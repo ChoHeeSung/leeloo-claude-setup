@@ -98,9 +98,22 @@ echo "[leeloo-setup] statusline-leeloo.sh 설치 완료"
 # ---------------------------------------------------------------------------
 # Step 5: gemini-cli 설치 (없을 때만)
 # ---------------------------------------------------------------------------
-# npm이 없으면 Node.js 먼저 설치
-if ! command -v npm &> /dev/null; then
-    echo "[leeloo-setup] npm이 없습니다. Node.js 설치 중..."
+# Node.js >= 20 필요 (gemini-cli 요구사항)
+NODE_MIN_VERSION=20
+NEED_NODE_INSTALL=false
+
+if ! command -v node &> /dev/null; then
+    NEED_NODE_INSTALL=true
+else
+    NODE_MAJOR=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$NODE_MAJOR" -lt "$NODE_MIN_VERSION" ] 2>/dev/null; then
+        echo "[leeloo-setup] Node.js v${NODE_MAJOR} 감지. gemini-cli는 v${NODE_MIN_VERSION}+ 필요. 업그레이드 중..."
+        NEED_NODE_INSTALL=true
+    fi
+fi
+
+if [ "$NEED_NODE_INSTALL" = true ]; then
+    echo "[leeloo-setup] Node.js ${NODE_MIN_VERSION} 설치 중..."
     if [ "$OS_TYPE" = "Darwin" ]; then
         if command -v brew &> /dev/null; then
             brew install node 2>/dev/null || echo "[leeloo-setup] Node.js 자동 설치 실패. brew install node 로 수동 설치해주세요." >&2
@@ -108,10 +121,12 @@ if ! command -v npm &> /dev/null; then
             echo "[leeloo-setup] Homebrew가 없어 Node.js를 설치할 수 없습니다." >&2
         fi
     else
-        if command -v sudo &> /dev/null; then
-            sudo apt install -y nodejs npm 2>/dev/null || echo "[leeloo-setup] Node.js 자동 설치 실패. sudo apt install nodejs npm 으로 수동 설치해주세요." >&2
+        if command -v sudo &> /dev/null && command -v curl &> /dev/null; then
+            curl -fsSL https://deb.nodesource.com/setup_${NODE_MIN_VERSION}.x | sudo -E bash - 2>/dev/null \
+                && sudo apt install -y nodejs 2>/dev/null \
+                || echo "[leeloo-setup] Node.js ${NODE_MIN_VERSION} 자동 설치 실패. 수동 설치: https://nodejs.org/" >&2
         else
-            echo "[leeloo-setup] sudo 권한이 없어 Node.js를 설치할 수 없습니다." >&2
+            echo "[leeloo-setup] sudo 또는 curl이 없어 Node.js를 설치할 수 없습니다." >&2
         fi
     fi
 fi
@@ -120,13 +135,14 @@ fi
 if ! command -v gemini &> /dev/null; then
     if command -v npm &> /dev/null; then
         echo "[leeloo-setup] gemini-cli 설치 중..."
-        npm install -g @google/gemini-cli 2>/dev/null \
+        sudo npm install -g @google/gemini-cli 2>/dev/null \
+            || npm install -g @google/gemini-cli 2>/dev/null \
             || echo "[leeloo-setup] gemini-cli 자동 설치 실패. 수동 설치: https://github.com/google-gemini/gemini-cli" >&2
         if command -v gemini &> /dev/null; then
             echo "[leeloo-setup] gemini-cli 설치 완료"
         fi
     else
-        echo "[leeloo-setup] npm 설치 실패로 gemini-cli를 설치할 수 없습니다." >&2
+        echo "[leeloo-setup] npm이 없어 gemini-cli를 설치할 수 없습니다." >&2
     fi
 else
     echo "[leeloo-setup] gemini-cli 이미 설치됨 (스킵)"
