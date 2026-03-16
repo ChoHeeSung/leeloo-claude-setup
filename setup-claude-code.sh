@@ -46,15 +46,26 @@ mkdir -p "$CLAUDE_DIR"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 TEMPLATE="$RESOURCES/settings-template.json"
 
-# 템플릿 플레이스홀더 치환: __HOME__, 알림 명령어 (OS별 분기)
+# 템플릿 플레이스홀더 치환: __HOME__ (sed), 알림 훅 주입 (jq)
 if [ "$OS_TYPE" = "Darwin" ]; then
-    NOTIFY_STOP="osascript -e 'display notification \\\"작업이 완료되었습니다\\\" with title \\\"Claude Code\\\" sound name \\\"Glass\\\"'"
-    NOTIFY_INPUT="osascript -e 'display notification \\\"사용자 입력을 기다리고 있습니다\\\" with title \\\"Claude Code\\\" sound name \\\"Ping\\\"'"
+    NOTIFY_STOP="osascript -e 'display notification \"작업이 완료되었습니다\" with title \"Claude Code\" sound name \"Glass\"'"
+    NOTIFY_INPUT="osascript -e 'display notification \"사용자 입력을 기다리고 있습니다\" with title \"Claude Code\" sound name \"Ping\"'"
 else
     NOTIFY_STOP="notify-send -a 'Claude Code' '작업 완료' '작업이 완료되었습니다' 2>/dev/null || true"
     NOTIFY_INPUT="notify-send -a 'Claude Code' '입력 대기' '사용자 입력을 기다리고 있습니다' 2>/dev/null || true"
 fi
-TEMPLATE_RESOLVED=$(sed -e "s|__HOME__|$HOME|g" -e "s|__NOTIFY_STOP__|$NOTIFY_STOP|g" -e "s|__NOTIFY_INPUT__|$NOTIFY_INPUT|g" "$TEMPLATE")
+
+# __HOME__만 sed로 치환 (안전한 경로 문자열)
+TEMPLATE_RESOLVED=$(sed "s|__HOME__|$HOME|g" "$TEMPLATE")
+
+# 알림 훅은 jq로 안전하게 주입 (특수문자 이스케이프 불필요)
+TEMPLATE_RESOLVED=$(echo "$TEMPLATE_RESOLVED" | jq \
+    --arg stop_cmd "$NOTIFY_STOP" \
+    --arg input_cmd "$NOTIFY_INPUT" \
+    '.hooks = {
+        "Stop": [{"hooks": [{"type": "command", "command": $stop_cmd}]}],
+        "Notification": [{"hooks": [{"type": "command", "command": $input_cmd}]}]
+    }')
 
 if [ -f "$SETTINGS_FILE" ]; then
     # 기존 설정이 있으면 딥 머지 (템플릿 값이 기존 값 위에 덮어씀)
