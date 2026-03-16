@@ -26,9 +26,6 @@
     "command": "bash __HOME__/.claude/statusline-leeloo.sh"
   },
   "enabledPlugins": {
-    "commit@leeloo-flow": true,
-    "leeloo-flow@leeloo-flow": true,
-    "leeloo-flow-init@leeloo-flow": true,
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,

@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(command grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(gemini:*)",
+      "Bash(find:*)",
+      "Bash(/opt/homebrew/bin/gemini --help 2>&1 | head -40)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -r /:*)",
+      "Bash(sudo rm:*)",
+      "Bash(sudo shutdown:*)",
+      "Bash(sudo reboot:*)",
+      "Bash(mkfs:*)",
+      "Bash(dd if=:*)",
+      "Bash(:(){ :|:& };:*)"
     ]
   }
 }

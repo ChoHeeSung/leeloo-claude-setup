@@ -86,3 +86,25 @@ jq -s '.[0] * .[1]' "$SETTINGS_FILE" <(echo "$TEMPLATE_RESOLVED")
 **결과**: 플러그인 설치 → 첫 세션 시작 → 자동 환경 설정 → 이후 세션에서는 스킵
 
 **비유**: 새 직원이 입사(플러그인 설치)하면 첫 출근일(첫 세션)에 사원증, 노트북, 계정이 자동 세팅되고, 다음 날부터는 그냥 출근만 하면 되는 온보딩 시스템과 같다.
+
+### Git Commit Skill 내장
+
+**지시 요약**: 기존 `leeloo-flow` 마켓플레이스의 `/commit` 스킬을 `leeloo-claude-setup` 플러그인에 내장하여 별도 인증/의존성 없이 사용 가능하게 전환
+
+**작업 내용**:
+1. `skills/commit/SKILL.md` 신규 생성 — 기존 `leeloo-flow/plugins/commit/skills/commit/SKILL.md` 내용 그대로 복사
+   - Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
+   - `--push` 플래그 지원, 메시지 직접 입력 옵션
+   - Haiku 서브 에이전트로 diff 분석 위임
+2. `resources/settings-template.json`에는 `commit@leeloo-flow` 항목이 없어 변경 불필요
+
+**핵심 구조**:
+```
+skills/
+└── commit/
+    └── SKILL.md    ← auto-discovery로 플러그인에 자동 인식
+```
+
+**결과**: 플러그인 설치만으로 `/commit` 스킬 사용 가능. 별도 마켓플레이스 인증 불필요.
+
+**비유**: 기존에는 커밋 도장(스킬)을 다른 건물(leeloo-flow 마켓플레이스)까지 가서 빌려와야 했는데, 이제 우리 사무실 서랍(leeloo-claude-setup)에 도장을 비치해 놓은 것과 같다.
