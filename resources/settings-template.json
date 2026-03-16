@@ -1,4 +1,8 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "auto",
   "statusLine": {
     "type": "command",
     "command": "bash __HOME__/.claude/statusline-leeloo.sh"

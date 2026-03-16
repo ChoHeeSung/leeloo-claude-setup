@@ -62,6 +62,11 @@ bash <plugin-root>/uninstall-claude-code.sh
 - `/leeloo-cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
 - `/leeloo-todo` — Plan을 TODO 리스트로 변환하고 진행 상황 추적
 
+### Agent Team
+
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — 에이전트 팀 기능 활성화
+- `teammateMode: "auto"` — 디스플레이 모드 (tmux/iTerm2에서 split panes, 일반 터미널에서 in-process)
+
 ### 훅
 
 - **SessionStart** — 설정 미완료 시 설치 가이드 표시 (prompt 타입)

@@ -1,5 +1,34 @@
 # HISTORY.md
 
+## 2026-03-17
+
+### Agent Team 설정 추가
+
+**지시 요약**: 초기 설정 시 Claude Code agent-team 플래그도 함께 설정되도록 추가
+
+**작업 내용**:
+1. `resources/settings-template.json`에 agent-team 관련 설정 추가
+   - `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`: `"1"` (실험 기능 활성화)
+   - `teammateMode`: `"auto"` (tmux/iTerm2는 split panes, 일반 터미널은 in-process)
+2. `README.md`에 Agent Team 설정 섹션 추가
+
+**핵심 코드**:
+```json
+// settings-template.json에 추가된 설정
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "teammateMode": "auto"
+}
+```
+
+**결과**: 플러그인 설치 후 설정 스크립트 실행 시 agent-team 기능이 자동 활성화됨
+
+**비유**: 새 사무실 세팅할 때 회의실(agent-team)도 기본 비품으로 포함시킨 것과 같다. 회의실 배치 모드(teammateMode)는 사무실 크기(터미널 종류)에 맞게 자동 조절된다.
+
+---
+
 ## 2026-03-05
 
 ### 상태바 스크립트 파일명 변경
