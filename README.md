@@ -75,8 +75,10 @@ rm -f ~/.claude/.leeloo-setup-done
 ```
 leeloo-claude-setup/
 ├── .claude-plugin/
-│   ├── plugin.json              # 플러그인 매니페스트 (SessionStart, PostToolUse 훅)
+│   ├── plugin.json              # 플러그인 매니페스트
 │   └── marketplace.json         # 마켓플레이스 매니페스트
+├── hooks/
+│   └── hooks.json               # 훅 정의 (SessionStart, PostToolUse)
 ├── setup-claude-code.sh     # 멱등성 설정 스크립트
 ├── skills/
 │   ├── leeloo-commit/SKILL.md          # /leeloo-commit 스킬

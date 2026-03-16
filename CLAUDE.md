@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-- `.claude-plugin/plugin.json` — Plugin manifest. Defines `SessionStart` and `PostToolUse` hooks via `${CLAUDE_PLUGIN_ROOT}`.
+- `.claude-plugin/plugin.json` — Plugin manifest (name, description, author).
+- `hooks/hooks.json` — Hook definitions. `SessionStart` triggers setup script, `PostToolUse(ExitPlanMode)` suggests cross-validation.
 - `.claude-plugin/marketplace.json` — Marketplace manifest for plugin discovery and installation.
 - `setup-claude-code.sh` — Idempotent setup script. Checks marker file (`~/.claude/.leeloo-setup-done`); if absent, merges settings and installs resources, then creates the marker. Requires `jq` for JSON deep merge.
 - `resources/` — Template files deployed to `~/.claude/` during setup:
