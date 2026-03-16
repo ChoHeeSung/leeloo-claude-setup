@@ -108,3 +108,63 @@ skills/
 **결과**: 플러그인 설치만으로 `/commit` 스킬 사용 가능. 별도 마켓플레이스 인증 불필요.
 
 **비유**: 기존에는 커밋 도장(스킬)을 다른 건물(leeloo-flow 마켓플레이스)까지 가서 빌려와야 했는데, 이제 우리 사무실 서랍(leeloo-claude-setup)에 도장을 비치해 놓은 것과 같다.
+
+### Gemini 교차검증 스킬 및 훅 추가
+
+**지시 요약**: Claude plan mode에서 작성한 설계를 gemini-cli로 교차검증하는 기능 추가. 수동 호출(`/cross-validate`)과 plan mode 종료 시 자동 제안(PostToolUse 훅) 두 가지 진입점.
+
+**작업 내용**:
+1. `skills/cross-validate/SKILL.md` 신규 생성 — 7단계 프로시저
+   - gemini-cli 존재 확인 → plan 파일 탐색 → gemini 실행 → 결과 표시/저장
+   - 리뷰 결과는 **로컬 프로젝트 루트**에 `{plan파일명}.review.md`로 저장
+   - 에러 처리: 미설치, 파일 없음, timeout, 빈 응답
+2. `resources/gemini-review-prompt.md` 신규 생성 — 시니어 아키텍트 역할 프롬프트
+   - 5가지 검증 기준: 완전성, 실현 가능성, 리스크, 대안, 논리 검증
+   - 출력 형식: Overall Verdict / Strengths / Critical Issues / Concerns / Suggestions / Recommendations
+3. `plugin.json` 수정 — `PostToolUse` 훅 추가
+   - `matcher: "ExitPlanMode"` — plan mode 종료 시에만 트리거
+   - `type: "prompt"` — 사용자에게 교차검증 제안
+
+**핵심 코드**:
+```json
+// plugin.json — PostToolUse 훅 추가
+"PostToolUse": [{
+  "matcher": "ExitPlanMode",
+  "hooks": [{
+    "type": "prompt",
+    "prompt": "Plan mode를 방금 종료했습니다. '/cross-validate를 실행하면 Gemini가 이 plan을 독립적으로 검증합니다. 교차검증하시겠습니까?'"
+  }]
+}]
+```
+```bash
+# gemini-cli 실행 (120초 timeout)
+timeout 120 gemini -p "${PROMPT}\n---\n${PLAN_CONTENT}" -o text
+```
+
+**결과**: `/cross-validate` 스킬로 수동 교차검증 가능, plan mode 종료 시 자동 제안
+
+**비유**: 건축 설계도(plan)를 완성한 후, 다른 건축사(Gemini)에게 "이 설계에 문제 없는지 한번 봐주세요"라고 검토를 의뢰하는 것과 같다. 수동으로 의뢰할 수도 있고(스킬), 설계가 끝나면 자동으로 "검토 받으시겠습니까?"라고 물어보기도 한다(훅).
+
+### gemini-cli 자동 설치 추가
+
+**지시 요약**: 초기 설치 스크립트(`setup-claude-code.sh`)에 gemini-cli 자동 설치 단계 추가
+
+**작업 내용**:
+1. Step 5로 gemini-cli 설치 로직 추가 (기존 Step 5~6 → Step 6~7로 번호 조정)
+2. `command -v gemini`로 이미 설치 여부 확인 → 없으면 `npm install -g @google/gemini-cli` 실행
+3. npm 미설치 시 수동 설치 안내 메시지 출력
+4. 설치 실패 시에도 스크립트는 중단하지 않음 (교차검증은 선택 기능)
+
+**핵심 코드**:
+```bash
+if ! command -v gemini &> /dev/null; then
+    if command -v npm &> /dev/null; then
+        npm install -g @google/gemini-cli 2>/dev/null \
+            || echo "gemini-cli 자동 설치 실패" >&2
+    fi
+fi
+```
+
+**결과**: 플러그인 첫 세션 시 gemini-cli가 자동 설치되어 `/cross-validate` 스킬을 바로 사용 가능
+
+**비유**: 새 사무실에 복합기(gemini-cli)를 기본 비품으로 배치해 두는 것과 같다. 없으면 자동으로 설치하고, 이미 있으면 건너뛴다.

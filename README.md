@@ -20,15 +20,22 @@ claude plugins:add /path/to/leeloo-claude-setup
 | `settings.local.json` | 로컬 권한 설정 | 없을 때만 생성 |
 | `statusline-leeloo.sh` | Powerline 스타일 상태바 (모델, 컨텍스트, 비용, git) | 항상 덮어쓰기 |
 | `CLAUDE.md` | 사내 표준 글로벌 CLAUDE.md | 없을 때만 생성 |
+| `gemini-cli` | Gemini 교차검증용 CLI 도구 | 없을 때만 npm 설치 |
 
 모든 파일은 `~/.claude/` 디렉토리에 배포됩니다.
 
 ## 주요 설정 내용
 
+### 스킬
+
+- `/commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
+- `/cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
+
 ### 훅
 
 - **Stop** — 작업 완료 시 macOS 알림 (Glass 사운드)
 - **Notification** — 사용자 입력 대기 시 macOS 알림 (Ping 사운드)
+- **PostToolUse(ExitPlanMode)** — plan mode 종료 시 Gemini 교차검증 제안
 
 ### 활성화 플러그인
 
@@ -52,6 +59,7 @@ claude plugins:add /path/to/leeloo-claude-setup
   ```bash
   brew install jq
   ```
+- [Node.js / npm](https://nodejs.org/) — gemini-cli 자동 설치에 필요 (선택)
 
 ## 재설정
 
@@ -65,11 +73,15 @@ rm -f ~/.claude/.leeloo-setup-done
 
 ```
 leeloo-claude-setup/
-├── plugin.json              # 플러그인 매니페스트 (SessionStart 훅)
+├── plugin.json              # 플러그인 매니페스트 (SessionStart, PostToolUse 훅)
 ├── setup-claude-code.sh     # 멱등성 설정 스크립트
+├── skills/
+│   ├── commit/SKILL.md          # /commit 스킬
+│   └── cross-validate/SKILL.md  # /cross-validate 스킬
 └── resources/
     ├── settings-template.json   # settings.json 머지 템플릿
     ├── settings.local.json      # 로컬 권한 템플릿
     ├── statusline-leeloo.sh     # 상태바 스크립트
+    ├── gemini-review-prompt.md  # Gemini 교차검증 프롬프트 템플릿
     └── CLAUDE.md                # 글로벌 CLAUDE.md 템플릿
 ```

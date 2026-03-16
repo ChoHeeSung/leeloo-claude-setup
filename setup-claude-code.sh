@@ -69,7 +69,26 @@ chmod +x "$CLAUDE_DIR/statusline-leeloo.sh"
 echo "[leeloo-setup] statusline-leeloo.sh 설치 완료"
 
 # ---------------------------------------------------------------------------
-# Step 5: 글로벌 CLAUDE.md 배포 (없을 때만)
+# Step 5: gemini-cli 설치 (없을 때만)
+# ---------------------------------------------------------------------------
+if ! command -v gemini &> /dev/null; then
+    if command -v npm &> /dev/null; then
+        echo "[leeloo-setup] gemini-cli 설치 중..."
+        npm install -g @google/gemini-cli 2>/dev/null \
+            || echo "[leeloo-setup] gemini-cli 자동 설치 실패. 수동 설치: https://github.com/google-gemini/gemini-cli" >&2
+        if command -v gemini &> /dev/null; then
+            echo "[leeloo-setup] gemini-cli 설치 완료"
+        fi
+    else
+        echo "[leeloo-setup] npm이 없어 gemini-cli를 설치할 수 없습니다. Node.js 설치 후 수동 설치: npm install -g @google/gemini-cli" >&2
+    fi
+else
+    echo "[leeloo-setup] gemini-cli 이미 설치됨 (스킵)"
+fi
+
+# ---------------------------------------------------------------------------
+# Step 6: 글로벌 CLAUDE.md 배포 (없을 때만)
+
 # ---------------------------------------------------------------------------
 if [ ! -f "$CLAUDE_DIR/CLAUDE.md" ]; then
     cp "$RESOURCES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
@@ -79,7 +98,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 6: 마커 파일 생성
+# Step 7: 마커 파일 생성
 # ---------------------------------------------------------------------------
 echo "installed=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$MARKER_FILE"
 
