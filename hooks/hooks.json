@@ -5,9 +5,8 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh",
-            "timeout": 30
+            "type": "prompt",
+            "prompt": "Bash로 ~/.claude/.leeloo-setup-done 파일 존재 여부를 확인하세요. 파일이 없으면 아래 안내를 사용자에게 표시하세요:\n\n---\n[leeloo-setup] 사내 표준 환경이 아직 설정되지 않았습니다.\n\n설치: bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh\n제거: bash ${CLAUDE_PLUGIN_ROOT}/uninstall-claude-code.sh\n\n터미널에서 직접 실행해주세요.\n---\n\n파일이 이미 존재하면 아무것도 하지 마세요."
           }
         ]
       }
@@ -18,7 +17,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Plan mode를 방금 종료했습니다. 사용자에게 gemini-cli를 사용한 교차검증을 제안하세요. '/leeloo-cross-validate를 실행하면 Gemini가 이 plan을 독립적으로 검증합니다. 교차검증하시겠습니까?' 라고 물어보세요."
+            "prompt": "Plan mode를 방금 종료했습니다. 다음 옵션을 사용자에게 제안하세요:\n1. '/leeloo-cross-validate'를 실행하면 Gemini가 이 plan을 독립적으로 검증합니다.\n2. '/leeloo-todo'를 실행하면 plan을 TODO 리스트로 변환합니다.\n어떤 것을 먼저 하시겠습니까?"
           }
         ]
       }

@@ -231,6 +231,44 @@ fi
 
 **비유**: 해외 지사(Linux 서버)에도 본사(macOS)와 동일한 사내 시스템을 구축하되, 현지 인프라(notify-send, apt)에 맞게 로컬라이징한 것과 같다.
 
+### 안전 설치 가이드 + 백업/언인스톨 + TODO 스킬
+
+**지시 요약**: SessionStart 훅의 자동 실행 위험성 해소, 백업/복원 메커니즘 추가, Plan→TODO 변환 스킬 추가
+
+**작업 내용**:
+1. **SessionStart 훅 변경**: `type: "command"` → `type: "prompt"` 로 전환. 자동 실행 대신 설치 가이드만 표시
+2. **백업 로직 추가**: `setup-claude-code.sh`에 Step 1.5로 `~/.claude/.leeloo-backup/` 백업 단계 삽입
+3. **언인스톨 스크립트 생성**: `uninstall-claude-code.sh` — 백업 복원, 마커 삭제, 정리 (멱등성 보장)
+4. **TODO 스킬 생성**: `skills/leeloo-todo/SKILL.md` — 8개 서브커맨드 (create/list/add/start/done/undo/clear)
+5. **글로벌 CLAUDE.md 수정**: 필수 원칙 4번 "TODO.md 확인 원칙" 추가, 번호 재조정
+6. **PostToolUse 훅 수정**: Plan mode 종료 시 교차검증 + TODO 생성 동시 제안
+7. **README.md, CLAUDE.md 업데이트**: 백업, 언인스톨, TODO 스킬 설명 반영
+
+**핵심 코드**:
+```json
+// hooks.json — SessionStart를 prompt 타입으로 변경
+"SessionStart": [{
+  "hooks": [{
+    "type": "prompt",
+    "prompt": "...마커 파일 확인 → 없으면 설치 가이드 표시..."
+  }]
+}]
+```
+```bash
+# setup-claude-code.sh — 백업 로직
+BACKUP_DIR="$CLAUDE_DIR/.leeloo-backup"
+mkdir -p "$BACKUP_DIR"
+for f in settings.json settings.local.json statusline-leeloo.sh CLAUDE.md; do
+    [ -f "$CLAUDE_DIR/$f" ] && cp "$CLAUDE_DIR/$f" "$BACKUP_DIR/$f"
+done
+```
+
+**결과**: 안전한 수동 설치 플로우, 완전한 백업/복원, Plan→TODO 워크플로우 완성
+
+**비유**: 기존에는 새 직원이 첫 출근하면 시스템이 알아서 모든 걸 설치했는데(자동 실행), 이제는 "이것들을 설치해야 합니다"라는 체크리스트를 먼저 보여주고 직원이 직접 실행하는 방식으로 바뀌었다. 또한 설치 전 기존 환경을 사진 찍어두고(백업), 퇴사 시 원래대로 복원할 수 있게(언인스톨) 했다. 그리고 설계도(Plan)를 완성하면 "시공 작업 목록(TODO)"으로 변환하는 도구도 추가했다.
+
+---
+
 ### 플러그인 구조 수정 — 훅 인식 + settings.json 파괴 버그 수정
 
 **지시 요약**: Linux 서버에서 플러그인 설치 테스트 중 발견된 3가지 문제 수정

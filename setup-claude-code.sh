@@ -41,6 +41,19 @@ echo "[leeloo-setup] 사내 표준 환경 설정을 시작합니다..."
 mkdir -p "$CLAUDE_DIR"
 
 # ---------------------------------------------------------------------------
+# Step 1.5: 기존 파일 백업
+# ---------------------------------------------------------------------------
+BACKUP_DIR="$CLAUDE_DIR/.leeloo-backup"
+mkdir -p "$BACKUP_DIR"
+
+for f in settings.json settings.local.json statusline-leeloo.sh CLAUDE.md; do
+    if [ -f "$CLAUDE_DIR/$f" ]; then
+        cp "$CLAUDE_DIR/$f" "$BACKUP_DIR/$f"
+        echo "[leeloo-setup] 백업: $f"
+    fi
+done
+
+# ---------------------------------------------------------------------------
 # Step 2: settings.json 머지 (기존 설정 보존 + 사내 설정 추가)
 # ---------------------------------------------------------------------------
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
