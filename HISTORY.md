@@ -168,3 +168,33 @@ fi
 **결과**: 플러그인 첫 세션 시 gemini-cli가 자동 설치되어 `/cross-validate` 스킬을 바로 사용 가능
 
 **비유**: 새 사무실에 복합기(gemini-cli)를 기본 비품으로 배치해 두는 것과 같다. 없으면 자동으로 설치하고, 이미 있으면 건너뛴다.
+
+### 마켓플레이스 매니페스트 추가
+
+**지시 요약**: leeloo-claude-setup 레포를 Claude Code 플러그인 마켓플레이스로도 등록할 수 있도록 `.claude-plugin/marketplace.json` 추가
+
+**작업 내용**:
+1. `.claude-plugin/marketplace.json` 신규 생성 — anthropics/claude-plugins-official 형식 준수
+   - name, description, owner, plugins 배열 구조
+   - `source: "."` 으로 같은 레포 내 플러그인 참조
+2. `resources/settings-template.json` 수정
+   - `enabledPlugins`에 `leeloo-claude-setup@leeloo-claude-setup` 추가
+   - `extraKnownMarketplaces`에 leeloo-claude-setup Bitbucket URL 추가
+3. `README.md` 구조도에 `.claude-plugin/` 디렉토리 및 마켓플레이스 항목 추가
+
+**핵심 코드**:
+```json
+// .claude-plugin/marketplace.json
+{
+  "name": "leeloo-claude-setup",
+  "plugins": [{
+    "name": "leeloo-claude-setup",
+    "source": ".",
+    "category": "productivity"
+  }]
+}
+```
+
+**결과**: Add Marketplace에서 Bitbucket URL로 마켓플레이스 등록 가능
+
+**비유**: 가게(플러그인)를 운영하면서 동시에 그 가게가 입점한 쇼핑몰 안내 디렉토리(마켓플레이스)도 함께 만든 것과 같다. 이제 "이 쇼핑몰에 어떤 가게가 있나요?"라고 물으면 자기 자신을 소개할 수 있다.

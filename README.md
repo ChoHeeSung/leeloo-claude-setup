@@ -46,6 +46,7 @@ claude plugins:add /path/to/leeloo-claude-setup
 
 - `claude-plugins-official` (GitHub)
 - `leeloo-flow` (Bitbucket)
+- `leeloo-claude-setup` (Bitbucket)
 
 ## 설계 원칙
 
@@ -73,6 +74,8 @@ rm -f ~/.claude/.leeloo-setup-done
 
 ```
 leeloo-claude-setup/
+├── .claude-plugin/
+│   └── marketplace.json         # 마켓플레이스 매니페스트
 ├── plugin.json              # 플러그인 매니페스트 (SessionStart, PostToolUse 훅)
 ├── setup-claude-code.sh     # 멱등성 설정 스크립트
 ├── skills/

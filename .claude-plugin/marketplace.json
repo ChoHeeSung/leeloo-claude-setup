@@ -1,0 +1,21 @@
+{
+  "name": "leeloo-claude-setup",
+  "description": "Leeloo(이루기술) 사내 Claude Code 환경 자동 설정 플러그인 마켓플레이스",
+  "owner": {
+    "name": "Leeloo (이루기술)",
+    "email": "dev@leeloo.co.kr"
+  },
+  "plugins": [
+    {
+      "name": "leeloo-claude-setup",
+      "description": "사내 표준 Claude Code 환경 자동 설정. 설치 후 첫 세션에서 settings, statusline, CLAUDE.md, gemini-cli를 자동 적용합니다.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Leeloo (이루기술)",
+        "email": "dev@leeloo.co.kr"
+      },
+      "source": ".",
+      "category": "productivity"
+    }
+  ]
+}

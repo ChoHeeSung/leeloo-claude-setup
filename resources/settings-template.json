@@ -50,7 +50,8 @@
     "swift-lsp@claude-plugins-official": true,
     "kotlin-lsp@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
-    "pinecone@claude-plugins-official": true
+    "pinecone@claude-plugins-official": true,
+    "leeloo-claude-setup@leeloo-claude-setup": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
@@ -63,6 +64,12 @@
       "source": {
         "source": "git",
         "url": "https://ChoHeesung@bitbucket.org/leeloocoltd/leeloo-flow.git"
+      }
+    },
+    "leeloo-claude-setup": {
+      "source": {
+        "source": "git",
+        "url": "https://ChoHeesung@bitbucket.org/leeloocoltd/leeloo-claude-setup.git"
       }
     }
   }
