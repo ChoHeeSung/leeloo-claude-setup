@@ -198,3 +198,35 @@ fi
 **결과**: Add Marketplace에서 Bitbucket URL로 마켓플레이스 등록 가능
 
 **비유**: 가게(플러그인)를 운영하면서 동시에 그 가게가 입점한 쇼핑몰 안내 디렉토리(마켓플레이스)도 함께 만든 것과 같다. 이제 "이 쇼핑몰에 어떤 가게가 있나요?"라고 물으면 자기 자신을 소개할 수 있다.
+
+### Linux 호환성 수정 — OS별 분기 처리
+
+**지시 요약**: Linux 서버에서 플러그인 테스트 시 발견된 macOS 전용 코드 문제 수정
+
+**발견된 문제점**:
+1. 알림 훅이 `osascript` (macOS 전용) → Linux에서 작동 안 함
+2. jq 미설치 안내가 `brew install jq` (macOS 전용)
+3. gemini-cli 미설치 시 Node.js 설치 안내가 macOS 전용
+
+**작업 내용**:
+1. `setup-claude-code.sh`에 `OS_TYPE="$(uname -s)"` OS 감지 추가
+2. `settings-template.json`의 알림 명령어를 `__NOTIFY_STOP__`, `__NOTIFY_INPUT__` 플레이스홀더로 변경
+3. setup 스크립트에서 OS별 분기:
+   - macOS: `osascript` (기존)
+   - Linux: `notify-send` (libnotify)
+4. jq 설치 안내: macOS → `brew install jq`, Linux → `sudo apt install jq`
+5. Node.js 설치 안내: macOS → `brew install node`, Linux → `sudo apt install nodejs npm`
+
+**핵심 코드**:
+```bash
+OS_TYPE="$(uname -s)"
+if [ "$OS_TYPE" = "Darwin" ]; then
+    NOTIFY_STOP="osascript -e '...'"
+else
+    NOTIFY_STOP="notify-send -a 'Claude Code' '작업 완료' '...'"
+fi
+```
+
+**결과**: macOS와 Linux 모두에서 플러그인이 정상 작동
+
+**비유**: 해외 지사(Linux 서버)에도 본사(macOS)와 동일한 사내 시스템을 구축하되, 현지 인프라(notify-send, apt)에 맞게 로컬라이징한 것과 같다.

@@ -28,8 +28,8 @@ claude plugins:add /path/to/leeloo-claude-setup
 
 ### 스킬
 
-- `/commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
-- `/cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
+- `/leeloo-commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
+- `/leeloo-cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
 
 ### 훅
 
@@ -79,8 +79,8 @@ leeloo-claude-setup/
 ├── plugin.json              # 플러그인 매니페스트 (SessionStart, PostToolUse 훅)
 ├── setup-claude-code.sh     # 멱등성 설정 스크립트
 ├── skills/
-│   ├── commit/SKILL.md          # /commit 스킬
-│   └── cross-validate/SKILL.md  # /cross-validate 스킬
+│   ├── leeloo-commit/SKILL.md          # /leeloo-commit 스킬
+│   └── leeloo-cross-validate/SKILL.md  # /leeloo-cross-validate 스킬
 └── resources/
     ├── settings-template.json   # settings.json 머지 템플릿
     ├── settings.local.json      # 로컬 권한 템플릿

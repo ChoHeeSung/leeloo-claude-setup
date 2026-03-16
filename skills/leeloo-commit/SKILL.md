@@ -1,6 +1,6 @@
 ---
-name: commit
-description: "레포 변경사항 → 회사 스타일 커밋 메시지 생성 + 커밋/푸시. Usage: /commit [--push] [message]"
+name: leeloo-commit
+description: "레포 변경사항 → 회사 스타일 커밋 메시지 생성 + 커밋/푸시. Usage: /leeloo-commit [--push] [message]"
 license: MIT
 ---
 

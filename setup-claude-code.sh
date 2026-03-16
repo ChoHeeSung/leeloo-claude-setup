@@ -10,6 +10,11 @@ PLUGIN_ROOT="$(cd "$(dirname "$0")" && pwd)"
 RESOURCES="$PLUGIN_ROOT/resources"
 
 # ---------------------------------------------------------------------------
+# OS 감지
+# ---------------------------------------------------------------------------
+OS_TYPE="$(uname -s)"
+
+# ---------------------------------------------------------------------------
 # 마커 확인: 이미 설정 완료면 즉시 종료
 # ---------------------------------------------------------------------------
 if [ -f "$MARKER_FILE" ]; then
@@ -20,7 +25,11 @@ fi
 # jq 필수 확인
 # ---------------------------------------------------------------------------
 if ! command -v jq &> /dev/null; then
-    echo "[leeloo-setup] jq가 필요합니다. brew install jq 로 설치해주세요." >&2
+    if [ "$OS_TYPE" = "Darwin" ]; then
+        echo "[leeloo-setup] jq가 필요합니다. brew install jq 로 설치해주세요." >&2
+    else
+        echo "[leeloo-setup] jq가 필요합니다. sudo apt install jq 로 설치해주세요." >&2
+    fi
     exit 1
 fi
 
@@ -37,8 +46,15 @@ mkdir -p "$CLAUDE_DIR"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 TEMPLATE="$RESOURCES/settings-template.json"
 
-# 템플릿의 __HOME__ 플레이스홀더를 실제 경로로 치환
-TEMPLATE_RESOLVED=$(sed "s|__HOME__|$HOME|g" "$TEMPLATE")
+# 템플릿 플레이스홀더 치환: __HOME__, 알림 명령어 (OS별 분기)
+if [ "$OS_TYPE" = "Darwin" ]; then
+    NOTIFY_STOP="osascript -e 'display notification \\\"작업이 완료되었습니다\\\" with title \\\"Claude Code\\\" sound name \\\"Glass\\\"'"
+    NOTIFY_INPUT="osascript -e 'display notification \\\"사용자 입력을 기다리고 있습니다\\\" with title \\\"Claude Code\\\" sound name \\\"Ping\\\"'"
+else
+    NOTIFY_STOP="notify-send -a 'Claude Code' '작업 완료' '작업이 완료되었습니다' 2>/dev/null || true"
+    NOTIFY_INPUT="notify-send -a 'Claude Code' '입력 대기' '사용자 입력을 기다리고 있습니다' 2>/dev/null || true"
+fi
+TEMPLATE_RESOLVED=$(sed -e "s|__HOME__|$HOME|g" -e "s|__NOTIFY_STOP__|$NOTIFY_STOP|g" -e "s|__NOTIFY_INPUT__|$NOTIFY_INPUT|g" "$TEMPLATE")
 
 if [ -f "$SETTINGS_FILE" ]; then
     # 기존 설정이 있으면 딥 머지 (템플릿 값이 기존 값 위에 덮어씀)
@@ -80,7 +96,11 @@ if ! command -v gemini &> /dev/null; then
             echo "[leeloo-setup] gemini-cli 설치 완료"
         fi
     else
-        echo "[leeloo-setup] npm이 없어 gemini-cli를 설치할 수 없습니다. Node.js 설치 후 수동 설치: npm install -g @google/gemini-cli" >&2
+        if [ "$OS_TYPE" = "Darwin" ]; then
+            echo "[leeloo-setup] npm이 없어 gemini-cli를 설치할 수 없습니다. brew install node 후 npm install -g @google/gemini-cli" >&2
+        else
+            echo "[leeloo-setup] npm이 없어 gemini-cli를 설치할 수 없습니다. sudo apt install nodejs npm 후 npm install -g @google/gemini-cli" >&2
+        fi
     fi
 else
     echo "[leeloo-setup] gemini-cli 이미 설치됨 (스킵)"
