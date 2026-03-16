@@ -230,3 +230,48 @@ fi
 **결과**: macOS와 Linux 모두에서 플러그인이 정상 작동
 
 **비유**: 해외 지사(Linux 서버)에도 본사(macOS)와 동일한 사내 시스템을 구축하되, 현지 인프라(notify-send, apt)에 맞게 로컬라이징한 것과 같다.
+
+### 플러그인 구조 수정 — 훅 인식 + settings.json 파괴 버그 수정
+
+**지시 요약**: Linux 서버에서 플러그인 설치 테스트 중 발견된 3가지 문제 수정
+
+**발견된 문제점**:
+1. SessionStart 훅이 자동 실행되지 않음
+2. `plugin.json`을 `.claude-plugin/`으로 이동하면 플러그인 자체가 로드 안 됨
+3. sed로 알림 명령어 치환 시 특수문자(`||`, `>`, `'`)가 settings.json을 파괴
+
+**작업 내용**:
+1. **훅 auto-discovery 구조 적용**: `hooks/hooks.json` 신규 생성 (공식 hookify 플러그인 구조 참고)
+2. **plugin.json 위치 확정**: 루트에 유지 (`.claude-plugin/`으로 이동하면 플러그인 로드 실패)
+3. **sed → jq 안전 치환**: 알림 명령어를 sed 플레이스홀더에서 jq `--arg` 주입으로 변경
+   - `settings-template.json`에서 알림 플레이스홀더(`__NOTIFY_STOP__` 등) 제거
+   - sed는 `__HOME__` 경로 치환만 담당
+   - jq가 `.hooks` 필드를 안전하게 주입 (특수문자 자동 이스케이프)
+
+**핵심 코드**:
+```bash
+# jq로 알림 훅 안전하게 주입
+TEMPLATE_RESOLVED=$(echo "$TEMPLATE_RESOLVED" | jq \
+    --arg stop_cmd "$NOTIFY_STOP" \
+    --arg input_cmd "$NOTIFY_INPUT" \
+    '.hooks = {
+        "Stop": [{"hooks": [{"type": "command", "command": $stop_cmd}]}],
+        "Notification": [{"hooks": [{"type": "command", "command": $input_cmd}]}]
+    }')
+```
+
+**최종 플러그인 구조**:
+```
+leeloo-claude-setup/
+├── plugin.json              ← 루트 (플러그인 매니페스트)
+├── .claude-plugin/
+│   └── marketplace.json     ← 마켓플레이스 전용
+├── hooks/
+│   └── hooks.json           ← 훅 auto-discovery
+├── skills/                  ← 스킬 auto-discovery
+└── ...
+```
+
+**결과**: SessionStart 훅 자동 실행, settings.json 정상 생성, 상태바 적용 확인
+
+**비유**: 집(플러그인)을 지을 때, 대문(plugin.json)은 반드시 정문(루트)에 있어야 택배(Claude Code)가 찾아올 수 있다. 대문을 뒷골목(.claude-plugin/)으로 옮기면 택배가 "부재중"으로 돌아간다. 그리고 집 내부 배선(알림 명령어)은 전문가 도구(jq)로 시공해야 합선(sed 특수문자 파괴) 없이 안전하다.
