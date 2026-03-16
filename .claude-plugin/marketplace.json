@@ -14,7 +14,7 @@
         "name": "Leeloo (이루기술)",
         "email": "dev@leeloo.co.kr"
       },
-      "source": ".",
+      "source": "./",
       "category": "productivity"
     }
   ]
