@@ -1,0 +1,16 @@
+{
+  "name": "leeloo-claude-setup",
+  "description": "Leeloo(이루기술) 사내 Claude Code 환경 자동 설정 플러그인. 설치 후 첫 세션에서 사내 표준 설정을 자동 적용합니다.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
