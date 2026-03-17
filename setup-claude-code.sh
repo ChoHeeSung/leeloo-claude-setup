@@ -162,8 +162,25 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 6: 글로벌 CLAUDE.md 배포 (없을 때만)
+# Step 6: uv (uvx) 설치 (없을 때만)
+# ---------------------------------------------------------------------------
+if ! command -v uvx &> /dev/null; then
+    if command -v curl &> /dev/null; then
+        echo "[leeloo-setup] uv (uvx) 설치 중..."
+        curl -LsSf https://astral.sh/uv/install.sh | sh 2>/dev/null \
+            || echo "[leeloo-setup] uv 자동 설치 실패. 수동 설치: https://docs.astral.sh/uv/" >&2
+        if command -v uvx &> /dev/null; then
+            echo "[leeloo-setup] uv (uvx) 설치 완료"
+        fi
+    else
+        echo "[leeloo-setup] curl이 없어 uv를 설치할 수 없습니다." >&2
+    fi
+else
+    echo "[leeloo-setup] uv (uvx) 이미 설치됨 (스킵)"
+fi
 
+# ---------------------------------------------------------------------------
+# Step 7: 글로벌 CLAUDE.md 배포 (없을 때만)
 # ---------------------------------------------------------------------------
 if [ ! -f "$CLAUDE_DIR/CLAUDE.md" ]; then
     cp "$RESOURCES/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
@@ -173,7 +190,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 7: 마커 파일 생성
+# Step 8: 마커 파일 생성
 # ---------------------------------------------------------------------------
 echo "installed=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$MARKER_FILE"
 

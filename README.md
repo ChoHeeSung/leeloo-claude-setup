@@ -29,6 +29,7 @@ claude plugins:add /path/to/leeloo-claude-setup
 | `statusline-leeloo.sh` | Powerline 스타일 상태바 (모델, 컨텍스트, 비용, git) | 항상 덮어쓰기 |
 | `CLAUDE.md` | 사내 표준 글로벌 CLAUDE.md | 없을 때만 생성 |
 | `gemini-cli` | Gemini 교차검증용 CLI 도구 | 없을 때만 npm 설치 |
+| `uv (uvx)` | Python 패키지 러너 (MCP 서버 등) | 없을 때만 설치 |
 
 모든 파일은 `~/.claude/` 디렉토리에 배포됩니다.
 
