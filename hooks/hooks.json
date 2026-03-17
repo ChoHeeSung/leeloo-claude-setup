@@ -5,8 +5,8 @@
       {
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Bash로 ~/.claude/.leeloo-setup-done 파일 존재 여부를 확인하세요. 파일이 없으면 아래 안내를 사용자에게 표시하세요:\n\n---\n[leeloo-setup] 사내 표준 환경이 아직 설정되지 않았습니다.\n\n설치: bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh\n제거: bash ${CLAUDE_PLUGIN_ROOT}/uninstall-claude-code.sh\n\n터미널에서 직접 실행해주세요.\n---\n\n파일이 이미 존재하면 아무것도 하지 마세요."
+            "type": "command",
+            "command": "if [ ! -f ~/.claude/.leeloo-setup-done ]; then echo '[leeloo-setup] 사내 표준 환경이 아직 설정되지 않았습니다.'; echo ''; echo \"설치: bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh\"; echo \"제거: bash ${CLAUDE_PLUGIN_ROOT}/uninstall-claude-code.sh\"; echo ''; echo '터미널에서 직접 실행해주세요.'; fi"
           }
         ]
       }
