@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Plan mode를 방금 종료했습니다. 다음을 순서대로 수행하세요:\n\n1. **Plan 저장**: 방금 완성된 plan 전체 내용을 프로젝트 루트의 `.claude/plans/` 디렉토리에 저장하세요.\n   - 디렉토리가 없으면 `mkdir -p .claude/plans/`로 생성\n   - 파일명: `{YYYY-MM-DD}-{plan-요약-kebab-case}.md` (예: `2026-03-17-api-refactoring.md`)\n   - plan 내용을 그대로 Write 도구로 저장\n   - 저장 완료 후 경로를 사용자에게 알려주세요\n\n2. **다음 단계 제안**: 사용자에게 다음 옵션을 제안하세요:\n   - '/leeloo-cross-validate'를 실행하면 Gemini가 이 plan을 독립적으로 검증합니다.\n   - '/leeloo-todo'를 실행하면 plan을 TODO 리스트로 변환합니다.\n   어떤 것을 먼저 하시겠습니까?"
+            "prompt": "Plan mode가 종료되면 다음 옵션을 사용자에게 제안하세요:\n- '/leeloo-cross-validate' — Gemini가 이 plan을 독립적으로 교차검증합니다.\n- '/leeloo-todo' — plan을 TODO 리스트로 변환합니다.\n각 스킬이 plan을 자동으로 .claude/plans/에 저장합니다."
           }
         ]
       }

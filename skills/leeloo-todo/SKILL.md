@@ -64,7 +64,13 @@ Plan mode에서 작성한 계획을 실행 가능한 TODO 리스트로 변환하
 
 ### create 동작
 
-1. **Plan 파일 찾기**: 인자가 있으면 해당 경로 사용. 없으면 프로젝트 루트의 `.claude/plans/*.md`에서 최근 수정된 파일 탐색 (Glob으로 `{프로젝트루트}/.claude/plans/*.md` 검색, `.review.md`로 끝나는 파일은 제외).
+1. **Plan 확보**:
+   - **인자가 있으면**: 해당 경로의 파일을 사용.
+   - **인자가 없고 현재 컨텍스트에 plan이 있으면** (plan mode 직후 호출 등):
+     1. `mkdir -p .claude/plans/` 실행
+     2. plan 내용을 `.claude/plans/{YYYY-MM-DD}-{plan-요약-kebab-case}.md`에 Write 도구로 저장
+     3. 저장된 파일을 사용
+   - **인자도 없고 컨텍스트에 plan도 없으면**: Glob으로 `{프로젝트루트}/.claude/plans/*.md` 검색 (`.review.md` 제외). 없으면 에러, 여러 개면 AskUserQuestion으로 선택.
 2. **Plan 내용 읽기**: Read 도구로 plan 파일 내용을 읽습니다.
 3. **태스크 분해**: Plan의 변경 사항/구현 단계를 분석하여 독립적 태스크 단위로 분해합니다.
    - 각 태스크에 번호, 제목, 간단한 설명 부여
