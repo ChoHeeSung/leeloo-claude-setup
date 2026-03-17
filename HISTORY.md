@@ -2,6 +2,21 @@
 
 ## 2026-03-17
 
+### 초기 설치를 SessionStart 훅 → /leeloo-setup 스킬로 전환
+
+**지시 요약**: Linux에서 SessionStart `prompt` 타입 훅 에러 발생, `command` 타입으로 변경해도 출력이 UI에 표시되지 않는 문제 → 훅 대신 스킬로 전환
+
+**작업 내용**:
+1. `skills/leeloo-setup/SKILL.md` 신규 생성 — install/uninstall/status 서브커맨드
+2. `hooks/hooks.json`에서 SessionStart 훅 제거 (PostToolUse만 유지)
+3. README.md, CLAUDE.md 업데이트 — 설치 방법을 `/leeloo-setup`으로 변경
+
+**결과**: 크로스 플랫폼 호환성 확보, 사용자가 `/leeloo-setup`으로 명시적 설치/제거/상태확인
+
+**비유**: 기존에는 새 직원이 출근(세션 시작)하면 자동 안내판(훅)이 떠야 했는데, 안내판 자체가 건물(OS)에 따라 안 보이는 문제가 있었다. 이제 안내 데스크(스킬)를 따로 만들어 직원이 직접 찾아오면 확실하게 안내해주는 방식으로 바꾼 것.
+
+---
+
 ### Sub Agent 생성 스킬 + Agent Team 생성 스킬 추가
 
 **지시 요약**: 사용자가 에이전트 frontmatter 문법이나 TeamCreate 도구 파라미터를 직접 알 필요 없이, 대화형으로 Sub Agent와 Agent Team을 구성할 수 있는 스킬 2종 추가

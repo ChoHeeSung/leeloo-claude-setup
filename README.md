@@ -2,7 +2,7 @@
 
 Leeloo(이루기술) 사내 Claude Code 환경 설정 플러그인.
 
-설치 후 첫 세션에서 설치 가이드를 안내하며, 사용자가 직접 설정 스크립트를 실행합니다.
+사내 표준 환경 설정, 스킬, 훅을 제공하는 Claude Code 플러그인입니다.
 
 ## 설치
 
@@ -12,10 +12,12 @@ claude plugins:add /path/to/leeloo-claude-setup
 
 또는 Plugin Marketplace를 통해 설치합니다.
 
-플러그인 설치 후 첫 세션에서 설치 안내가 표시됩니다. 터미널에서 직접 실행하세요:
+플러그인 설치 후 `/leeloo-setup`으로 사내 표준 환경을 설정하세요:
 
-```bash
-bash <plugin-root>/setup-claude-code.sh
+```
+/leeloo-setup              — 사내 표준 환경 설치
+/leeloo-setup uninstall    — 설치된 환경 제거 (백업 복원)
+/leeloo-setup status       — 현재 설치 상태 확인
 ```
 
 ## 설치 시 적용되는 항목
@@ -58,6 +60,7 @@ bash <plugin-root>/uninstall-claude-code.sh
 
 ### 스킬
 
+- `/leeloo-setup` — 사내 표준 환경 설치/제거/상태확인
 - `/leeloo-commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
 - `/leeloo-cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
 - `/leeloo-todo` — Plan을 TODO 리스트로 변환하고 진행 상황 추적
@@ -71,7 +74,6 @@ bash <plugin-root>/uninstall-claude-code.sh
 
 ### 훅
 
-- **SessionStart** — 설정 미완료 시 설치 가이드 표시 (prompt 타입)
 - **Stop** — 작업 완료 시 macOS 알림 (Glass 사운드)
 - **Notification** — 사용자 입력 대기 시 macOS 알림 (Ping 사운드)
 - **PostToolUse(ExitPlanMode)** — plan mode 종료 시 Gemini 교차검증 + TODO 생성 제안
@@ -105,11 +107,11 @@ bash <plugin-root>/uninstall-claude-code.sh
 
 ## 재설정
 
-설정을 다시 적용하려면 마커 파일을 삭제 후 설정 스크립트를 실행합니다:
+설정을 다시 적용하려면:
 
-```bash
-rm -f ~/.claude/.leeloo-setup-done
-bash <plugin-root>/setup-claude-code.sh
+```
+/leeloo-setup uninstall    — 먼저 제거
+/leeloo-setup              — 다시 설치
 ```
 
 ## 구조
@@ -120,10 +122,11 @@ leeloo-claude-setup/
 │   ├── plugin.json              # 플러그인 매니페스트
 │   └── marketplace.json         # 마켓플레이스 매니페스트
 ├── hooks/
-│   └── hooks.json               # 훅 정의 (SessionStart, PostToolUse)
+│   └── hooks.json               # 훅 정의 (PostToolUse)
 ├── setup-claude-code.sh         # 멱등성 설정 스크립트 (백업 포함)
 ├── uninstall-claude-code.sh     # 언인스톨 스크립트 (백업 복원)
 ├── skills/
+│   ├── leeloo-setup/SKILL.md           # /leeloo-setup 스킬
 │   ├── leeloo-agent/SKILL.md           # /leeloo-agent 스킬
 │   ├── leeloo-commit/SKILL.md          # /leeloo-commit 스킬
 │   ├── leeloo-cross-validate/SKILL.md  # /leeloo-cross-validate 스킬

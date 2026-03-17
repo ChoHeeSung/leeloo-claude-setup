@@ -1,16 +1,6 @@
 {
   "description": "Leeloo Claude Code 환경 설정 훅",
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ ! -f ~/.claude/.leeloo-setup-done ]; then echo '[leeloo-setup] 사내 표준 환경이 아직 설정되지 않았습니다.'; echo ''; echo \"설치: bash ${CLAUDE_PLUGIN_ROOT}/setup-claude-code.sh\"; echo \"제거: bash ${CLAUDE_PLUGIN_ROOT}/uninstall-claude-code.sh\"; echo ''; echo '터미널에서 직접 실행해주세요.'; fi"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "ExitPlanMode",
