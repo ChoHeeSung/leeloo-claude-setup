@@ -1,6 +1,8 @@
 ---
 name: leeloo-cross-validate
 description: "gemini-cli로 현재 plan을 교차검증합니다. Usage: /leeloo-cross-validate [plan-file-path]"
+user_invocable: true
+argument-hint: "[plan-file-path]"
 license: MIT
 ---
 

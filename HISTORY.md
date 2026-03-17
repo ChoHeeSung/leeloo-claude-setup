@@ -2,6 +2,44 @@
 
 ## 2026-03-17
 
+### Sub Agent 생성 스킬 + Agent Team 생성 스킬 추가
+
+**지시 요약**: 사용자가 에이전트 frontmatter 문법이나 TeamCreate 도구 파라미터를 직접 알 필요 없이, 대화형으로 Sub Agent와 Agent Team을 구성할 수 있는 스킬 2종 추가
+
+**작업 내용**:
+1. **`/leeloo-agent` 스킬 생성** (`skills/leeloo-agent/SKILL.md`)
+   - 서브커맨드: `create`, `create --preset`, `list`, `show`, `delete`
+   - 프리셋 5종: `code-reviewer`, `debugger`, `tester`, `researcher`, `docs-writer`
+   - 대화형 생성: 역할 질문 1회 → 자동 추론(name, tools, model, permissionMode) → 프리뷰 확인 → 파일 생성
+   - 모델 선택 기준: opus(고난이도 추론) / sonnet(일반 구현) / haiku(단순 탐색)
+   - 생성 위치: `.claude/agents/{name}.md` (Claude Code 공식 경로)
+
+2. **`/leeloo-team` 스킬 생성** (`skills/leeloo-team/SKILL.md`)
+   - 서브커맨드: `create`, `create --preset`, `list`, `message`, `broadcast`, `shutdown`
+   - 팀 프리셋 4종: `fullstack`, `review-squad`, `refactor`, `research`
+   - 대화형 생성: 목적 질문 1회 → 자동 설계(팀원 수/역할/모델/태스크 의존성) → 프리뷰 확인 → TeamCreate + TaskCreate + Agent spawn
+   - TeamCreate, SendMessage, TeamDelete 도구를 래핑
+
+3. **README.md** — 스킬 목록 및 구조도에 2개 스킬 추가
+4. **CLAUDE.md** — Architecture 섹션에 2개 스킬 추가
+
+**핵심 설계**:
+```
+# 에이전트 생성 플로우 (질문 최소화 → 추론 최대화)
+질문 1회 (역할/목적) → AI 추론 (설정 전체) → 프리뷰 확인 → 생성
+
+# 도구 최소화 원칙
+읽기 전용 → ["Read", "Grep", "Glob"] + plan 모드
+코드 수정 → + "Edit" + acceptEdits 모드
+명령어 실행 → + "Bash" + default 모드
+```
+
+**결과**: `/leeloo-agent`로 Sub Agent를, `/leeloo-team`으로 Agent Team을 대화형으로 생성·관리 가능
+
+**비유**: 기존에는 팀을 꾸리려면 채용 서류(frontmatter)를 직접 작성하고 인사 시스템(TeamCreate API)에 수동 등록해야 했는데, 이제 "이런 역할이 필요해요"라고 한마디만 하면 HR 담당자(스킬)가 채용 공고 작성부터 온보딩까지 자동으로 처리해주는 것과 같다.
+
+---
+
 ### Agent Team 설정 추가
 
 **지시 요약**: 초기 설정 시 Claude Code agent-team 플래그도 함께 설정되도록 추가

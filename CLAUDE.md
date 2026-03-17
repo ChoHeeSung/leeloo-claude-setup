@@ -19,8 +19,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `statusline-leeloo.sh` — Custom Powerline-style statusline (model, context usage, cost, git info).
   - `CLAUDE.md` — Company-standard global CLAUDE.md template (deployed to `~/.claude/CLAUDE.md`).
 - `skills/` — Plugin skills:
+  - `leeloo-agent/SKILL.md` — Interactive Sub Agent creation/management with 5 presets.
   - `leeloo-commit/SKILL.md` — Conventional Commits + Korean-style commit messages.
   - `leeloo-cross-validate/SKILL.md` — Gemini-based plan cross-validation.
+  - `leeloo-team/SKILL.md` — Interactive Agent Team composition/management with 4 presets.
   - `leeloo-todo/SKILL.md` — Plan-to-TODO conversion and task tracking.
 
 ## Key Design Decisions

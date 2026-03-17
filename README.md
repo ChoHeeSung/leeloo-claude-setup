@@ -61,6 +61,8 @@ bash <plugin-root>/uninstall-claude-code.sh
 - `/leeloo-commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
 - `/leeloo-cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
 - `/leeloo-todo` — Plan을 TODO 리스트로 변환하고 진행 상황 추적
+- `/leeloo-agent` — Sub Agent 대화형 생성/관리 (프리셋 5종 내장)
+- `/leeloo-team` — Agent Team 대화형 구성/관리 (프리셋 4종 내장)
 
 ### Agent Team
 
@@ -122,8 +124,10 @@ leeloo-claude-setup/
 ├── setup-claude-code.sh         # 멱등성 설정 스크립트 (백업 포함)
 ├── uninstall-claude-code.sh     # 언인스톨 스크립트 (백업 복원)
 ├── skills/
+│   ├── leeloo-agent/SKILL.md           # /leeloo-agent 스킬
 │   ├── leeloo-commit/SKILL.md          # /leeloo-commit 스킬
 │   ├── leeloo-cross-validate/SKILL.md  # /leeloo-cross-validate 스킬
+│   ├── leeloo-team/SKILL.md            # /leeloo-team 스킬
 │   └── leeloo-todo/SKILL.md            # /leeloo-todo 스킬
 └── resources/
     ├── settings-template.json   # settings.json 머지 템플릿

@@ -2,6 +2,7 @@
 name: leeloo-todo
 description: Plan을 태스크 단위 TODO 리스트로 변환하고 관리하는 스킬. /leeloo-todo [create|list|add|start|done|undo|clear]
 user_invocable: true
+argument-hint: "[create|list|add|start|done|undo|clear] [path|item|number]"
 ---
 
 # /leeloo-todo — Plan → TODO 변환 및 관리
