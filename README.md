@@ -77,7 +77,7 @@ bash <plugin-root>/uninstall-claude-code.sh
 
 - **Stop** — 작업 완료 시 macOS 알림 (Glass 사운드)
 - **Notification** — 사용자 입력 대기 시 macOS 알림 (Ping 사운드)
-- **PostToolUse(ExitPlanMode)** — plan mode 종료 시 Gemini 교차검증 + TODO 생성 제안
+- **PermissionRequest(ExitPlanMode)** — plan mode 종료 시 plan 파일 저장 + Gemini 교차검증 + TODO 생성 제안
 
 ### 활성화 플러그인
 

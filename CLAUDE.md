@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture
 
 - `.claude-plugin/plugin.json` — Plugin manifest (name, description, author).
-- `hooks/hooks.json` — Hook definitions. `PostToolUse(ExitPlanMode)` suggests cross-validation and TODO generation.
+- `hooks/hooks.json` — Hook definitions. `PermissionRequest(ExitPlanMode)` saves plan to `.claude/plans/` and suggests cross-validation and TODO generation.
 - `.claude-plugin/marketplace.json` — Marketplace manifest for plugin discovery and installation.
 - `setup-claude-code.sh` — Idempotent setup script. Backs up existing files to `~/.claude/.leeloo-backup/`, then checks marker file (`~/.claude/.leeloo-setup-done`); if absent, merges settings and installs resources, then creates the marker. Requires `jq` for JSON deep merge.
 - `uninstall-claude-code.sh` — Uninstall script. Restores files from backup, removes files created by setup, deletes marker file and backup directory. Idempotent.
