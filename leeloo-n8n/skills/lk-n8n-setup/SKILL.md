@@ -74,15 +74,17 @@ npx @anthropic/n8n-mcp
 
 ## 2. Claude Code 설정
 
-~/.claude/settings.json 또는 프로젝트의 .mcp.json에 다음을 추가하세요:
+글로벌: ~/.claude/.mcp.json 또는 프로젝트: .mcp.json에 다음을 추가하세요:
 
 {
   "mcpServers": {
     "n8n-mcp": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic/n8n-mcp"],
+      "args": ["n8n-mcp"],
       "env": {
-        "N8N_BASE_URL": "http://localhost:5678",
+        "MCP_MODE": "stdio",
+        "N8N_API_URL": "http://localhost:5678",
         "N8N_API_KEY": "your-api-key"
       }
     }
