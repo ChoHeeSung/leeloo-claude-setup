@@ -1,26 +1,26 @@
 ---
-name: leeloo-agent
-description: Sub Agent(.claude/agents/*.md)를 대화형으로 생성·관리하는 스킬. /leeloo-agent [create|list|show|delete] [--preset <name>]
+name: lk-agent
+description: "Sub Agent를 대화형으로 생성·관리하는 스킬. /lk-agent [create|list|show|delete] [--preset <name>]"
 user_invocable: true
-argument-hint: "[create|list|show|delete] [--preset code-reviewer|debugger|tester|researcher|docs-writer]"
+argument-hint: "[create|list|show|delete] [--preset <name>]"
 ---
 
-# /leeloo-agent — Sub Agent 생성 및 관리
+# /lk-agent — Sub Agent 생성 및 관리
 
-`.claude/agents/*.md` 파일을 대화형으로 생성하고 관리합니다. 프리셋 5종을 내장하여 빠른 시작을 지원합니다.
+`.claude/agents/*.md` 파일을 대화형으로 생성하고 관리합니다. 프리셋 7종을 내장하여 빠른 시작을 지원합니다.
 
 ## 서브커맨드
 
 ```
-/leeloo-agent                         — 대화형으로 에이전트 생성 (기본 동작 = create)
-/leeloo-agent create                  — 대화형으로 에이전트 생성
-/leeloo-agent create --preset <name>  — 프리셋 기반 빠른 생성
-/leeloo-agent list                    — .claude/agents/ 내 에이전트 목록
-/leeloo-agent show <name>             — 에이전트 상세 정보
-/leeloo-agent delete <name>           — 에이전트 삭제
+/lk-agent                         — 대화형으로 에이전트 생성 (기본 동작 = create)
+/lk-agent create                  — 대화형으로 에이전트 생성
+/lk-agent create --preset <name>  — 프리셋 기반 빠른 생성
+/lk-agent list                    — .claude/agents/ 내 에이전트 목록
+/lk-agent show <name>             — 에이전트 상세 정보
+/lk-agent delete <name>           — 에이전트 삭제
 ```
 
-## 프리셋 5종
+## 프리셋 7종
 
 | 프리셋 | 용도 | tools | model | permissionMode |
 |--------|------|-------|-------|----------------|
@@ -29,6 +29,22 @@ argument-hint: "[create|list|show|delete] [--preset code-reviewer|debugger|teste
 | `tester` | 테스트 작성 | Read, Write, Edit, Bash, Grep, Glob | sonnet | acceptEdits |
 | `researcher` | 코드베이스 탐색 | Read, Grep, Glob, Bash | haiku | plan |
 | `docs-writer` | 문서 작성 | Read, Write, Edit, Grep, Glob | sonnet | acceptEdits |
+| `plan-reviewer` | Plan 검증 전문 | Read, Grep, Glob | sonnet | plan |
+| `refactoring-guide` | 리팩토링 가이드 | Read, Grep, Glob, Bash | sonnet | plan |
+
+## 에이전트 frontmatter 필드 설명
+
+| 필드 | 설명 | 예시 |
+|------|------|------|
+| `name` | 에이전트 고유 이름 (kebab-case) | `code-reviewer` |
+| `description` | 역할 설명 (한 줄, 한국어) | `코드를 리뷰합니다.` |
+| `tools` | 허용된 도구 목록 | `["Read", "Grep"]` |
+| `model` | 사용 모델 | `opus`, `sonnet`, `haiku` |
+| `permissionMode` | 권한 모드 | `plan`, `acceptEdits`, `default` |
+| `maxTurns` | 최대 대화 턴 수 | `15` |
+| `effort` | 작업 강도 힌트 | `low`, `medium`, `high` |
+| `disallowedTools` | 금지 도구 목록 | `["Bash", "Write"]` |
+| `context` | 에이전트에게 전달할 추가 컨텍스트 | `"프로젝트 루트: /app"` |
 
 ## 프리셋 상세 — 생성되는 파일 내용
 
@@ -176,6 +192,81 @@ maxTurns: 20
 - 주요 변경 사항 요약
 ```
 
+### plan-reviewer
+
+```markdown
+---
+name: plan-reviewer
+description: "Plan 문서를 검증하고 action items를 추출합니다."
+tools: ["Read", "Grep", "Glob"]
+model: sonnet
+permissionMode: plan
+maxTurns: 15
+---
+
+당신은 Plan 검증 전문가입니다.
+
+## 역할
+- Plan 문서의 품질을 검증하고 실행 가능한 action items를 추출합니다.
+
+## 검증 기준
+1. **완전성**: 목적, 범위, 구현 단계, 테스트 계획 포함 여부
+2. **실현가능성**: 기술적 제약, 의존성, 현실적 범위 평가
+3. **리스크**: 잠재적 문제점 식별, 대안 제시
+4. **대안**: 선택되지 않은 접근법과의 비교 근거
+
+## 프로세스
+1. Plan 문서 전체 읽기
+2. 각 기준별 평가 (1-10점)
+3. 문제점 및 개선 제안 목록화
+4. Action items 우선순위 정렬
+
+## Gemini 리뷰 분석
+- Gemini 리뷰 파일(`.review.md`)이 있으면 함께 분석
+- Claude와 Gemini 관점의 불일치 항목 강조
+
+## 출력 형식
+- Score Card (완전성/실현가능성/리스크/명확성)
+- 주요 문제점 목록
+- Action Items (우선순위 순)
+- Verdict: PASS / PASS WITH CONCERNS / NEEDS REVISION
+```
+
+### refactoring-guide
+
+```markdown
+---
+name: refactoring-guide
+description: "코드를 분석하고 리팩토링 전략을 제시합니다."
+tools: ["Read", "Grep", "Glob", "Bash"]
+model: sonnet
+permissionMode: plan
+maxTurns: 20
+---
+
+당신은 리팩토링 전문가입니다.
+
+## 역할
+- 코드를 분석하고 체계적인 리팩토링 전략을 제시합니다. 직접 수정하지 않고 가이드만 제공합니다.
+
+## 분석 기준
+1. **코드 냄새 (Code Smells)**: 중복, 긴 메서드, 과도한 의존성
+2. **설계 패턴**: 현재 패턴과 더 나은 패턴 제안
+3. **의존성**: 순환 의존성, 불필요한 결합
+4. **테스트 커버리지**: 리팩토링 안전망 확인
+
+## 전략 제시 형식
+1. **영향 범위 파악**: 변경 시 영향받는 파일/모듈 목록
+2. **리팩토링 순서**: 안전한 순서로 단계 나열 (의존성 역순)
+3. **각 단계별 방법**: 구체적인 리팩토링 패턴과 예시
+
+## 출력 형식
+- 현재 상태 분석 (주요 문제점)
+- 리팩토링 전략 (단계별)
+- 영향 범위 맵
+- 주의사항 및 테스트 포인트
+```
+
 ## Procedure
 
 ### 인자 파싱
@@ -214,7 +305,7 @@ maxTurns: 20
 
 3. **프리뷰 확인**: AskUserQuestion으로 생성될 파일 전체 내용을 프리뷰로 보여줍니다.
    ```
-   📄 .claude/agents/{name}.md 프리뷰:
+   .claude/agents/{name}.md 프리뷰:
 
    {파일 전체 내용}
 
@@ -229,7 +320,7 @@ maxTurns: 20
 
 6. **결과 출력**:
    ```
-   ✅ 에이전트 생성 완료
+   에이전트 생성 완료
 
    이름: {name}
    경로: .claude/agents/{name}.md
@@ -243,7 +334,7 @@ maxTurns: 20
 
 ### preset create 동작
 
-1. **프리셋 검증**: 요청된 프리셋 이름이 5종(`code-reviewer`, `debugger`, `tester`, `researcher`, `docs-writer`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
+1. **프리셋 검증**: 요청된 프리셋 이름이 7종(`code-reviewer`, `debugger`, `tester`, `researcher`, `docs-writer`, `plan-reviewer`, `refactoring-guide`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
 
 2. **프리뷰 표시**: 해당 프리셋의 전체 파일 내용을 프리뷰로 표시합니다.
 
@@ -262,11 +353,11 @@ maxTurns: 20
 ### list 동작
 
 1. Glob 도구로 `.claude/agents/*.md` 파일 목록을 검색합니다.
-2. 파일이 없으면 "에이전트가 없습니다. `/leeloo-agent create`로 생성하세요." 안내.
+2. 파일이 없으면 "에이전트가 없습니다. `/lk-agent create`로 생성하세요." 안내.
 3. 각 파일에서 frontmatter를 읽어 테이블로 표시합니다:
 
 ```
-📋 등록된 에이전트 목록
+등록된 에이전트 목록
 
 | 이름 | 설명 | 모델 | 권한 |
 |------|------|------|------|
@@ -291,4 +382,4 @@ maxTurns: 20
 3. AskUserQuestion — "`{name}` 에이전트를 삭제하시겠습니까? (예/아니오)"
 4. "예" 선택 시 → Bash로 `rm .claude/agents/{name}.md` 실행.
 5. 디렉토리가 비어있으면 빈 상태로 유지 (삭제하지 않음).
-6. 결과: "🗑️ `{name}` 에이전트가 삭제되었습니다."
+6. 결과: "`{name}` 에이전트가 삭제되었습니다."

@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "pdca": {
+    "docPaths": {
+      "plan": "docs/plan/{feature}.plan.md",
+      "design": "docs/design/{feature}.design.md",
+      "analysis": "docs/analysis/{feature}.analysis.md",
+      "report": "docs/report/{feature}.report.md"
+    },
+    "matchRateThreshold": 90,
+    "autoIterate": true,
+    "maxIterations": 5
+  },
+  "crossValidation": {
+    "enabled": true,
+    "maxRetries": 3,
+    "passThreshold": 80,
+    "concernsThreshold": 60
+  },
+  "statePaths": {
+    "root": ".leeloo",
+    "pdcaStatus": ".leeloo/pdca-status.json",
+    "activeContext": ".leeloo/active-context.json"
+  }
+}

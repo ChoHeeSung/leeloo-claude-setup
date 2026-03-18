@@ -1,16 +1,46 @@
 {
-  "description": "Leeloo Claude Code 환경 설정 훅",
+  "description": "leeloo-kit 런타임 자동화",
   "hooks": {
-    "PermissionRequest": [
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js\"",
+        "runOnce": true,
+        "timeout": 5000
+      }]
+    }],
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/bash-pre.js\"",
+        "timeout": 3000
+      }]
+    }],
+    "PostToolUse": [
       {
-        "matcher": "ExitPlanMode",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Plan mode가 종료되면 다음 옵션을 사용자에게 제안하세요:\n- '/leeloo-cross-validate' — Gemini가 이 plan을 독립적으로 교차검증합니다.\n- '/leeloo-todo' — plan을 TODO 리스트로 변환합니다.\n각 스킬이 plan을 자동으로 .claude/plans/에 저장합니다."
-          }
-        ]
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/write-post.js\"",
+          "timeout": 5000
+        }]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [{
+          "type": "command",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/skill-post.js\"",
+          "timeout": 5000
+        }]
       }
-    ]
+    ],
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js\"",
+        "timeout": 10000
+      }]
+    }]
   }
 }

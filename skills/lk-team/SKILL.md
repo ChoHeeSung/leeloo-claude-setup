@@ -1,27 +1,27 @@
 ---
-name: leeloo-team
-description: Agent Team을 대화형으로 구성·관리하는 스킬. /leeloo-team [create|list|message|broadcast|shutdown] [--preset <name>]
+name: lk-team
+description: "Agent Team을 대화형으로 구성·관리하는 스킬. /lk-team [create|list|message|broadcast|shutdown] [--preset <name>]"
 user_invocable: true
-argument-hint: "[create|list|message|broadcast|shutdown] [--preset fullstack|review-squad|refactor|research]"
+argument-hint: "[create|list|message|broadcast|shutdown] [--preset <name>]"
 ---
 
-# /leeloo-team — Agent Team 구성 및 관리
+# /lk-team — Agent Team 구성 및 관리
 
-Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMessage, TeamDelete 도구를 래핑하여 쉽게 사용할 수 있습니다. 프리셋 4종을 내장하여 빠른 시작을 지원합니다.
+Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMessage, TeamDelete 도구를 래핑하여 쉽게 사용할 수 있습니다. 프리셋 5종을 내장하여 빠른 시작을 지원합니다.
 
 ## 서브커맨드
 
 ```
-/leeloo-team                          — 대화형으로 팀 구성 (기본 동작 = create)
-/leeloo-team create                   — 대화형으로 팀 구성
-/leeloo-team create --preset <name>   — 프리셋 기반 팀 구성
-/leeloo-team list                     — 현재 팀 상태 확인
-/leeloo-team message <name> <msg>     — 팀원에게 메시지
-/leeloo-team broadcast <msg>          — 전체 팀원에게 메시지
-/leeloo-team shutdown                 — 팀 종료/정리
+/lk-team                          — 대화형으로 팀 구성 (기본 동작 = create)
+/lk-team create                   — 대화형으로 팀 구성
+/lk-team create --preset <name>   — 프리셋 기반 팀 구성
+/lk-team list                     — 현재 팀 상태 확인
+/lk-team message <name> <msg>     — 팀원에게 메시지
+/lk-team broadcast <msg>          — 전체 팀원에게 메시지
+/lk-team shutdown                 — 팀 종료/정리
 ```
 
-## 팀 프리셋 4종
+## 팀 프리셋 5종
 
 | 프리셋 | 구성 (역할/모델) | 용도 |
 |--------|-----------------|------|
@@ -29,6 +29,7 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 | `review-squad` | reviewer-1(sonnet) + reviewer-2(sonnet) + summarizer(haiku) | 다각도 코드 리뷰 |
 | `refactor` | analyzer(opus/plan) + implementer(sonnet) + tester(haiku) | 리팩토링 |
 | `research` | explorer-1(haiku) + explorer-2(haiku) + synthesizer(opus) | 코드베이스 조사 |
+| `pdca-verify` | gap-detector(opus/plan) + code-analyzer(opus/plan) + summarizer(haiku/plan) | PDCA Check 전문 |
 
 ## 프리셋 상세
 
@@ -72,6 +73,16 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 태스크: #1, #2 병렬 → #3 순차
 ```
 
+### pdca-verify
+
+```
+팀: pdca-verify (3명)
+1. gap-detector (plan, opus) — 설계-구현 갭 분석, Match Rate 산출
+2. code-analyzer (plan, opus) — 코드 품질/보안/성능 분석
+3. summarizer (plan, haiku) — 두 분석 결과를 종합하여 최종 리포트 작성
+태스크: #1, #2 병렬 → #3 순차
+```
+
 ## Procedure
 
 ### 인자 파싱
@@ -108,9 +119,13 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
      - 독립적 작업 → 병렬 (#1, #2 병렬)
      - 순차 의존 → 화살표 (#1 → #2)
 
-3. **프리뷰 확인**: AskUserQuestion으로 전체 팀 구성을 프리뷰로 보여줍니다.
+3. **TODO.md 확인**: Read 도구로 프로젝트 루트의 `TODO.md` 읽기 (있는 경우).
+   - TODO.md가 있으면 AskUserQuestion — "TODO.md에서 태스크를 자동 분배할까요? (분배/직접 설정)"
+   - "분배" 선택 시: TODO.md의 ⬜ 대기 항목을 팀원들에게 자동 배분
+
+4. **프리뷰 확인**: AskUserQuestion으로 전체 팀 구성을 프리뷰로 보여줍니다.
    ```
-   📋 팀 구성 프리뷰
+   팀 구성 프리뷰
 
    팀: {team-name} ({n}명)
    1. {name} ({permissionMode}, {model}) — {역할 설명}
@@ -123,14 +138,14 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
    - "수정" 선택 시 → 수정 사항을 반영하여 다시 프리뷰
    - "생성" 선택 시 → 다음 단계로 진행
 
-4. **팀 생성**: 다음 순서로 도구를 호출합니다:
+5. **팀 생성**: 다음 순서로 도구를 호출합니다:
    - **TeamCreate** — 팀 생성 (팀 이름 + 팀원 정의)
    - **TaskCreate** — 각 팀원에게 태스크 할당 (의존성 포함)
    - **Agent** — 각 팀원을 spawn (name 파라미터로 팀원 이름 지정)
 
-5. **결과 출력**:
+6. **결과 출력**:
    ```
-   ✅ 팀 생성 완료
+   팀 생성 완료
 
    팀: {team-name}
    팀원:
@@ -138,27 +153,31 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
    - {name} ({model}, {permissionMode}) — {상태}
 
    관리 명령어:
-   - /leeloo-team list             — 팀 상태 확인
-   - /leeloo-team message <name> <msg> — 팀원에게 메시지
-   - /leeloo-team broadcast <msg>  — 전체 메시지
-   - /leeloo-team shutdown         — 팀 종료
+   - /lk-team list             — 팀 상태 확인
+   - /lk-team message <name> <msg> — 팀원에게 메시지
+   - /lk-team broadcast <msg>  — 전체 메시지
+   - /lk-team shutdown         — 팀 종료
    ```
 
 ---
 
 ### preset create 동작
 
-1. **프리셋 검증**: 요청된 프리셋 이름이 4종(`fullstack`, `review-squad`, `refactor`, `research`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
+1. **프리셋 검증**: 요청된 프리셋 이름이 5종(`fullstack`, `review-squad`, `refactor`, `research`, `pdca-verify`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
 
-2. **프리뷰 표시**: 해당 프리셋의 팀 구성을 프리뷰로 표시합니다.
+2. **TODO.md 확인**: Read 도구로 프로젝트 루트의 `TODO.md` 읽기 (있는 경우).
+   - TODO.md가 있으면 AskUserQuestion — "TODO.md에서 태스크를 자동 분배할까요? (분배/직접 설정)"
+   - "분배" 선택 시: TODO.md의 ⬜ 대기 항목을 팀원들에게 자동 배분
 
-3. **확인**: AskUserQuestion — "이대로 생성할까요? (생성/수정)"
+3. **프리뷰 표시**: 해당 프리셋의 팀 구성을 프리뷰로 표시합니다.
+
+4. **확인**: AskUserQuestion — "이대로 생성할까요? (생성/수정)"
    - "수정" 선택 시 → 수정 사항을 반영하여 다시 프리뷰
    - "생성" 선택 시 → 다음 단계로 진행
 
-4. **팀 생성**: create 동작의 4단계와 동일 (TeamCreate → TaskCreate → Agent spawn).
+5. **팀 생성**: create 동작의 5단계와 동일 (TeamCreate → TaskCreate → Agent spawn).
 
-5. **결과 출력**: create 동작과 동일한 형식.
+6. **결과 출력**: create 동작과 동일한 형식.
 
 ---
 
@@ -169,7 +188,7 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 3. 테이블 형식으로 표시합니다:
 
 ```
-📋 팀 상태: {team-name}
+팀 상태: {team-name}
 
 | 팀원 | 모델 | 권한 | 태스크 | 상태 |
 |------|------|------|--------|------|
@@ -178,7 +197,7 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 | tester | haiku | acceptEdits | 테스트 작성 | ⬜ 대기 |
 ```
 
-팀이 없으면 "활성 팀이 없습니다. `/leeloo-team create`로 생성하세요." 안내.
+팀이 없으면 "활성 팀이 없습니다. `/lk-team create`로 생성하세요." 안내.
 
 ---
 
@@ -189,18 +208,18 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
    ```
    SendMessage(to: "{name}", message: "{msg}")
    ```
-3. 결과: "📨 `{name}`에게 메시지를 전송했습니다."
+3. 결과: "`{name}`에게 메시지를 전송했습니다."
 
 ---
 
 ### broadcast 동작
 
-1. **비용 경고**: "⚠️ 전체 팀원에게 메시지를 보냅니다. 각 팀원이 응답하므로 비용이 발생합니다."
+1. **비용 경고**: "전체 팀원에게 메시지를 보냅니다. 각 팀원이 응답하므로 비용이 발생합니다."
 2. SendMessage 도구로 전체 팀원에게 메시지를 전송합니다.
    ```
    SendMessage(to: "*", message: "{msg}")
    ```
-3. 결과: "📢 전체 팀원에게 메시지를 전송했습니다."
+3. 결과: "전체 팀원에게 메시지를 전송했습니다."
 
 ---
 
@@ -210,5 +229,5 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 2. "예" 선택 시:
    - SendMessage로 각 팀원에게 종료 요청: `SendMessage(to: "*", message: "작업을 정리하고 종료해주세요.")`
    - TeamDelete 도구로 팀 삭제
-3. 결과: "🛑 팀이 종료되었습니다."
+3. 결과: "팀이 종료되었습니다."
 4. "아니오" 선택 시: "팀 종료가 취소되었습니다."

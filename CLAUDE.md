@@ -4,49 +4,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`leeloo-claude-setup` is a Claude Code plugin for Leeloo(이루기술) that provides company-standard Claude Code environment settings, skills, and hooks. Users run `/leeloo-setup` to install the environment.
+`leeloo-kit` is a Claude Code plugin for Leeloo(이루기술) — the company-standard AI development kit featuring PDCA workflow, dual verification (Gemini + Claude), and agent automation. Pure plugin architecture with no shell script dependencies.
 
 ## Architecture
 
-- `.claude-plugin/plugin.json` — Plugin manifest (name, description, author).
-- `hooks/hooks.json` — Hook definitions. `PermissionRequest(ExitPlanMode)` saves plan to `.claude/plans/` and suggests cross-validation and TODO generation.
-- `.claude-plugin/marketplace.json` — Marketplace manifest for plugin discovery and installation.
-- `setup-claude-code.sh` — Idempotent setup script. Backs up existing files to `~/.claude/.leeloo-backup/`, then checks marker file (`~/.claude/.leeloo-setup-done`); if absent, merges settings and installs resources, then creates the marker. Requires `jq` for JSON deep merge.
-- `uninstall-claude-code.sh` — Uninstall script. Restores files from backup, removes files created by setup, deletes marker file and backup directory. Idempotent.
-- `resources/` — Template files deployed to `~/.claude/` during setup:
-  - `settings-template.json` — Merged into existing `settings.json` (uses `__HOME__` placeholder, resolved at runtime). Contains hooks, statusLine, enabledPlugins, extraKnownMarketplaces.
-  - `settings.local.json` — Local permissions (created only if absent).
-  - `statusline-leeloo.sh` — Custom Powerline-style statusline (model, context usage, cost, git info).
-  - `CLAUDE.md` — Company-standard global CLAUDE.md template (deployed to `~/.claude/CLAUDE.md`).
-- `skills/` — Plugin skills:
-  - `leeloo-setup/SKILL.md` — Environment setup install/uninstall/status via `/leeloo-setup`.
-  - `leeloo-agent/SKILL.md` — Interactive Sub Agent creation/management with 5 presets.
-  - `leeloo-commit/SKILL.md` — Conventional Commits + Korean-style commit messages.
-  - `leeloo-cross-validate/SKILL.md` — Gemini-based plan cross-validation.
-  - `leeloo-team/SKILL.md` — Interactive Agent Team composition/management with 4 presets.
-  - `leeloo-todo/SKILL.md` — Plan-to-TODO conversion and task tracking.
+- `plugin.json` — Plugin manifest (name: "leeloo-kit", version: "2.0.0").
+- `.claude-plugin/marketplace.json` — Marketplace manifest for plugin discovery.
+- `hooks/hooks.json` — 5 hook events: SessionStart, PreToolUse(Bash), PostToolUse(Write|Edit, Skill), Stop.
+- `scripts/` — Runtime hook scripts (Node.js v18+ CommonJS):
+  - `session-start.js` — Session init, dependency checks, PDCA status display.
+  - `bash-pre.js` — Dangerous command blocking (rm -rf, git push --force, etc).
+  - `write-post.js` — PDCA document format validation.
+  - `skill-post.js` — Post-skill orchestration (next step suggestions).
+  - `unified-stop.js` — Stop dispatcher for agent/skill completion handling.
+  - `lib/` — Shared utilities: io.js, config.js, paths.js, pdca-status.js, context.js.
+- `leeloo.config.json` — Central config (PDCA paths, thresholds, cross-validation settings).
+- `skills/` — 9 skills (lk- prefix):
+  - `lk-plan/` — Brainstorming-based Plan creation with Gemini cross-validation.
+  - `lk-pdca/` — PDCA lifecycle management (design/do/analyze/report/status).
+  - `lk-review/` — Gemini+Claude dual review with unified Score Card.
+  - `lk-cross-validate/` — Gemini cross-validation with Score Card and metrics.
+  - `lk-agent/` — Sub Agent creation/management with 7 presets.
+  - `lk-team/` — Agent Team composition/management with 5 presets.
+  - `lk-todo/` — Plan-to-TODO with design doc references and progress suggestions.
+  - `lk-commit/` — Conventional Commits + Korean style + TODO integration.
+  - `lk-setup/` — Optional environment enhancement (statusline, CLAUDE.md, gemini).
+- `agents/` — 4 PDCA agents: gap-detector, pdca-iterator, code-analyzer, report-generator.
+- `templates/` — 5 PDCA document templates: plan, design, analysis, report, do.
+- `output-styles/` — 3 output styles: lk-dual-verify, lk-mentor, lk-ops.
+- `resources/` — Optional resources: statusline-leeloo.sh, gemini-review-prompt.md, CLAUDE.md template.
 
 ## Key Design Decisions
 
-- **Merge, not overwrite**: `settings.json` is deep-merged with `jq -s '.[0] * .[1]'` to preserve user's existing settings.
-- **Idempotent via marker file**: The setup runs once per machine. Delete `~/.claude/.leeloo-setup-done` to force re-run.
-- **`settings.local.json` and `CLAUDE.md` are non-destructive**: Only created if they don't already exist.
-- **Backup before setup**: Existing files are backed up to `~/.claude/.leeloo-backup/` before modification, enabling clean uninstall.
-- **Skill-based setup**: `/leeloo-setup` skill handles installation instead of SessionStart hook, ensuring cross-platform compatibility.
-- **Uninstallable**: `uninstall-claude-code.sh` restores pre-installation state. System packages (Node.js, gemini-cli) are not removed.
-- **TODO workflow**: Plan mode exit suggests converting the plan to a trackable TODO list via `/leeloo-todo`.
+- **Pure plugin**: No shell scripts. Plugin install = marketplace install or `enabledPlugins` path. Hooks, skills, agents auto-discovered.
+- **PDCA workflow**: Plan → Design → Do → Check(Analyze) → Act(Iterate) → Report. Each phase produces a document in `docs/{phase}/`.
+- **Dual verification**: Gemini cross-validation + Claude analysis for quality assurance.
+- **Hook-driven orchestration**: skill-post.js and unified-stop.js auto-suggest next PDCA steps.
+- **State in `.leeloo/`**: pdca-status.json, active-context.json, metrics.json for runtime state.
+- **lk- prefix**: All skills use `lk-` prefix for discoverability and namespace separation.
+- **Design doc references in TODO**: Each TODO item links to its source section in the design document.
+
+## PDCA Document Paths
+
+- Plan: `docs/plan/{feature}.plan.md`
+- Design: `docs/design/{feature}.design.md`
+- Analysis: `docs/analysis/{feature}.analysis.md`
+- Report: `docs/report/{feature}.report.md`
 
 ## Testing Changes
 
-To test the setup script locally:
-```bash
-# Remove marker to force re-run
-rm -f ~/.claude/.leeloo-setup-done
-# Run directly
-bash setup-claude-code.sh
-```
-
-To test uninstall:
-```bash
-bash uninstall-claude-code.sh
-```
+Plugin is tested by enabling it and verifying:
+1. SessionStart hook runs (check `.leeloo/` creation)
+2. Skills appear in `/` autocomplete (lk-plan, lk-pdca, etc.)
+3. Agents appear in Agent tool (gap-detector, etc.)
+4. Full PDCA cycle: `/lk-plan` → `/lk-cross-validate` → `/lk-pdca design` → `/lk-pdca analyze` → `/lk-pdca report`

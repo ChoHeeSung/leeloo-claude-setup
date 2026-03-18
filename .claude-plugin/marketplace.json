@@ -1,15 +1,15 @@
 {
-  "name": "leeloo-claude-setup",
-  "description": "Leeloo(이루기술) 사내 Claude Code 환경 자동 설정 플러그인 마켓플레이스",
+  "name": "leeloo-kit",
+  "description": "Leeloo(이루기술) 사내 표준 AI 개발 키트 마켓플레이스",
   "owner": {
     "name": "Leeloo (이루기술)",
     "email": "dev@leeloo.co.kr"
   },
   "plugins": [
     {
-      "name": "leeloo-claude-setup",
-      "description": "사내 표준 Claude Code 환경 자동 설정. 설치 후 첫 세션에서 settings, statusline, CLAUDE.md, gemini-cli를 자동 적용합니다.",
-      "version": "1.0.0",
+      "name": "leeloo-kit",
+      "description": "사내 표준 AI 개발 키트. PDCA 워크플로우 + 다중 검증 자동화 + 에이전트 시스템을 제공합니다.",
+      "version": "2.0.0",
       "author": {
         "name": "Leeloo (이루기술)",
         "email": "dev@leeloo.co.kr"

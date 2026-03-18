@@ -43,3 +43,42 @@
 ### 11. 한국어 응답 원칙
 - 모든 응답은 한국어로 작성한다.
 - 코드, 명령어, 기술 용어 등 고유명사는 원문 그대로 사용할 수 있으나, 설명과 대화는 반드시 한국어로 한다.
+
+## PDCA 워크플로우 (leeloo-kit)
+
+### 개요
+leeloo-kit 플러그인은 PDCA(Plan-Do-Check-Act) 사이클 기반 개발 워크플로우를 제공합니다.
+
+### 스킬 명령어
+| 명령어 | 용도 |
+|--------|------|
+| `/lk-plan <feature>` | 브레인스토밍 기반 Plan 작성 |
+| `/lk-pdca design <feature>` | 설계 문서 작성 |
+| `/lk-pdca do <feature>` | 구현 가이드 + TODO 생성 |
+| `/lk-pdca analyze <feature>` | Gap 분석 (설계-구현 매칭) |
+| `/lk-pdca report <feature>` | 완료 보고서 생성 |
+| `/lk-cross-validate [path]` | Gemini 교차검증 |
+| `/lk-review [code\|plan] [path]` | Gemini+Claude 이중 리뷰 |
+| `/lk-todo` | TODO 리스트 관리 |
+| `/lk-commit [--push]` | 회사 스타일 커밋 |
+| `/lk-agent` | Sub Agent 생성/관리 |
+| `/lk-team` | Agent Team 구성/관리 |
+| `/lk-setup` | 선택적 환경 강화 |
+
+### 문서 경로
+- Plan: `docs/plan/{feature}.plan.md`
+- Design: `docs/design/{feature}.design.md`
+- Analysis: `docs/analysis/{feature}.analysis.md`
+- Report: `docs/report/{feature}.report.md`
+
+### 워크플로우 흐름
+```
+/lk-plan → /lk-cross-validate → /lk-pdca design → /lk-pdca do
+→ /lk-pdca analyze → (Match Rate ≥90%) → /lk-pdca report
+                    → (Match Rate <90%) → 자동 개선 반복
+```
+
+### 교차검증
+- Plan/Design 완료 후 `/lk-cross-validate`로 Gemini 독립 검증
+- Score Card (50점 만점) + Match Rate로 품질 측정
+- Verdict: PASS / PASS WITH CONCERNS / NEEDS REVISION

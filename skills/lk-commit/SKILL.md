@@ -1,23 +1,23 @@
 ---
-name: leeloo-commit
-description: "레포 변경사항 → 회사 스타일 커밋 메시지 생성 + 커밋/푸시. Usage: /leeloo-commit [--push] [message]"
+name: lk-commit
+description: "레포 변경사항 → 회사 스타일 커밋 메시지 생성 + 커밋/푸시. /lk-commit [--push] [message]"
 user_invocable: true
 argument-hint: "[--push] [commit message]"
-license: MIT
 ---
 
 git diff를 분석해 Conventional Commits + 한국어 스타일 커밋 메시지를 자동 생성하고 커밋합니다.
+TODO.md가 있으면 커밋 전후로 진행 상황을 연동합니다.
 
 ## Usage
 
 ```
-/commit                    — auto-generate commit message, commit only
-/commit --push             — auto-generate + commit + push
-/commit fix: 버그 수정     — use provided message as-is
-/commit --push feat: 기능  — use provided message + push
+/lk-commit                    — auto-generate commit message, commit only
+/lk-commit --push             — auto-generate + commit + push
+/lk-commit fix: 버그 수정     — use provided message as-is
+/lk-commit --push feat: 기능  — use provided message + push
 ```
 
-The argument after `commit` (excluding `--push`) is an optional commit message override.
+The argument after `lk-commit` (excluding `--push`) is an optional commit message override.
 
 ## Procedure
 
@@ -27,7 +27,18 @@ Extract from arguments:
 - `--push` → push after commit
 - Remaining text → user-provided commit message (optional)
 
-### 2. Check for changes
+### 2. TODO.md 확인 (커밋 전)
+
+Read 도구로 프로젝트 루트의 `TODO.md` 읽기 (없으면 이 단계 건너뜀).
+
+TODO.md가 있으면 현재 🔨 진행중 항목을 표시:
+```
+현재 진행 중인 TODO 항목:
+- #2: 진행 중 태스크명
+- #5: 진행 중 태스크명
+```
+
+### 3. Check for changes
 
 ```bash
 git status --short
@@ -43,7 +54,7 @@ If no changes (no output), output:
 ```
 → Stop.
 
-### 3. Generate commit message (Haiku Task)
+### 4. Generate commit message (Haiku Task)
 
 **유저가 메시지를 직접 제공한 경우 이 단계를 건너뛴다.**
 
@@ -144,7 +155,18 @@ EOF
 )"
 ```
 
-### 7. Push (if --push)
+### 7. TODO.md 연동 (커밋 후)
+
+TODO.md가 있으면 AskUserQuestion — "완료된 TODO 항목이 있나요? (항목 번호를 입력하거나 없음 선택)"
+
+- 번호를 입력한 경우: 해당 번호들의 상태를 ✅로 변경
+  - Edit 도구로 TODO.md 수정
+  - 종료 시간: 현재 시각(`MM-DD HH:MM`)으로 기록
+  - 소요 시간: 시작 시간이 있으면 계산, 없으면 `-`
+  - 진행 상황 갱신
+- "없음" 선택 시: 건너뜀
+
+### 8. Push (if --push)
 
 If `--push` flag was provided:
 
@@ -165,7 +187,7 @@ Push 실패
 ```
 → Stop.
 
-### 8. Output
+### 9. Output
 
 **Commit only (no --push):**
 ```
@@ -177,7 +199,7 @@ Push 실패
 
 Push 하려면:
   git push
-  또는: /commit --push (다음 커밋 시)
+  또는: /lk-commit --push (다음 커밋 시)
 ```
 
 **Commit + Push:**
