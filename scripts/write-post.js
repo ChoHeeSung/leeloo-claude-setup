@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const { readStdin, respond, allowWithMessage } = require('./lib/io');
+const { readStdin, respond, postContext } = require('./lib/io');
 
 /**
  * write-post.js — PDCA 문서 포맷 검증 (PostToolUse:Write|Edit)
@@ -31,7 +31,7 @@ async function main() {
   try {
     event = await readStdin();
   } catch (e) {
-    respond({ decision: 'allow' });
+    respond({});
     return;
   }
 
@@ -47,7 +47,7 @@ async function main() {
   }
 
   if (!matchedRule) {
-    respond({ decision: 'allow' });
+    respond({});
     return;
   }
 
@@ -56,8 +56,7 @@ async function main() {
   try {
     content = fs.readFileSync(filePath, 'utf8');
   } catch (e) {
-    // 파일 읽기 실패 시 allow
-    respond({ decision: 'allow' });
+    respond({});
     return;
   }
 
@@ -67,7 +66,7 @@ async function main() {
   );
 
   if (missingSections.length > 0) {
-    allowWithMessage(
+    postContext(
       `[leeloo-kit] ${matchedRule.label} 문서에 필수 섹션이 누락되었습니다:\n` +
       missingSections.map((s) => `  - ${s}`).join('\n') +
       '\n문서 템플릿을 참고하여 섹션을 추가하세요.'
@@ -75,9 +74,9 @@ async function main() {
     return;
   }
 
-  respond({ decision: 'allow' });
+  respond({});
 }
 
 main().catch(() => {
-  process.stdout.write(JSON.stringify({ decision: 'allow' }) + '\n');
+  process.stdout.write(JSON.stringify({}) + '\n');
 });

@@ -1,7 +1,7 @@
 'use strict';
 
-const { readStdin, allowWithMessage, respond } = require('./lib/io');
-const { setActiveSkill, loadContext } = require('./lib/context');
+const { readStdin, respond, postContext } = require('./lib/io');
+const { setActiveSkill } = require('./lib/context');
 
 /**
  * skill-post.js — Skill 실행 후 오케스트레이션 (PostToolUse:Skill)
@@ -22,23 +22,16 @@ function getNextStepMessage(skillName, event) {
       const phaseMap = {
         plan:     '  - /lk-pdca design    — Design 단계로 진행\n  - /lk-cross-validate — Plan 교차검증',
         design:   '  - /lk-pdca do        — Do(실행) 단계로 진행\n  - /lk-cross-validate — Design 교차검증',
-        do:       '  - /lk-pdca check     — Check(검증) 단계로 진행',
-        check:    '  - /lk-pdca act       — Act(개선) 단계로 진행\n  - /lk-review         — 코드 리뷰 실행',
-        act:      '  - /lk-pdca plan      — 새 PDCA 사이클 시작\n  - /lk-todo create    — 개선사항을 TODO로 변환'
+        do:       '  - /lk-pdca analyze   — Analyze(검증) 단계로 진행',
+        analyze:  '  - /lk-pdca report    — Report 생성\n  - /lk-review         — 코드 리뷰 실행',
+        report:   '  - /lk-todo create    — 후속 작업을 TODO로 변환'
       };
       const hint = phaseMap[phase] || '  - /lk-pdca [phase]   — 다음 단계로 진행';
       return `[leeloo-kit] lk-pdca ${phase || ''} 완료. 다음 단계:\n${hint}`;
     }
 
-    case 'lk-cross-validate': {
-      const verdict = (event.tool_output && event.tool_output.verdict) || '';
-      if (verdict === 'pass') {
-        return '[leeloo-kit] 교차검증 통과. 다음 단계:\n  - /lk-pdca design — Design 단계로 진행\n  - /lk-todo create — TODO 변환';
-      } else if (verdict === 'fail') {
-        return '[leeloo-kit] 교차검증 미통과. 다음 단계:\n  - /lk-plan        — Plan 재작성\n  - /lk-pdca plan   — Plan 수정 후 재검증';
-      }
+    case 'lk-cross-validate':
       return '[leeloo-kit] 교차검증 완료. 검증 결과를 확인하고 다음 단계를 선택하세요.';
-    }
 
     default:
       return null;
@@ -50,7 +43,7 @@ async function main() {
   try {
     event = await readStdin();
   } catch (e) {
-    respond({ decision: 'allow' });
+    respond({});
     return;
   }
 
@@ -69,12 +62,12 @@ async function main() {
   const message = skillName ? getNextStepMessage(skillName, event) : null;
 
   if (message) {
-    allowWithMessage(message);
+    postContext(message);
   } else {
-    respond({ decision: 'allow' });
+    respond({});
   }
 }
 
 main().catch(() => {
-  process.stdout.write(JSON.stringify({ decision: 'allow' }) + '\n');
+  process.stdout.write(JSON.stringify({}) + '\n');
 });

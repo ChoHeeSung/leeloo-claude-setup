@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { readStdin, allowWithMessage } = require('./lib/io');
+const { readStdin, respond, sessionMessage } = require('./lib/io');
 const { ensureStateDir } = require('./lib/paths');
 const { loadStatus } = require('./lib/pdca-status');
 
@@ -13,7 +13,6 @@ function isCommandAvailable(cmd) {
 }
 
 async function main() {
-  // stdin 이벤트 읽기 (SessionStart)
   try {
     await readStdin();
   } catch (e) {
@@ -39,10 +38,10 @@ async function main() {
   // 3. gemini-cli 존재 확인
   const geminiAvailable = isCommandAvailable('gemini') || isCommandAvailable('gemini-cli');
   if (!geminiAvailable) {
-    messages.push('[안내] gemini-cli가 설치되어 있지 않습니다. 교차검증(/lk-cross-validate) 기능을 사용하려면 gemini-cli를 설치하세요: npm install -g @google/generative-ai-cli');
+    messages.push('[안내] gemini-cli 미설치. 교차검증(/lk-cross-validate)에 필요: npm install -g @google/gemini-cli');
   }
 
-  // 4. pdca-status.json 로드 → 현재 활성 feature/phase 표시
+  // 4. pdca-status.json 로드
   try {
     const status = loadStatus();
     const features = Object.keys(status);
@@ -65,11 +64,12 @@ async function main() {
   if (fs.existsSync(todoPath)) {
     try {
       const todoContent = fs.readFileSync(todoPath, 'utf8');
-      const totalTasks = (todoContent.match(/- \[[ x]\]/g) || []).length;
-      const doneTasks = (todoContent.match(/- \[x\]/gi) || []).length;
-      if (totalTasks > 0) {
-        const pct = Math.round((doneTasks / totalTasks) * 100);
-        messages.push(`TODO 진행률: ${doneTasks}/${totalTasks} (${pct}%)`);
+      const completedMatch = todoContent.match(/완료:\s*(\d+)\/(\d+)/);
+      if (completedMatch) {
+        const done = parseInt(completedMatch[1], 10);
+        const total = parseInt(completedMatch[2], 10);
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        messages.push(`TODO 진행률: ${done}/${total} (${pct}%)`);
       }
     } catch (e) {
       // 무시
@@ -77,13 +77,13 @@ async function main() {
   }
 
   // 출력
-  const systemMessage = messages.length > 0
-    ? ['leeloo-kit v2.0.0 세션 시작', ...messages].join('\n')
-    : 'leeloo-kit v2.0.0 세션 시작. /lk-plan, /lk-pdca, /lk-cross-validate 등의 스킬을 사용할 수 있습니다.';
+  const systemMsg = messages.length > 0
+    ? ['leeloo-kit v2.0.0', ...messages].join('\n')
+    : 'leeloo-kit v2.0.0 세션 시작';
 
-  allowWithMessage(systemMessage);
+  sessionMessage(systemMsg);
 }
 
 main().catch(() => {
-  process.stdout.write(JSON.stringify({ decision: 'allow' }) + '\n');
+  respond({});
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-const { readStdin, respond } = require('./lib/io');
+const { readStdin, preAllow, preDeny } = require('./lib/io');
 
 /**
  * bash-pre.js — 위험 명령 차단 (PreToolUse:Bash)
@@ -20,7 +20,7 @@ async function main() {
   try {
     event = await readStdin();
   } catch (e) {
-    respond({ decision: 'allow' });
+    preAllow();
     return;
   }
 
@@ -28,17 +28,14 @@ async function main() {
 
   for (const pattern of DANGEROUS_PATTERNS) {
     if (pattern.test(command)) {
-      respond({
-        decision: 'block',
-        reason: '위험 명령 차단: ' + command.slice(0, 100)
-      });
+      preDeny('위험 명령 차단: ' + command.slice(0, 100));
       return;
     }
   }
 
-  respond({ decision: 'allow' });
+  preAllow();
 }
 
 main().catch(() => {
-  process.stdout.write(JSON.stringify({ decision: 'allow' }) + '\n');
+  process.stdout.write(JSON.stringify({}) + '\n');
 });

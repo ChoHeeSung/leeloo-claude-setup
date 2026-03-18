@@ -2,12 +2,14 @@
 
 /**
  * io.js — stdin JSON 파싱, stdout JSON 출력 유틸리티
+ *
+ * Hook 출력 스키마 (CC v2.1.78):
+ *   Stop:         { decision?: "approve"|"block", stopReason?, systemMessage? }
+ *   PreToolUse:   { permissionDecision?: "allow"|"deny"|"ask", reason?, systemMessage? }
+ *   PostToolUse:  { additionalContext? }
+ *   SessionStart: { systemMessage? }
  */
 
-/**
- * process.stdin에서 JSON 읽기
- * @returns {Promise<object>}
- */
 function readStdin() {
   return new Promise((resolve, reject) => {
     let data = '';
@@ -26,28 +28,37 @@ function readStdin() {
   });
 }
 
-/**
- * JSON.stringify로 stdout 출력
- * @param {object} obj
- */
 function respond(obj) {
   process.stdout.write(JSON.stringify(obj) + '\n');
 }
 
-/**
- * allow 결정 + 메시지 출력
- * @param {string} msg
- */
-function allowWithMessage(msg) {
-  respond({ decision: 'allow', systemMessage: msg });
+// SessionStart / Stop 용
+function sessionMessage(msg) {
+  respond({ systemMessage: msg });
 }
 
-/**
- * block 결정 + 메시지 출력
- * @param {string} msg
- */
-function blockWithMessage(msg) {
-  respond({ decision: 'block', systemMessage: msg });
+// PreToolUse 용: 허용
+function preAllow() {
+  respond({});
 }
 
-module.exports = { readStdin, respond, allowWithMessage, blockWithMessage };
+// PreToolUse 용: 차단
+function preDeny(reason) {
+  respond({ permissionDecision: 'deny', reason: reason });
+}
+
+// PostToolUse 용
+function postContext(msg) {
+  respond({ additionalContext: msg });
+}
+
+// Stop 용: 승인 + 메시지
+function stopApprove(msg) {
+  if (msg) {
+    respond({ systemMessage: msg });
+  } else {
+    respond({});
+  }
+}
+
+module.exports = { readStdin, respond, sessionMessage, preAllow, preDeny, postContext, stopApprove };
