@@ -1,142 +1,121 @@
 # leeloo-claude-setup
 
-Leeloo(이루기술) 사내 Claude Code 환경 설정 플러그인.
+Leeloo(이루기술) 사내 Claude Code 플러그인 마켓플레이스.
 
-사내 표준 환경 설정, 스킬, 훅을 제공하는 Claude Code 플러그인입니다.
+하나의 레포에서 복수의 독립 플러그인을 제공합니다.
+
+## 플러그인 목록
+
+| 플러그인 | 버전 | 설명 |
+|---------|------|------|
+| **leeloo-kit** | 2.0.0 | 사내 표준 AI 개발 키트 — PDCA 워크플로우 + 다중 검증 자동화 + 에이전트 시스템 |
+| **leeloo-n8n** | 1.0.0 | n8n 워크플로우 자동화 — MCP 17개 도구를 사용자 친화적 skill로 래핑 |
 
 ## 설치
 
-```bash
-claude plugins:add /path/to/leeloo-claude-setup
+Plugin Marketplace를 통해 설치합니다. 레포를 마켓플레이스에 등록하면 두 플러그인이 개별적으로 표시됩니다.
+
+또는 직접 경로로 활성화:
+
+```jsonc
+// ~/.claude/settings.json
+{
+  "enabledPlugins": [
+    "/path/to/leeloo-claude-setup/leeloo-kit",
+    "/path/to/leeloo-claude-setup/leeloo-n8n"
+  ]
+}
 ```
 
-또는 Plugin Marketplace를 통해 설치합니다.
+## leeloo-kit
 
-플러그인 설치 후 `/leeloo-setup`으로 사내 표준 환경을 설정하세요:
+PDCA 워크플로우 + Gemini 교차검증 + 에이전트 자동화를 제공하는 사내 표준 AI 개발 키트.
 
-```
-/leeloo-setup              — 사내 표준 환경 설치
-/leeloo-setup uninstall    — 설치된 환경 제거 (백업 복원)
-/leeloo-setup status       — 현재 설치 상태 확인
-```
+### 스킬 (lk- 접두사)
 
-## 설치 시 적용되는 항목
+| 스킬 | 설명 |
+|------|------|
+| `/lk-plan` | 브레인스토밍 기반 Plan 작성 + Gemini 교차검증 연동 |
+| `/lk-pdca` | PDCA 통합 관리 (design/do/analyze/report/status) |
+| `/lk-review` | Gemini+Claude 이중 리뷰 + 통합 Score Card |
+| `/lk-cross-validate` | Gemini 교차검증 + Score Card + 메트릭 저장 |
+| `/lk-agent` | Sub Agent 대화형 생성/관리 (프리셋 7종) |
+| `/lk-team` | Agent Team 구성/관리 (프리셋 5종) |
+| `/lk-todo` | Plan을 TODO 리스트로 변환 + 진행 상황 추적 |
+| `/lk-commit` | Conventional Commits + 한국어 스타일 + TODO 연동 |
+| `/lk-setup` | 선택적 환경 강화 (statusline, CLAUDE.md, gemini) |
 
-| 항목 | 설명 | 동작 |
-|------|------|------|
-| `settings.json` | 훅, 상태바, 플러그인, 마켓플레이스 설정 | 기존 설정에 **딥 머지** |
-| `settings.local.json` | 로컬 권한 설정 | 없을 때만 생성 |
-| `statusline-leeloo.sh` | Powerline 스타일 상태바 (모델, 컨텍스트, 비용, git) | 항상 덮어쓰기 |
-| `CLAUDE.md` | 사내 표준 글로벌 CLAUDE.md | 없을 때만 생성 |
-| `gemini-cli` | Gemini 교차검증용 CLI 도구 | 없을 때만 npm 설치 |
-| `uv (uvx)` | Python 패키지 러너 (MCP 서버 등) | 없을 때만 설치 |
+### 에이전트
 
-모든 파일은 `~/.claude/` 디렉토리에 배포됩니다.
-
-## 백업
-
-설치 스크립트는 실행 전 기존 파일들을 `~/.claude/.leeloo-backup/`에 자동 백업합니다.
-
-백업 대상: `settings.json`, `settings.local.json`, `statusline-leeloo.sh`, `CLAUDE.md`
-
-- 수정 전 기존 파일만 백업 (없으면 스킵)
-- 재설치 시 백업 덮어씀 (항상 최신 설치 전 상태 유지)
-
-## 제거 (Uninstall)
-
-```bash
-bash <plugin-root>/uninstall-claude-code.sh
-```
-
-제거 스크립트 동작:
-- `~/.claude/.leeloo-backup/`에서 원래 파일 복원
-- 백업에 없는 파일(=설치가 새로 만든 파일)은 삭제
-- 마커 파일(`~/.claude/.leeloo-setup-done`) 삭제
-- 백업 디렉토리 정리
-- 멱등성 보장 (여러 번 실행해도 안전)
-
-**참고**: gemini-cli, Node.js 등 시스템 패키지는 제거하지 않습니다.
-
-## 주요 설정 내용
-
-### 스킬
-
-- `/leeloo-setup` — 사내 표준 환경 설치/제거/상태확인
-- `/leeloo-commit` — Conventional Commits + 한국어 스타일 커밋 메시지 자동 생성
-- `/leeloo-cross-validate` — gemini-cli로 plan 교차검증 (Gemini가 독립적으로 설계 리뷰)
-- `/leeloo-todo` — Plan을 TODO 리스트로 변환하고 진행 상황 추적
-- `/leeloo-agent` — Sub Agent 대화형 생성/관리 (프리셋 5종 내장)
-- `/leeloo-team` — Agent Team 대화형 구성/관리 (프리셋 4종 내장)
-
-### Agent Team
-
-- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — 에이전트 팀 기능 활성화
-- `teammateMode: "auto"` — 디스플레이 모드 (tmux/iTerm2에서 split panes, 일반 터미널에서 in-process)
+- `gap-detector` — 설계/구현 Gap 분석 + Match Rate 산출
+- `pdca-iterator` — Gap 기반 자동 개선
+- `code-analyzer` — 코드 품질/보안/성능 분석
+- `report-generator` — PDCA 사이클 완료 보고서 생성
 
 ### 훅
 
-- **Stop** — 작업 완료 시 macOS 알림 (Glass 사운드)
-- **Notification** — 사용자 입력 대기 시 macOS 알림 (Ping 사운드)
-- **PermissionRequest(ExitPlanMode)** — plan mode 종료 시 plan 파일 저장 + Gemini 교차검증 + TODO 생성 제안
+- **SessionStart** — 세션 초기화, 의존성 확인, PDCA 상태 표시
+- **PreToolUse(Bash)** — 위험 명령 차단 (rm -rf, git push --force 등)
+- **PostToolUse(Write|Edit)** — PDCA 문서 포맷 검증
+- **PostToolUse(Skill)** — 스킬 완료 후 다음 단계 제안
+- **Stop** — 에이전트/스킬 완료 처리
 
-### 활성화 플러그인
+## leeloo-n8n
 
-- `leeloo-flow` — 사내 프로젝트 관리 워크플로우
-- `context7`, `code-review`, `playwright`, `serena` 등 공식 플러그인 다수
+n8n MCP 서버의 17개 도구를 8개 skill로 래핑한 워크플로우 자동화 플러그인.
 
-### 마켓플레이스
+### 사전 요구사항
 
-- `claude-plugins-official` (GitHub)
-- `leeloo-flow` (Bitbucket)
-- `leeloo-claude-setup` (Bitbucket)
+- n8n MCP 서버 설정 필요 (`/lk-n8n-setup install`로 가이드 확인)
 
-## 설계 원칙
+### 스킬 (lk-n8n- 접두사)
 
-- **수동 실행** — SessionStart 훅은 설치 가이드만 표시하고, 사용자가 직접 스크립트를 실행합니다.
-- **머지, 덮어쓰기 아님** — `settings.json`은 `jq`로 딥 머지하여 기존 설정을 보존합니다.
-- **멱등성** — 마커 파일(`~/.claude/.leeloo-setup-done`)로 중복 실행을 방지합니다.
-- **비파괴적** — `settings.local.json`과 `CLAUDE.md`는 이미 존재하면 건드리지 않습니다.
-- **백업 & 복원** — 설치 전 기존 파일을 백업하고, 언인스톨로 복원할 수 있습니다.
-
-## 사전 요구사항
-
-- [jq](https://jqlang.github.io/jq/) — JSON 딥 머지에 필요
-  ```bash
-  brew install jq
-  ```
-- [Node.js / npm](https://nodejs.org/) — gemini-cli 자동 설치에 필요 (선택)
-
-## 재설정
-
-설정을 다시 적용하려면:
-
-```
-/leeloo-setup uninstall    — 먼저 제거
-/leeloo-setup              — 다시 설치
-```
+| 스킬 | 서브커맨드 | 래핑 MCP 도구 |
+|------|-----------|--------------|
+| `/lk-n8n-setup` | status, install | health_check |
+| `/lk-n8n-workflow` | create, get, list, update, delete | create/get/list/update/delete_workflow |
+| `/lk-n8n-run` | test, list, get, delete | test_workflow, executions |
+| `/lk-n8n-validate` | check, fix, lint | validate_workflow, autofix_workflow |
+| `/lk-n8n-node` | search, info, check | search_nodes, get_node, validate_node |
+| `/lk-n8n-template` | search, get, deploy | search/get/deploy_template |
+| `/lk-n8n-version` | list, get, rollback, prune | workflow_versions |
+| `/lk-n8n-docs` | (overview), topic | tools_documentation |
 
 ## 구조
 
 ```
 leeloo-claude-setup/
 ├── .claude-plugin/
-│   ├── plugin.json              # 플러그인 매니페스트
-│   └── marketplace.json         # 마켓플레이스 매니페스트
-├── hooks/
-│   └── hooks.json               # 훅 정의 (PostToolUse)
-├── setup-claude-code.sh         # 멱등성 설정 스크립트 (백업 포함)
-├── uninstall-claude-code.sh     # 언인스톨 스크립트 (백업 복원)
-├── skills/
-│   ├── leeloo-setup/SKILL.md           # /leeloo-setup 스킬
-│   ├── leeloo-agent/SKILL.md           # /leeloo-agent 스킬
-│   ├── leeloo-commit/SKILL.md          # /leeloo-commit 스킬
-│   ├── leeloo-cross-validate/SKILL.md  # /leeloo-cross-validate 스킬
-│   ├── leeloo-team/SKILL.md            # /leeloo-team 스킬
-│   └── leeloo-todo/SKILL.md            # /leeloo-todo 스킬
-└── resources/
-    ├── settings-template.json   # settings.json 머지 템플릿
-    ├── settings.local.json      # 로컬 권한 템플릿
-    ├── statusline-leeloo.sh     # 상태바 스크립트
-    ├── gemini-review-prompt.md  # Gemini 교차검증 프롬프트 템플릿
-    └── CLAUDE.md                # 글로벌 CLAUDE.md 템플릿
+│   └── marketplace.json         # 마켓플레이스 매니페스트 (plugins 배열)
+├── leeloo-kit/                  # 플러그인 1
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   ├── leeloo.config.json
+│   ├── skills/                  # 9 skills (lk- prefix)
+│   ├── hooks/
+│   ├── scripts/
+│   ├── agents/
+│   ├── templates/
+│   ├── output-styles/
+│   └── resources/
+├── leeloo-n8n/                  # 플러그인 2
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   └── skills/                  # 8 skills (lk-n8n- prefix)
+└── docs/                        # 공통 문서
 ```
+
+## 설계 원칙
+
+- **멀티 플러그인 레포** — marketplace.json의 plugins 배열로 복수 플러그인 제공
+- **순수 플러그인** — 셸 스크립트 없음. 플러그인 설치 = marketplace install 또는 enabledPlugins 경로
+- **네임스페이스 분리** — lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) 접두사로 충돌 방지
+- **독립 설치** — 각 플러그인은 개별적으로 활성화/비활성화 가능
+- **PDCA 워크플로우** — Plan → Design → Do → Check → Act → Report
+- **이중 검증** — Gemini 교차검증 + Claude 분석
+
+## 사전 요구사항
+
+- Claude Code
+- Node.js v18+ (gemini-cli용, 선택)
+- jq (선택)

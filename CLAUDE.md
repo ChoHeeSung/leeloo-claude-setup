@@ -4,57 +4,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`leeloo-kit` is a Claude Code plugin for Leeloo(이루기술) — the company-standard AI development kit featuring PDCA workflow, dual verification (Gemini + Claude), and agent automation. Pure plugin architecture with no shell script dependencies.
+`leeloo-claude-setup`은 Leeloo(이루기술) 사내 Claude Code 플러그인 마켓플레이스 레포지토리입니다.
+하나의 레포에서 복수의 독립 플러그인을 제공합니다.
 
-## Architecture
+## Multi-Plugin Structure
 
-- `plugin.json` — Plugin manifest (name: "leeloo-kit", version: "2.0.0").
-- `.claude-plugin/marketplace.json` — Marketplace manifest for plugin discovery.
-- `hooks/hooks.json` — 5 hook events: SessionStart, PreToolUse(Bash), PostToolUse(Write|Edit, Skill), Stop.
-- `scripts/` — Runtime hook scripts (Node.js v18+ CommonJS):
-  - `session-start.js` — Session init, dependency checks, PDCA status display.
-  - `bash-pre.js` — Dangerous command blocking (rm -rf, git push --force, etc).
-  - `write-post.js` — PDCA document format validation.
-  - `skill-post.js` — Post-skill orchestration (next step suggestions).
-  - `unified-stop.js` — Stop dispatcher for agent/skill completion handling.
-  - `lib/` — Shared utilities: io.js, config.js, paths.js, pdca-status.js, context.js.
-- `leeloo.config.json` — Central config (PDCA paths, thresholds, cross-validation settings).
-- `skills/` — 9 skills (lk- prefix):
-  - `lk-plan/` — Brainstorming-based Plan creation with Gemini cross-validation.
-  - `lk-pdca/` — PDCA lifecycle management (design/do/analyze/report/status).
-  - `lk-review/` — Gemini+Claude dual review with unified Score Card.
-  - `lk-cross-validate/` — Gemini cross-validation with Score Card and metrics.
-  - `lk-agent/` — Sub Agent creation/management with 7 presets.
-  - `lk-team/` — Agent Team composition/management with 5 presets.
-  - `lk-todo/` — Plan-to-TODO with design doc references and progress suggestions.
-  - `lk-commit/` — Conventional Commits + Korean style + TODO integration.
-  - `lk-setup/` — Optional environment enhancement (statusline, CLAUDE.md, gemini).
-- `agents/` — 4 PDCA agents: gap-detector, pdca-iterator, code-analyzer, report-generator.
-- `templates/` — 5 PDCA document templates: plan, design, analysis, report, do.
-- `output-styles/` — 3 output styles: lk-dual-verify, lk-mentor, lk-ops.
-- `resources/` — Optional resources: statusline-leeloo.sh, gemini-review-prompt.md, CLAUDE.md template.
+```
+leeloo-claude-setup/
+├── .claude-plugin/marketplace.json   # 마켓플레이스 매니페스트 (plugins 배열)
+├── leeloo-kit/                       # 플러그인 1: PDCA 워크플로우 + AI 개발 키트
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   ├── skills/                       # 9 skills (lk- prefix)
+│   ├── hooks/
+│   ├── scripts/
+│   ├── agents/
+│   ├── templates/
+│   ├── output-styles/
+│   └── resources/
+├── leeloo-n8n/                       # 플러그인 2: n8n 워크플로우 자동화
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   └── skills/                       # 8 skills (n8n- prefix)
+└── docs/                             # 공통 문서 (Plan, TODO 등)
+```
+
+## Plugins
+
+### leeloo-kit (v2.0.0)
+사내 표준 AI 개발 키트. PDCA 워크플로우 + 다중 검증 자동화 + 에이전트 시스템.
+- Skills: lk-plan, lk-pdca, lk-review, lk-cross-validate, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
+- 상세: `leeloo-kit/CLAUDE.md` 참조
+
+### leeloo-n8n (v1.0.0)
+n8n MCP 17개 도구를 8개 skill로 래핑한 워크플로우 자동화 플러그인.
+- Skills: lk-n8n-setup, lk-n8n-workflow, lk-n8n-run, lk-n8n-validate, lk-n8n-node, lk-n8n-template, lk-n8n-version, lk-n8n-docs
+- 상세: `leeloo-n8n/CLAUDE.md` 참조
 
 ## Key Design Decisions
 
-- **Pure plugin**: No shell scripts. Plugin install = marketplace install or `enabledPlugins` path. Hooks, skills, agents auto-discovered.
-- **PDCA workflow**: Plan → Design → Do → Check(Analyze) → Act(Iterate) → Report. Each phase produces a document in `docs/{phase}/`.
-- **Dual verification**: Gemini cross-validation + Claude analysis for quality assurance.
-- **Hook-driven orchestration**: skill-post.js and unified-stop.js auto-suggest next PDCA steps.
-- **State in `.leeloo/`**: pdca-status.json, active-context.json, metrics.json for runtime state.
-- **lk- prefix**: All skills use `lk-` prefix for discoverability and namespace separation.
-- **Design doc references in TODO**: Each TODO item links to its source section in the design document.
-
-## PDCA Document Paths
-
-- Plan: `docs/plan/{feature}.plan.md`
-- Design: `docs/design/{feature}.design.md`
-- Analysis: `docs/analysis/{feature}.analysis.md`
-- Report: `docs/report/{feature}.report.md`
+- **멀티 플러그인 레포**: marketplace.json의 plugins 배열로 복수 플러그인 제공. 각 플러그인은 독립 서브디렉토리.
+- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) 접두사로 skill 충돌 방지.
+- **독립 설치**: 각 플러그인은 개별적으로 활성화/비활성화 가능.
 
 ## Testing Changes
 
-Plugin is tested by enabling it and verifying:
-1. SessionStart hook runs (check `.leeloo/` creation)
-2. Skills appear in `/` autocomplete (lk-plan, lk-pdca, etc.)
-3. Agents appear in Agent tool (gap-detector, etc.)
-4. Full PDCA cycle: `/lk-plan` → `/lk-cross-validate` → `/lk-pdca design` → `/lk-pdca analyze` → `/lk-pdca report`
+1. 레포를 마켓플레이스에 등록
+2. 플러그인 목록에서 leeloo-kit, leeloo-n8n 두 개가 표시되는지 확인
+3. 각 플러그인의 skill이 `/` 자동완성에 나타나는지 확인

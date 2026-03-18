@@ -1,9 +1,9 @@
 {
-  "name": "leeloo-kit",
-  "description": "Leeloo(이루기술) 사내 표준 AI 개발 키트 마켓플레이스",
+  "name": "leeloo-claude-setup",
+  "description": "Leeloo(이루기술) 사내 표준 Claude Code 플러그인 마켓플레이스",
   "owner": {
     "name": "Leeloo (이루기술)",
-    "email": "dev@leeloo.co.kr"
+    "email": "leeloo.chs@gmail.com"
   },
   "plugins": [
     {
@@ -12,10 +12,21 @@
       "version": "2.0.0",
       "author": {
         "name": "Leeloo (이루기술)",
-        "email": "dev@leeloo.co.kr"
+        "email": "leeloo.chs@gmail.com"
       },
-      "source": "./",
+      "source": "./leeloo-kit",
       "category": "productivity"
+    },
+    {
+      "name": "leeloo-n8n",
+      "description": "n8n 워크플로우 자동화 도구. MCP 17개 도구를 사용자 친화적 skill로 래핑하여 제공합니다.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Leeloo (이루기술)",
+        "email": "leeloo.chs@gmail.com"
+      },
+      "source": "./leeloo-n8n",
+      "category": "automation"
     }
   ]
 }

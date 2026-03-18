@@ -2,6 +2,6 @@
   "name": "leeloo-kit",
   "version": "2.0.0",
   "description": "Leeloo 사내 표준 AI 개발 키트 — PDCA 워크플로우 + 다중 검증 자동화",
-  "author": { "name": "Leeloo (이루기술)", "email": "dev@leeloo.co.kr" },
+  "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
   "outputStyles": "./output-styles/"
 }

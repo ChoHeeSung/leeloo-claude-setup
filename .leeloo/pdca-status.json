@@ -1,0 +1,10 @@
+{
+  "features": [
+    {
+      "feature": "leeloo-n8n-plugin",
+      "plan": "docs/plan/leeloo-n8n-plugin.plan.md",
+      "planDate": "2026-03-18",
+      "stage": "plan"
+    }
+  ]
+}
