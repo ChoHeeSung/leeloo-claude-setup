@@ -59,21 +59,39 @@ async function main() {
     // 무시
   }
 
-  // 5. TODO.md 존재 시 진행률 표시
-  const todoPath = path.join(process.cwd(), 'TODO.md');
-  if (fs.existsSync(todoPath)) {
-    try {
-      const todoContent = fs.readFileSync(todoPath, 'utf8');
-      const completedMatch = todoContent.match(/완료:\s*(\d+)\/(\d+)/);
-      if (completedMatch) {
-        const done = parseInt(completedMatch[1], 10);
-        const total = parseInt(completedMatch[2], 10);
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-        messages.push(`TODO 진행률: ${done}/${total} (${pct}%)`);
+  // 5. TODO*.md 파일들 진행률 표시
+  try {
+    const cwd = process.cwd();
+    const todoFiles = fs.readdirSync(cwd).filter(
+      (f) => f.startsWith('TODO') && f.endsWith('.md')
+    );
+    let totalDone = 0;
+    let totalAll = 0;
+    const todoLines = [];
+    todoFiles.forEach((file) => {
+      try {
+        const content = fs.readFileSync(path.join(cwd, file), 'utf8');
+        const completedMatch = content.match(/완료:\s*(\d+)\/(\d+)/);
+        if (completedMatch) {
+          const done = parseInt(completedMatch[1], 10);
+          const total = parseInt(completedMatch[2], 10);
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+          const label = file === 'TODO.md' ? 'TODO' : file.replace(/\.md$/, '');
+          todoLines.push(`  - ${label}: ${done}/${total} (${pct}%)`);
+          totalDone += done;
+          totalAll += total;
+        }
+      } catch (e) {
+        // 개별 파일 읽기 실패 무시
       }
-    } catch (e) {
-      // 무시
+    });
+    if (totalAll > 0) {
+      const totalPct = Math.round((totalDone / totalAll) * 100);
+      messages.push(`TODO 전체: ${totalDone}/${totalAll} (${totalPct}%)`);
+      todoLines.forEach((line) => messages.push(line));
     }
+  } catch (e) {
+    // 무시
   }
 
   // 출력
