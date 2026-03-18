@@ -4,8 +4,7 @@
     "SessionStart": [{
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js\"",
-        "runOnce": true,
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js",
         "timeout": 5000
       }]
     }],
@@ -13,7 +12,7 @@
       "matcher": "Bash",
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/bash-pre.js\"",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/bash-pre.js",
         "timeout": 3000
       }]
     }],
@@ -22,7 +21,7 @@
         "matcher": "Write|Edit",
         "hooks": [{
           "type": "command",
-          "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/write-post.js\"",
+          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/write-post.js",
           "timeout": 5000
         }]
       },
@@ -30,7 +29,7 @@
         "matcher": "Skill",
         "hooks": [{
           "type": "command",
-          "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/skill-post.js\"",
+          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/skill-post.js",
           "timeout": 5000
         }]
       }
@@ -38,7 +37,7 @@
     "Stop": [{
       "hooks": [{
         "type": "command",
-        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js\"",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js",
         "timeout": 10000
       }]
     }]
