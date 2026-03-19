@@ -1,8 +1,8 @@
 ---
 name: lk-setup
-description: "선택적 환경 강화 도구. /lk-setup [status|statusline|claude-md|gemini|serena]"
+description: "선택적 환경 강화 도구. /lk-setup [status|statusline|claude-md|gemini|serena|plugins]"
 user_invocable: true
-argument-hint: "[status|statusline|claude-md|gemini|serena]"
+argument-hint: "[status|statusline|claude-md|gemini|serena|plugins]"
 ---
 
 # /lk-setup — 선택적 환경 강화
@@ -19,6 +19,7 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 /lk-setup claude-md  — CLAUDE.md를 ~/.claude/CLAUDE.md에 설치
 /lk-setup gemini     — gemini-cli 설치 가이드 표시
 /lk-setup serena     — serena 플러그인 대시보드 자동 열기 비활성화
+/lk-setup plugins    — 권장 마켓플레이스 등록 + document-skills 플러그인 설치
 ```
 
 ## Procedure
@@ -31,6 +32,7 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 - `claude-md` → **claude-md** 동작
 - `gemini` → **gemini** 동작
 - `serena` → **serena** 동작
+- `plugins` → **plugins** 동작
 
 ---
 
@@ -56,6 +58,12 @@ command -v jq 2>/dev/null || echo "NOT_INSTALLED"
 
 # serena 대시보드 자동 열기 설정 확인
 grep -q 'web_dashboard_open_on_launch: false' ~/.serena/serena_config.yml 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
+
+# anthropic-agent-skills 마켓플레이스 등록 여부
+grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "REGISTERED" || echo "NOT_REGISTERED"
+
+# document-skills 플러그인 설치 여부
+grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "INSTALLED" || echo "NOT_INSTALLED"
 ```
 
 결과를 테이블로 표시합니다:
@@ -71,6 +79,8 @@ leeloo-kit 환경 상태
 | CLAUDE.md | ✅ 설치됨 / ❌ 미설치 | /lk-setup claude-md |
 | jq | ✅ 설치됨 / ❌ 미설치 | brew install jq |
 | serena 대시보드 | ✅ 비활성화됨 / ⚠️ 자동 열기 | /lk-setup serena |
+| anthropic-agent-skills | ✅ 등록됨 / ❌ 미등록 | /lk-setup plugins |
+| document-skills | ✅ 설치됨 / ❌ 미설치 | /lk-setup plugins |
 
 설치되지 않은 항목은 해당 서브커맨드로 설치하세요.
 ```
@@ -200,4 +210,49 @@ serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
 
    경로: ~/.serena/serena_config.yml
    설정: web_dashboard_open_on_launch: false
+   ```
+
+---
+
+### plugins 동작
+
+anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러그인을 설치합니다.
+
+1. **마켓플레이스 등록 확인**: Bash로 확인:
+   ```bash
+   grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "REGISTERED" || echo "NOT_REGISTERED"
+   ```
+
+2. **마켓플레이스 미등록 시**: Read 도구로 `~/.claude/settings.json` 읽은 후, Edit 도구로 `extraKnownMarketplaces` 객체에 다음 항목 추가:
+   ```json
+   "anthropic-agent-skills": {
+     "source": {
+       "source": "git",
+       "url": "https://github.com/anthropics/skills.git"
+     }
+   }
+   ```
+   - 이미 등록됨이면: "anthropic-agent-skills 마켓플레이스가 이미 등록되어 있습니다." 안내.
+
+3. **document-skills 플러그인 설치 확인**: Bash로 확인:
+   ```bash
+   grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "INSTALLED" || echo "NOT_INSTALLED"
+   ```
+
+4. **document-skills 미설치 시**: Edit 도구로 `~/.claude/settings.json`의 `enabledPlugins` 객체에 다음 추가:
+   ```json
+   "document-skills@anthropic-agent-skills": true
+   ```
+   - 이미 설치됨이면: "document-skills 플러그인이 이미 설치되어 있습니다." 안내.
+
+5. **결과 안내**:
+   ```
+   플러그인 설정 완료
+
+   | 항목 | 상태 |
+   |------|------|
+   | anthropic-agent-skills 마켓플레이스 | ✅ 등록됨 |
+   | document-skills 플러그인 | ✅ 설치됨 |
+
+   Claude Code를 재시작하거나 /reload-plugins 로 적용하세요.
    ```
