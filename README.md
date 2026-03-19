@@ -37,8 +37,8 @@ PDCA 워크플로우 + Gemini 교차검증 + 에이전트 자동화를 제공하
 |------|------|
 | `/lk-plan` | 브레인스토밍 기반 Plan 작성 + Gemini 교차검증 연동 |
 | `/lk-pdca` | PDCA 통합 관리 (design/do/analyze/report/status) |
-| `/lk-review` | Gemini+Claude 이중 리뷰 + 통합 Score Card |
-| `/lk-cross-validate` | Gemini 교차검증 + Score Card + 메트릭 저장 |
+| `/lk-code-review` | 코드 리뷰 — Claude 단독 또는 Gemini 이중 (`--dual`) |
+| `/lk-plan-cross-review` | 플랜 리뷰 — Gemini가 Plan/Design을 독립 검증 |
 | `/lk-agent` | Sub Agent 대화형 생성/관리 (프리셋 7종) |
 | `/lk-team` | Agent Team 구성/관리 (프리셋 5종) |
 | `/lk-todo` | Plan을 TODO 리스트로 변환 + 진행 상황 추적 |

@@ -22,8 +22,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `skills/` — 9 skills (lk- prefix):
   - `lk-plan/` — Brainstorming-based Plan creation with Gemini cross-validation.
   - `lk-pdca/` — PDCA lifecycle management (design/do/analyze/report/status).
-  - `lk-review/` — Gemini+Claude dual review with unified Score Card.
-  - `lk-cross-validate/` — Gemini cross-validation with Score Card and metrics.
+  - `lk-code-review/` — Code review (Claude solo or Gemini+Claude dual with --dual flag).
+  - `lk-plan-cross-review/` — Plan review (Gemini independent validation of Plan/Design docs).
   - `lk-agent/` — Sub Agent creation/management with 7 presets.
   - `lk-team/` — Agent Team composition/management with 5 presets.
   - `lk-todo/` — Plan-to-TODO with design doc references and progress suggestions.
@@ -57,4 +57,4 @@ Plugin is tested by enabling it and verifying:
 1. SessionStart hook runs (check `.leeloo/` creation)
 2. Skills appear in `/` autocomplete (lk-plan, lk-pdca, etc.)
 3. Agents appear in Agent tool (gap-detector, etc.)
-4. Full PDCA cycle: `/lk-plan` → `/lk-cross-validate` → `/lk-pdca design` → `/lk-pdca analyze` → `/lk-pdca report`
+4. Full PDCA cycle: `/lk-plan` → `/lk-plan-cross-review` → `/lk-pdca design` → `/lk-pdca analyze` → `/lk-pdca report`

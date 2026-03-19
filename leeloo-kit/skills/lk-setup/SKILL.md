@@ -156,7 +156,7 @@ node --version 2>/dev/null || echo "NOT_INSTALLED"
 ```
 gemini-cli 설치 가이드
 
-gemini-cli는 Gemini 교차검증(/lk-cross-validate, /lk-review)에 필요합니다.
+gemini-cli는 Gemini 교차검증(/lk-plan-cross-review, /lk-code-review --dual)에 필요합니다.
 
 ## 설치 방법
 

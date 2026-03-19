@@ -33,7 +33,7 @@ leeloo-claude-setup/
 
 ### leeloo-kit (v2.0.0)
 사내 표준 AI 개발 키트. PDCA 워크플로우 + 다중 검증 자동화 + 에이전트 시스템.
-- Skills: lk-plan, lk-pdca, lk-review, lk-cross-validate, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
+- Skills: lk-plan, lk-pdca, lk-code-review, lk-plan-cross-review, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
 - 상세: `leeloo-kit/CLAUDE.md` 참조
 
 ### leeloo-n8n (v1.0.0)

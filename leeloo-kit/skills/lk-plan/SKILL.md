@@ -175,9 +175,9 @@ Plan 문서 내용 (템플릿 기반 + 추가 섹션):
    파일: docs/plan/{feature}.plan.md
 
    다음 단계:
-   - /lk-cross-validate docs/plan/{feature}.plan.md  — Gemini 교차검증
+   - /lk-plan-cross-review docs/plan/{feature}.plan.md  — Gemini 교차검증
    - /lk-pdca design {feature}                       — 설계 문서 작성
    ```
 
 6. **교차검증 제안**: AskUserQuestion — "Gemini로 이 Plan을 교차검증할까요? (검증/나중에)"
-   - "검증" 선택 시: `/lk-cross-validate docs/plan/{feature}.plan.md` 로직 실행
+   - "검증" 선택 시: `/lk-plan-cross-review docs/plan/{feature}.plan.md` 로직 실행
