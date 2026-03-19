@@ -87,8 +87,10 @@ gemini-cli가 설치되어 있지 않습니다.
 
 Bash로 gemini-cli 실행:
 
+Bash 도구의 timeout 파라미터를 120000ms로 설정하여 실행하세요 (macOS에는 `timeout` 명령이 없음):
+
 ```bash
-timeout 120 gemini -p "$(cat <<'PROMPT_EOF'
+gemini -p "$(cat <<'PROMPT_EOF'
 당신은 시니어 코드 리뷰어입니다. 다음 코드 변경사항을 리뷰하세요.
 
 리뷰 기준:

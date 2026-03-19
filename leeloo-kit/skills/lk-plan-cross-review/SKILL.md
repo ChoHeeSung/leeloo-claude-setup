@@ -82,8 +82,10 @@ Read 도구로 선택된 파일 내용을 읽으세요.
 1. Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/gemini-review-prompt.md` 파일을 읽어 리뷰 프롬프트 템플릿을 가져오세요.
 2. 다음 Bash 명령으로 gemini-cli를 실행하세요:
 
+Bash 도구의 timeout 파라미터를 120000ms로 설정하여 실행하세요 (macOS에는 `timeout` 명령이 없음):
+
 ```bash
-timeout 120 gemini -p "$(cat <<'PROMPT_EOF'
+gemini -p "$(cat <<'PROMPT_EOF'
 {gemini-review-prompt.md 내용}
 
 ---
