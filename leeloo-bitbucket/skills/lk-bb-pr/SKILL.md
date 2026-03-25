@@ -42,24 +42,17 @@ echo "TOKEN=${BITBUCKET_API_TOKEN:+SET}" && echo "WORKSPACE=${BITBUCKET_WORKSPAC
 
 ### list 동작
 
-PR이 많을 수 있으므로 병렬 페이지네이션으로 가져옵니다.
+PR이 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
 
-#### Step 1: 전체 개수 확인
-
+Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests?state={OPEN|ALL}&pagelen=1" | jq '.size'
+"${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests" \
+  --query "state=OPEN" \
+  --jq-filter '{id: .id, title: .title, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, created: .created_on, updated: .updated_on}'
 ```
-- `--all` 플래그 없으면 state=OPEN, 있으면 state 파라미터 생략 (전체).
+- `--all` 플래그 시 `--query` 생략 (전체 상태).
 
-#### Step 2: 병렬 페이지 요청
-
-pagelen=50 기준으로 필요한 페이지 수를 계산하고 **여러 Bash 도구 호출을 병렬로** 실행:
-
-```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests?state=OPEN&pagelen=50&page={N}" | jq '[.values[] | {id: .id, title: .title, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, created: .created_on, updated: .updated_on}]'
-```
-
-#### Step 3: 결과 표시
+결과 표시:
 
 ```
 PR 목록: {repo_slug} — 총 {N}개
@@ -81,8 +74,9 @@ PR 상세와 댓글을 **병렬로** 가져옵니다:
 curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}" | jq '{id: .id, title: .title, description: .description, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, reviewers: [.reviewers[].display_name], created: .created_on, updated: .updated_on, close_source: .close_source_branch, merge_commit: .merge_commit}'
 ```
 ```bash
-# PR 댓글 (Bash 호출 2, 동시 실행)
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/comments?pagelen=100" | jq '[.values[] | {id: .id, user: .user.display_name, content: .content.raw, created: .created_on, inline: .inline}]'
+# PR 댓글 (Bash 호출 2, 동시 실행) — 댓글이 100개 초과 시 bb-fetch-all.sh 사용
+"${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/comments" \
+  --jq-filter '{id: .id, user: .user.display_name, content: .content.raw, created: .created_on, inline: .inline}'
 ```
 
 결과 표시:

@@ -39,23 +39,15 @@ echo "TOKEN=${BITBUCKET_API_TOKEN:+SET}" && echo "WORKSPACE=${BITBUCKET_WORKSPAC
 
 ### list 동작
 
-브랜치가 많을 수 있으므로 병렬 페이지네이션으로 가져옵니다.
+브랜치가 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
 
-#### Step 1: 전체 개수 확인
-
+Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches?pagelen=1" | jq '.size'
+"${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches" \
+  --jq-filter '{name: .name, hash: .target.hash[0:7], date: .target.date, author: .target.author.raw}'
 ```
 
-#### Step 2: 병렬 페이지 요청
-
-pagelen=100 기준으로 필요한 페이지 수를 계산하고 **여러 Bash 도구 호출을 병렬로** 실행:
-
-```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches?pagelen=100&page={N}" | jq '[.values[] | {name: .name, hash: .target.hash[0:7], date: .target.date, author: .target.author.raw}]'
-```
-
-#### Step 3: 결과 표시
+결과 표시:
 
 ```
 브랜치 목록: {repo_slug} — 총 {N}개

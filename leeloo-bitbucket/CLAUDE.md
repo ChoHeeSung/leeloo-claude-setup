@@ -20,9 +20,16 @@ MCP 서버 없이 curl 기반으로 저장소 관리 기능을 제공합니다.
 | `lk-bb-pr` | list, get, create, merge, comment | PR 관리 |
 | `lk-bb-commit` | list, diff | 커밋 이력, diff 조회 |
 
+## Scripts
+
+- `scripts/bb-fetch-all.sh` — 병렬 페이지네이션 유틸리티. 동시 요청 수 제한(`--max-parallel`, 기본 5) 지원.
+  ```bash
+  bb-fetch-all.sh <endpoint> [--pagelen 100] [--max-parallel 5] [--jq-filter '{name, slug}'] [--query "state=OPEN"]
+  ```
+
 ## Architecture
 
-- Pure skill plugin — hooks, agents, scripts 없음
+- Pure skill plugin — hooks, agents 없음. scripts는 병렬 페이지네이션 유틸리티만 포함.
 - 각 skill은 환경변수 체크 → 인자 파싱 → curl 호출 → 결과 포맷팅 패턴
 - 환경변수 미설정 시 `/lk-bb-setup install` 안내로 유도
 - API 엔드포인트: `https://api.bitbucket.org/2.0/`

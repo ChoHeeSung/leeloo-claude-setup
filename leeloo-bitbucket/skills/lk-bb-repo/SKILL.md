@@ -42,33 +42,17 @@ echo "TOKEN=${BITBUCKET_API_TOKEN:+SET}" && echo "WORKSPACE=${BITBUCKET_WORKSPAC
 
 ### list 동작
 
-저장소가 많으므로 병렬 페이지네이션으로 빠르게 전체 목록을 가져옵니다.
-
-#### Step 1: 전체 개수 확인
+저장소가 많으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
 
 Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=1" | jq '.size'
+"${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE" \
+  --jq-filter '{name: .name, slug: .slug, project: .project.key, updated: .updated_on, is_private: .is_private}'
 ```
 
-#### Step 2: 병렬 페이지 요청
+키워드가 있으면 결과 JSON에서 name/slug에 키워드가 포함된 항목만 필터링합니다.
 
-전체 개수를 기반으로 필요한 페이지 수를 계산합니다 (pagelen=100 기준).
-**여러 Bash 도구 호출을 병렬로** 실행하여 모든 페이지를 동시에 가져옵니다:
-
-```bash
-# 페이지 1
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=100&page=1" | jq '[.values[] | {name: .name, slug: .slug, project: .project.key, updated: .updated_on, is_private: .is_private}]'
-```
-```bash
-# 페이지 2 (동시 실행)
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=100&page=2" | jq '[.values[] | {name: .name, slug: .slug, project: .project.key, updated: .updated_on, is_private: .is_private}]'
-```
-(필요한 페이지 수만큼 병렬 Bash 호출)
-
-#### Step 3: 결과 병합 및 표시
-
-키워드가 있으면 name/slug에서 필터링한 후 테이블로 표시:
+결과를 테이블로 표시:
 
 ```
 Bitbucket 저장소 목록 ({워크스페이스}) — 총 {N}개
