@@ -26,6 +26,10 @@ leeloo-claude-setup/
 │   ├── plugin.json
 │   ├── CLAUDE.md
 │   └── skills/                       # 8 skills (n8n- prefix)
+├── leeloo-bitbucket/                 # 플러그인 3: Bitbucket 저장소 관리
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   └── skills/                       # 5 skills (lk-bb- prefix)
 └── docs/                             # 공통 문서 (Plan, TODO 등)
 ```
 
@@ -41,14 +45,19 @@ n8n MCP 17개 도구를 8개 skill로 래핑한 워크플로우 자동화 플러
 - Skills: lk-n8n-setup, lk-n8n-workflow, lk-n8n-run, lk-n8n-validate, lk-n8n-node, lk-n8n-template, lk-n8n-version, lk-n8n-docs
 - 상세: `leeloo-n8n/CLAUDE.md` 참조
 
+### leeloo-bitbucket (v1.0.0)
+Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP 서버 불필요.
+- Skills: lk-bb-setup, lk-bb-repo, lk-bb-branch, lk-bb-pr, lk-bb-commit
+- 상세: `leeloo-bitbucket/CLAUDE.md` 참조
+
 ## Key Design Decisions
 
 - **멀티 플러그인 레포**: marketplace.json의 plugins 배열로 복수 플러그인 제공. 각 플러그인은 독립 서브디렉토리.
-- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) 접두사로 skill 충돌 방지.
+- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) vs lk-bb- (leeloo-bitbucket) 접두사로 skill 충돌 방지.
 - **독립 설치**: 각 플러그인은 개별적으로 활성화/비활성화 가능.
 
 ## Testing Changes
 
 1. 레포를 마켓플레이스에 등록
-2. 플러그인 목록에서 leeloo-kit, leeloo-n8n 두 개가 표시되는지 확인
+2. 플러그인 목록에서 leeloo-kit, leeloo-n8n, leeloo-bitbucket 세 개가 표시되는지 확인
 3. 각 플러그인의 skill이 `/` 자동완성에 나타나는지 확인

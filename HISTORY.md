@@ -1,5 +1,75 @@
 # HISTORY.md
 
+## 2026-03-25
+
+### leeloo-bitbucket 플러그인 v1.0.0 신규 생성
+
+**지시 요약**: bitbucket-mcp-server 분석 결과를 바탕으로, MCP 서버 없이 REST API 직접 호출 방식의 Bitbucket 저장소 관리 플러그인을 신규 생성. API Token(Bearer) 인증, 대화형 setup, 병렬 페이지네이션 적용.
+
+**작업 내용**:
+- `leeloo-bitbucket/` 디렉토리 생성 (plugin.json, CLAUDE.md)
+- 5개 스킬 작성: lk-bb-setup, lk-bb-repo, lk-bb-branch, lk-bb-pr, lk-bb-commit
+- marketplace.json에 3번째 플러그인 등록
+- 프로젝트 CLAUDE.md 업데이트 (구조도, 플러그인 목록, 네임스페이스)
+
+**핵심 설계**:
+```
+# 인증: Bearer Token (App Password 아님)
+curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/..."
+
+# 환경변수 3개
+BITBUCKET_USER_EMAIL, BITBUCKET_API_TOKEN, BITBUCKET_WORKSPACE
+
+# 병렬 페이지네이션: 대량 저장소/PR 조회 시 여러 Bash 도구를 동시 호출
+```
+
+**비유**: n8n 플러그인이 "통역사(MCP)를 고용해서 n8n과 대화"하는 방식이었다면, Bitbucket 플러그인은 "영어를 직접 배워서(curl) Bitbucket과 직접 대화"하는 방식이다. Bitbucket API가 단순 REST라 통역사가 필요 없는 셈.
+
+**결과**: 커밋 후 push 완료.
+
+---
+
+### bitbucket-mcp-server (hongjunland) 분석
+
+**지시 요약**: GitHub 레포 `hongjunland/bitbucket-mcp-server` 종합 분석 — MCP 도구 목록, 기술 스택, 설치 방법, 지원 API, 대상 플랫폼, 코드 품질 평가
+
+**작업 내용**: WebFetch로 README, package.json, tsconfig.json, 메인 소스(`src/bitbucket-server.ts`) 전체 코드를 확인하여 아래 6가지 관점에서 분석 수행
+
+**결과**:
+
+1. **MCP 도구 6종**: list_repositories, get_repository, list_branches, get_commits, create_branch, create_pull_request
+2. **기술 스택**: TypeScript + @modelcontextprotocol/sdk ^1.20.1 + axios ^1.12.2 (단일 파일 구조)
+3. **설치**: npm install → npm run build → Claude Desktop config에 env 주입 방식
+4. **Bitbucket API**: 저장소 조회, 브랜치 조회/생성, 커밋 이력, PR 생성 (읽기 4 + 쓰기 2)
+5. **대상 플랫폼**: Bitbucket Cloud 전용 (api.bitbucket.org/2.0)
+6. **코드 품질**: 초기 단계, 디버그 로그 잔존(`console.log(12312321)`), 테스트 없음, 에러 핸들링 최소
+
+**비유**: 이 MCP 서버는 Bitbucket Cloud 전용 "리모컨"과 같다. 버튼(도구)이 6개뿐이고 채널(기능)도 기본적인 것만 돌리지만, 리모컨 자체의 구조는 간결하다. 다만 아직 프로토타입 수준이라 버튼 라벨이 빠지거나(테스트 없음), 건전지 커버에 테이프가 붙어있는(디버그 로그 잔존) 상태다.
+
+---
+
+## 2026-03-19
+
+### gemini-cli timeout 명령 macOS 호환성 수정
+
+**지시 요약**: `lk-code-review --dual` 및 `lk-plan-cross-review`에서 gemini 실행 시 `timeout 120` 명령 사용 → macOS에 GNU timeout이 없어 실패하는 문제 수정.
+
+**작업 내용**:
+- `lk-code-review/SKILL.md`, `lk-plan-cross-review/SKILL.md`에서 `timeout 120 gemini` → `gemini` 으로 변경
+- Bash 도구의 timeout 파라미터(120000ms)를 사용하도록 안내문 추가
+
+**핵심 변경**:
+```diff
+-timeout 120 gemini -p "$(cat <<'PROMPT_EOF'
++gemini -p "$(cat <<'PROMPT_EOF'
+```
+
+**비유**: 한국에서는 "119"로 전화하면 소방서가 오지만, 미국에서는 "911"을 눌러야 한다. OS마다 명령어가 다른 것도 마찬가지 — macOS에서는 `timeout` 대신 다른 방식으로 시간 제한을 걸어야 한다.
+
+**결과**: 커밋 `8601773` → push 완료.
+
+---
+
 ## 2026-03-18
 
 ### leeloo-kit v2.0.0 리브랜딩 + PDCA 워크플로우 도입

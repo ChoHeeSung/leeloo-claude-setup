@@ -27,6 +27,17 @@
       },
       "source": "./leeloo-n8n",
       "category": "automation"
+    },
+    {
+      "name": "leeloo-bitbucket",
+      "description": "Bitbucket Cloud 저장소 관리 도구. REST API 직접 호출 기반으로 저장소, 브랜치, PR, 커밋을 관리합니다.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Leeloo (이루기술)",
+        "email": "leeloo.chs@gmail.com"
+      },
+      "source": "./leeloo-bitbucket",
+      "category": "devops"
     }
   ]
 }
