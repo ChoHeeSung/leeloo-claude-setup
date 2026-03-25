@@ -22,11 +22,10 @@ Bitbucket 저장소의 커밋 이력과 diff를 조회합니다.
 
 ### 사전 체크
 
-Bash로 환경변수 확인:
-```bash
-echo "TOKEN=${BITBUCKET_API_TOKEN:+SET}" && echo "WORKSPACE=${BITBUCKET_WORKSPACE:-NOT_SET}"
-```
-- 미설정 시: "Bitbucket 연결이 설정되지 않았습니다. `/lk-bb-setup install`로 초기 설정을 진행하세요." 안내 후 중단.
+Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
+- 파일이 없거나 토큰이 비어있으면: "Bitbucket 연결이 설정되지 않았습니다. `/lk-bb-setup install`로 초기 설정을 진행하세요." 안내 후 중단.
+- YAML frontmatter에서 `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace`를 파싱.
+- 이후 curl 호출 시 `-u "{이메일}:{토큰}"` 형식으로 사용.
 
 ### 인자 파싱
 

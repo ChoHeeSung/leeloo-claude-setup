@@ -8,7 +8,8 @@ MCP 서버 없이 curl 기반으로 저장소 관리 기능을 제공합니다.
 ## Prerequisites
 
 - Bitbucket Cloud API Token + 워크스페이스 설정 필요. `/lk-bb-setup install`로 초기 설정.
-- 환경변수: `BITBUCKET_USER_EMAIL`, `BITBUCKET_API_TOKEN`, `BITBUCKET_WORKSPACE`
+- 설정 파일: `~/.claude/leeloo-bitbucket.local.md` (YAML frontmatter에 인증 정보 저장)
+- 필드: `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace`
 
 ## Skills (lk-bb- prefix)
 
@@ -30,7 +31,7 @@ MCP 서버 없이 curl 기반으로 저장소 관리 기능을 제공합니다.
 ## Architecture
 
 - Pure skill plugin — hooks, agents 없음. scripts는 병렬 페이지네이션 유틸리티만 포함.
-- 각 skill은 환경변수 체크 → 인자 파싱 → curl 호출 → 결과 포맷팅 패턴
-- 환경변수 미설정 시 `/lk-bb-setup install` 안내로 유도
+- 각 skill은 설정 파일 읽기 → 인자 파싱 → curl 호출 → 결과 포맷팅 패턴
+- 설정 파일 미존재 시 `/lk-bb-setup install` 안내로 유도
 - API 엔드포인트: `https://api.bitbucket.org/2.0/`
 - 인증: Basic Auth (`-u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN"`)
