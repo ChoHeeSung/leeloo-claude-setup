@@ -33,4 +33,4 @@ MCP 서버 없이 curl 기반으로 저장소 관리 기능을 제공합니다.
 - 각 skill은 환경변수 체크 → 인자 파싱 → curl 호출 → 결과 포맷팅 패턴
 - 환경변수 미설정 시 `/lk-bb-setup install` 안내로 유도
 - API 엔드포인트: `https://api.bitbucket.org/2.0/`
-- 인증: Bearer Token (`Authorization: Bearer $BITBUCKET_API_TOKEN`)
+- 인증: Basic Auth (`-u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN"`)

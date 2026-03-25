@@ -40,7 +40,7 @@ echo "TOKEN=${BITBUCKET_API_TOKEN:+SET}" && echo "WORKSPACE=${BITBUCKET_WORKSPAC
 
 Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/commits/{branch}?pagelen=30" | jq '[.values[] | {hash: .hash[0:7], full_hash: .hash, message: (.message | split("\n")[0]), author: .author.raw, date: .date}]'
+curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/commits/{branch}?pagelen=30" | jq '[.values[] | {hash: .hash[0:7], full_hash: .hash, message: (.message | split("\n")[0]), author: .author.raw, date: .date}]'
 ```
 - branch 미지정 시 URL에서 `/{branch}` 부분 생략 (기본 브랜치 사용).
 
@@ -60,7 +60,7 @@ curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.o
 
 Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/diff/{commit_hash}"
+curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/diff/{commit_hash}"
 ```
 
 결과 표시:
@@ -80,7 +80,7 @@ curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.o
 
 Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/diff/{dst}..{src}"
+curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/diff/{dst}..{src}"
 ```
 
 결과 표시:

@@ -15,7 +15,8 @@
 #   bb-fetch-all.sh "/repositories/myworkspace/myrepo/pullrequests" --query "state=OPEN" --max-parallel 3
 #
 # 환경변수 필요:
-#   BITBUCKET_API_TOKEN   — Bearer 토큰
+#   BITBUCKET_USER_EMAIL  — 사용자 이메일
+#   BITBUCKET_API_TOKEN   — Atlassian API 토큰
 #
 # 출력: JSON 배열 (모든 페이지 결과 병합)
 
@@ -63,12 +64,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- 환경변수 확인 ---
+if [[ -z "${BITBUCKET_USER_EMAIL:-}" ]]; then
+  echo '{"error": "BITBUCKET_USER_EMAIL 환경변수가 설정되지 않았습니다."}' >&2
+  exit 1
+fi
 if [[ -z "${BITBUCKET_API_TOKEN:-}" ]]; then
   echo '{"error": "BITBUCKET_API_TOKEN 환경변수가 설정되지 않았습니다."}' >&2
   exit 1
 fi
 
-AUTH_HEADER="Authorization: Bearer $BITBUCKET_API_TOKEN"
+AUTH_CREDENTIALS="${BITBUCKET_USER_EMAIL}:${BITBUCKET_API_TOKEN}"
 
 # --- URL 구성 헬퍼 ---
 build_url() {
@@ -82,7 +87,7 @@ build_url() {
 
 # --- Step 1: 첫 페이지 요청 → 전체 개수 확인 ---
 FIRST_URL=$(build_url 1)
-FIRST_RESPONSE=$(curl -sf -H "$AUTH_HEADER" "$FIRST_URL" 2>/dev/null) || {
+FIRST_RESPONSE=$(curl -sf -u "$AUTH_CREDENTIALS" "$FIRST_URL" 2>/dev/null) || {
   echo '{"error": "API 요청 실패. 토큰 또는 엔드포인트를 확인하세요.", "endpoint": "'"$ENDPOINT"'"}' >&2
   exit 1
 }
@@ -114,7 +119,7 @@ RUNNING=0
 for ((page=2; page<=TOTAL_PAGES; page++)); do
   PAGE_URL=$(build_url "$page")
   (
-    RESPONSE=$(curl -sf -H "$AUTH_HEADER" "$PAGE_URL" 2>/dev/null) || exit 0
+    RESPONSE=$(curl -sf -u "$AUTH_CREDENTIALS" "$PAGE_URL" 2>/dev/null) || exit 0
     echo "$RESPONSE" | jq -c "[.values[] | $JQ_FILTER]" > "$TMPDIR/page_${page}.json"
   ) &
 

@@ -22,7 +22,7 @@ Bitbucket Cloud API 연결 상태를 확인하고, 대화형으로 초기 설정
 | 변수 | 용도 |
 |------|------|
 | `BITBUCKET_USER_EMAIL` | 사용자 이메일 |
-| `BITBUCKET_API_TOKEN` | API 토큰 (Bearer) |
+| `BITBUCKET_API_TOKEN` | Atlassian API 토큰 (Basic Auth) |
 | `BITBUCKET_WORKSPACE` | 워크스페이스 이름 |
 
 ## Procedure
@@ -59,7 +59,7 @@ Bitbucket Cloud API 연결 상태를 확인하고, 대화형으로 초기 설정
 
 3. **API 연결 테스트**: 환경변수가 모두 설정되어 있으면 Bash로 실행:
    ```bash
-   curl -s -w "\nHTTP_STATUS:%{http_code}" -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=1"
+   curl -s -w "\nHTTP_STATUS:%{http_code}" -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=1"
    ```
 
 4. **결과 표시**:
@@ -169,7 +169,7 @@ export BITBUCKET_USER_EMAIL="{이메일}" && export BITBUCKET_API_TOKEN="{토큰
 
 Bash로 실행:
 ```bash
-curl -s -w "\nHTTP_STATUS:%{http_code}" -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=1"
+curl -s -w "\nHTTP_STATUS:%{http_code}" -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE?pagelen=1"
 ```
 
 #### Step 8: 결과 안내

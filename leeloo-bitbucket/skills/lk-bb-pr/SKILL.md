@@ -71,7 +71,7 @@ PR 상세와 댓글을 **병렬로** 가져옵니다:
 
 ```bash
 # PR 상세 (Bash 호출 1)
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}" | jq '{id: .id, title: .title, description: .description, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, reviewers: [.reviewers[].display_name], created: .created_on, updated: .updated_on, close_source: .close_source_branch, merge_commit: .merge_commit}'
+curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}" | jq '{id: .id, title: .title, description: .description, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, reviewers: [.reviewers[].display_name], created: .created_on, updated: .updated_on, close_source: .close_source_branch, merge_commit: .merge_commit}'
 ```
 ```bash
 # PR 댓글 (Bash 호출 2, 동시 실행) — 댓글이 100개 초과 시 bb-fetch-all.sh 사용
@@ -125,7 +125,7 @@ PR #{pr_id}: {title}
 
 5. Bash로 실행:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
+   curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests" \
      -d '{
        "title": "{제목}",
@@ -161,7 +161,7 @@ PR #{pr_id}: {title}
 
 2. Bash로 실행:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
+   curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/merge" \
      -d '{"type": "pullrequest", "merge_strategy": "{merge_commit|squash}", "close_source_branch": true}'
    ```
@@ -176,7 +176,7 @@ PR #{pr_id}: {title}
 
 1. Bash로 실행:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
+   curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/comments" \
      -d '{"content": {"raw": "{text}"}}'
    ```

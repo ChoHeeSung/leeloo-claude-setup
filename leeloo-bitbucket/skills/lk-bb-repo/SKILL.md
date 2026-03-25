@@ -69,7 +69,7 @@ Bitbucket 저장소 목록 ({워크스페이스}) — 총 {N}개
 
 Bash로 실행:
 ```bash
-curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}" | jq '{name: .name, slug: .slug, project: .project.key, description: .description, language: .language, is_private: .is_private, created: .created_on, updated: .updated_on, size: .size, mainbranch: .mainbranch.name, clone_ssh: (.links.clone[] | select(.name=="ssh") | .href), clone_https: (.links.clone[] | select(.name=="https") | .href)}'
+curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}" | jq '{name: .name, slug: .slug, project: .project.key, description: .description, language: .language, is_private: .is_private, created: .created_on, updated: .updated_on, size: .size, mainbranch: .mainbranch.name, clone_ssh: (.links.clone[] | select(.name=="ssh") | .href), clone_https: (.links.clone[] | select(.name=="https") | .href)}'
 ```
 
 결과 표시:
@@ -108,7 +108,7 @@ curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.o
 
 3. Bash로 실행:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
+   curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}" \
      -d '{"scm": "git", "is_private": {true/false}, "project": {"key": "{프로젝트key}"}}'
    ```
@@ -137,7 +137,7 @@ curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.o
 
 2. Bash로 실행:
    ```bash
-   curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -H "Authorization: Bearer $BITBUCKET_API_TOKEN" \
+   curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}"
    ```
 

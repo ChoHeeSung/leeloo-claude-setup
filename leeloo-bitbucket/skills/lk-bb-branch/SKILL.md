@@ -66,13 +66,13 @@ Bash로 실행:
 
 2. Bash로 실행:
    ```bash
-   curl -s -X POST -H "Authorization: Bearer $BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
+   curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches" \
      -d '{"name": "{branch_name}", "target": {"hash": "{source}"}}'
    ```
    - source가 브랜치 이름인 경우, 먼저 해당 브랜치의 최신 커밋 해시를 조회:
      ```bash
-     curl -s -H "Authorization: Bearer $BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches/{source}" | jq -r '.target.hash'
+     curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches/{source}" | jq -r '.target.hash'
      ```
 
 3. 결과 표시:
@@ -98,7 +98,7 @@ Bash로 실행:
 
 2. Bash로 실행:
    ```bash
-   curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -H "Authorization: Bearer $BITBUCKET_API_TOKEN" \
+   curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches/{branch_name}"
    ```
 
