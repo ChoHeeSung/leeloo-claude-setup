@@ -2,6 +2,32 @@
 
 ## 2026-03-25
 
+### leeloo-bitbucket 인증 개선 — Basic Auth + 설정 파일 분리
+
+**지시 요약**: Bearer → Basic Auth 수정, .zshrc 대신 플러그인 전용 설정 파일(`~/.claude/leeloo-bitbucket.local.md`)에 인증 정보 저장, 병렬 페이지네이션 스크립트(`bb-fetch-all.sh`) 추가.
+
+**작업 내용**:
+- Atlassian API Token은 Bearer가 아닌 Basic Auth (`email:token`) 방식으로 수정
+- `bb-fetch-all.sh` 스크립트 추가: `--max-parallel` 옵션으로 동시 요청 수 제한 (기본 5)
+- 모든 스킬의 사전 체크를 환경변수 → 설정 파일 읽기 방식으로 변경
+- `lk-bb-setup install` 대화형 흐름을 설정 파일 저장으로 전환
+
+**핵심 변경**:
+```yaml
+# ~/.claude/leeloo-bitbucket.local.md
+---
+bitbucket_user_email: "user@example.com"
+bitbucket_api_token: "ATATT3x..."
+bitbucket_workspace: "myworkspace"
+---
+```
+
+**비유**: 집 열쇠를 현관 매트 아래(.zshrc)에 두는 대신, 개인 금고(전용 설정 파일)에 넣는 것. 금고는 주인만 열 수 있고, 다른 사람이 현관을 드나들어도 열쇠가 노출되지 않는다.
+
+**결과**: 커밋 `697cb9e`, `3365ca6`, `9b9196f` → push 완료.
+
+---
+
 ### leeloo-bitbucket 플러그인 v1.0.0 신규 생성
 
 **지시 요약**: bitbucket-mcp-server 분석 결과를 바탕으로, MCP 서버 없이 REST API 직접 호출 방식의 Bitbucket 저장소 관리 플러그인을 신규 생성. API Token(Bearer) 인증, 대화형 setup, 병렬 페이지네이션 적용.
