@@ -63,30 +63,22 @@ PDF 경로가 없으면:
    reader = PdfReader(pdf_path)
    total_pages = len(reader.pages)
    ```
-7. **텍스트 추출 방식 판별** (pdf 스킬 지침 참고):
+7. **추출 모드 판별** (pdf 스킬 지침 참고):
    - pdfplumber로 첫 2~3페이지 텍스트 추출 시도
-   - 텍스트가 추출되면 → **텍스트 모드** (빠름)
-   - 텍스트가 없거나 극히 적으면 → **OCR 모드** (CAD 벡터 도면)
-8. **OCR 모드인 경우 환경 설정**:
-   - `/tmp/tessdata` 디렉토리 생성
-   - `eng.traineddata` 복사
-   - `kor.traineddata` 없으면 다운로드: `https://github.com/tesseract-ocr/tessdata/raw/main/kor.traineddata`
-   - `TESSDATA_PREFIX` 환경변수 설정
-9. **OCR 불가 시 대체 모드 (이미지 모드)**:
-   - tesseract 미설치 또는 OCR 실패 시 → **이미지 모드**로 전환
-   - 각 페이지를 이미지(PNG)로 변환하여 Claude의 비전(Vision) 기능으로 직접 분석
-   - 이미지 모드에서도 SubAgent에 동일한 권한이 필요:
-     · **Read**: PDF 파일 및 변환된 이미지 파일 읽기
-     · **Bash**: pdf2image로 페이지→이미지 변환 스크립트 실행
-     · **Write**: JSON 결과 파일 저장
-   - 이미지 모드 SubAgent도 `mode: "bypassPermissions"` 적용
+   - 텍스트가 충분히 추출되면 → **텍스트 모드** (빠름)
+   - 텍스트가 없거나 극히 적으면 → **비전 모드** (CAD 벡터 도면)
+   - ※ Python OCR 라이브러리(pytesseract 등)는 CAD 도면에서 정확도가 매우 낮으므로 사용하지 않는다.
+     텍스트 추출이 불가능한 도면은 반드시 Claude Vision으로 직접 분석한다.
+8. **비전 모드인 경우 환경 확인**:
+   - pdf2image(poppler) 설치 여부 확인 — 페이지를 PNG로 변환하는 데 필요
+   - 미설치 시 `check-env.sh --fix`로 설치 시도
 
 환경 준비 완료 후 요약 출력:
 ```
 ## 환경 준비 완료
 
 - PDF: {파일명} ({total_pages}페이지)
-- 추출 모드: {텍스트 모드 / OCR 모드}
+- 추출 모드: {텍스트 모드 / 비전 모드}
 - 출력 폴더: {출력 경로}
 - 처리 범위: {전체 / 지정 페이지}
 ```
@@ -97,17 +89,61 @@ PDF 경로가 없으면:
 
 **목적**: 이 도면에서 사용되는 장비 유형, ID 체계, 텍스트 배치 형태를 자동으로 파악한다.
 
-#### 1-1. 샘플 페이지 선정
+#### 1-1. 샘플 페이지 선정 및 읽기
 - 전체 페이지 중 앞(1~2p), 중간(1p), 뒤(1p) 총 3~4페이지를 샘플로 선택
-- 각 샘플을 이미지로 변환(DPI=300)하여 OCR 수행
-  ```python
-  from pdf2image import convert_from_path
-  images = convert_from_path(pdf_path, first_page=p, last_page=p, dpi=300)
-  ```
 
-#### 1-2. 원시 텍스트 분석
+**텍스트 모드:**
+- pdfplumber로 각 샘플 페이지의 텍스트를 추출
 
-샘플 OCR 결과에서 아래 항목을 자동 탐지:
+**비전 모드 — 반드시 SubAgent에 위임:**
+
+> **컨텍스트 보호 원칙**: 부모 세션이 이미지를 직접 Read하면 컨텍스트에 누적되어
+> "Request too large (max 20MB)" 오류가 발생한다. 비전 모드에서 이미지 분석은
+> 반드시 SubAgent에 위임하여 부모 컨텍스트를 보호한다.
+
+- 샘플 페이지별로 **1개씩 SubAgent를 병렬 발생** (3~4개 동시)
+- 각 SubAgent 설정:
+  - `mode`: `"bypassPermissions"`
+  - prompt에 PDF 경로, 페이지 번호, `convert_page_safe` 함수 코드, 1-2 분석 항목 목록 전달
+- 각 SubAgent가 수행할 작업:
+  1. `convert_page_safe` 함수로 담당 페이지를 JPEG 변환
+  2. Read 도구로 JPEG 파일을 읽어 Claude Vision으로 도면 분석
+  3. 1-2의 항목(구간 형식, 시설물 블록, 장비 키워드, ID 체계, 방향 체계)을 식별
+  4. 발견 결과를 **텍스트(JSON)**로 반환 (이미지는 SubAgent 종료 시 소멸)
+- 부모는 텍스트 결과만 수신 → 컨텍스트에 이미지가 쌓이지 않음
+- 3~4개 SubAgent의 결과를 병합하여 전체 패턴 도출
+
+**`convert_page_safe` 함수** (SubAgent prompt에 포함하여 전달):
+```python
+import os
+from pdf2image import convert_from_path
+
+def convert_page_safe(pdf_path, page_num, output_path, max_size_mb=10):
+    """페이지를 컨텍스트 제한 이내의 JPEG로 변환한다.
+    DPI를 단계적으로 낮추고, JPEG 품질을 조절하여 크기를 맞춘다."""
+    for dpi in [200, 150, 100]:
+        images = convert_from_path(pdf_path, first_page=page_num, last_page=page_num, dpi=dpi)
+        for quality in [85, 70, 50]:
+            images[0].save(output_path, "JPEG", quality=quality)
+            size_mb = os.path.getsize(output_path) / (1024 * 1024)
+            if size_mb <= max_size_mb:
+                return dpi, quality, size_mb
+    # 최후 수단: 이미지 리사이즈
+    img = images[0]
+    img = img.resize((img.width // 2, img.height // 2))
+    img.save(output_path, "JPEG", quality=60)
+    size_mb = os.path.getsize(output_path) / (1024 * 1024)
+    return 100, 60, size_mb
+```
+- **이미지 크기 규칙:**
+  - PNG 사용 금지 → 반드시 **JPEG** (CAD 도면은 PNG 대비 5~10배 작음)
+  - 파일 크기 상한: **10MB** (SubAgent 컨텍스트 여유 확보)
+  - DPI 200부터 시작, 초과 시 단계적 하향
+  - 그래도 초과 시 해상도 절반 리사이즈
+
+#### 1-2. 도면 내용 분석
+
+샘플 페이지 결과(텍스트 또는 Vision)에서 아래 항목을 자동 탐지:
 
 **A. 도면 구간 형식 발견**
 ```
@@ -206,26 +242,33 @@ AskUserQuestion — "이 패턴으로 전체 처리를 진행할까요? (진행/
 Phase 1에서 발견한 패턴 정보를 각 SubAgent에 전달한다.
 
 #### 2-1. 그룹 분할
-- 총 페이지를 4~5개 그룹으로 나눔
+
+**텍스트 모드:**
+- 총 페이지를 4~5개 그룹으로 나눔 (텍스트는 가벼워 다수 페이지 가능)
 - 예: 20페이지 → [1-4], [5-9], [10-14], [15-20]
+
+**비전 모드 — 1페이지/SubAgent:**
+- 이미지가 SubAgent 컨텍스트에 쌓이는 것을 방지하기 위해 **페이지당 1개 SubAgent**
+- 한 번에 최대 5개 SubAgent를 병렬 발생 → 완료 후 다음 5개 배치 실행
+- 예: 20페이지 → 배치1[1-5], 배치2[6-10], 배치3[11-15], 배치4[16-20]
 
 #### 2-2. SubAgent 병렬 발생
 
-Agent 도구로 각 그룹마다 SubAgent를 병렬 실행한다.
+Agent 도구로 각 그룹(또는 각 페이지)마다 SubAgent를 병렬 실행한다.
 
 **SubAgent 권한 설정 (모든 모드 공통):**
 - `mode`: `"bypassPermissions"` — 아래 작업을 사용자 확인 없이 수행해야 하므로 권한 우회 필수.
-  - **Read**: PDF 원본 파일, 변환된 이미지 파일 읽기
-  - **Bash**: Python 스크립트 실행 (pdf2image, pdfplumber, pytesseract, openpyxl)
+  - **Read**: PDF 원본 파일, 변환된 이미지 파일 읽기 (비전 모드에서 Claude Vision 분석에 필수)
+  - **Bash**: Python 스크립트 실행 (pdf2image, pdfplumber, openpyxl)
   - **Write**: JSON 결과 파일 저장 (/tmp/)
 
 각 SubAgent에 전달할 정보:
 - PDF 파일 경로
-- 담당 페이지 범위
+- 담당 페이지 범위 (비전 모드는 1페이지만)
 - Phase 1 발견 패턴 JSON (전체)
-- 추출 모드: `text` / `ocr` / `image` (3가지 중 하나)
-- OCR 모드인 경우 TESSDATA_PREFIX 경로
-- 결과 저장 경로: `/tmp/facility_result_p{시작}-{끝}.json`
+- 추출 모드: `text` / `vision`
+- `convert_page_safe` 함수 코드 (비전 모드인 경우)
+- 결과 저장 경로: `/tmp/facility_result_p{페이지}.json`
 
 각 SubAgent가 담당 페이지에 대해 수행할 작업:
 
@@ -234,18 +277,23 @@ Agent 도구로 각 그룹마다 SubAgent를 병렬 실행한다.
 2. Phase 1 패턴 기반 시설물 파싱
 3. 결과를 JSON 파일로 저장
 
-**OCR 모드** (tesseract 사용 가능):
-1. 이미지 변환 (DPI=300)
-2. pytesseract로 OCR 텍스트 추출
-3. Phase 1 패턴 기반 시설물 파싱
-4. 결과를 JSON 파일로 저장
-
-**이미지 모드** (tesseract 미설치 또는 OCR 실패):
-1. pdf2image로 페이지를 PNG 이미지로 변환 (DPI=300)
-2. 이미지를 `/tmp/facility_page_{N}.png`로 저장
-3. Read 도구로 이미지 파일을 읽어 Claude Vision으로 직접 분석
-4. Vision 결과에서 Phase 1 패턴 기반 시설물 파싱
+**비전 모드** (텍스트 추출 불가 — CAD 벡터 도면 등):
+1. `convert_page_safe` 함수로 1페이지를 JPEG 변환 (크기 제한 자동 적용, 상한 10MB)
+2. 이미지를 `/tmp/facility_page_{N}.jpg`로 저장
+3. **Read 도구로 JPEG 파일을 읽어 Claude Vision이 도면을 직접 보고 분석**
+4. Vision이 식별한 시설물 정보를 Phase 1 패턴과 대조하여 구조화
 5. 결과를 JSON 파일로 저장
+6. SubAgent 종료 → 이미지 컨텍스트 자동 소멸
+
+> **컨텍스트 관리 규칙 (비전 모드 필수):**
+> - 한 세션(부모 또는 SubAgent)이 **2장 이상의 도면 이미지를 Read하지 않는다**
+> - 이미지 분석은 반드시 **SubAgent에 위임**하여 부모 컨텍스트를 보호한다
+> - 비전 모드 SubAgent는 **1페이지만 처리**하고 종료한다
+> - SubAgent는 5개씩 배치(batch) 실행하여 병렬성과 안정성을 양립한다
+
+> **중요**: 비전 모드에서는 Python OCR 라이브러리(pytesseract 등)를 사용하지 않는다.
+> Claude Vision이 도면 이미지를 직접 보고 텍스트·기호·배치를 판독하는 것이
+> OCR 라이브러리보다 CAD 도면에서 훨씬 높은 정확도를 보인다.
 
 #### SubAgent 파싱 로직
 
@@ -392,16 +440,23 @@ xlsx 스킬 지침에 따라 Excel 파일을 생성한다. 수식이 있으면 r
 - **xlsx 스킬**: `.claude/skills/xlsx/SKILL.md` — Excel 생성, 서식, 수식, recalc
 
 ### Python 패키지
-- pypdf, pdf2image, pytesseract, pdfplumber, openpyxl, Pillow
+- pypdf, pdf2image, pdfplumber, openpyxl, Pillow
+- ※ pytesseract는 사용하지 않음 — CAD 도면에서 정확도가 낮아 Claude Vision으로 대체
 
 ### 시스템
-- tesseract-ocr, poppler-utils
-- Tesseract data: eng.traineddata, kor.traineddata (한글 도면인 경우)
+- poppler-utils (pdf2image에 필요)
+- ※ tesseract-ocr는 불필요 — Claude Vision이 직접 도면을 분석
 
 ## 중요 주의사항
 
-1. **CAD 벡터 도면 판별**: pdfplumber로 텍스트가 안 나오면 무조건 OCR 모드. 이미지 변환 후 OCR 필수.
-2. **패턴 발견이 핵심**: Phase 1을 충분히 수행해야 Phase 2 정확도가 올라감. 샘플을 3~4페이지 이상 확인할 것.
-3. **OCR 한계 인정**: 정확도 85~90%. 불확실한 항목은 반드시 "확인 필요"로 표기하여 사용자가 수동 검수할 수 있게 한다.
-4. **SubAgent 환경 전달**: 병렬 처리 시 각 Agent에 OCR 환경설정(TESSDATA_PREFIX)과 Phase 1 발견 패턴을 모두 전달해야 한다.
-5. **새 패턴 대응**: Phase 2 도중 Phase 1에서 못 본 패턴이 나타나면 무시하지 말고 "확인 필요"로 수집하여 Phase 4에서 보고한다.
+1. **CAD 벡터 도면 판별**: pdfplumber로 텍스트가 안 나오면 **비전 모드**로 전환. Claude Vision이 도면 이미지를 직접 보고 판독한다.
+2. **Python OCR 사용 금지**: pytesseract 등 Python OCR 라이브러리는 CAD 도면에서 정확도가 매우 낮다. 텍스트 추출이 불가능한 도면은 반드시 Claude Vision으로 분석한다.
+3. **컨텍스트 초과 방지 (비전 모드 핵심)**:
+   - 부모 세션이 이미지를 직접 Read하면 컨텍스트에 누적되어 "Request too large" 오류가 발생한다.
+   - 이미지 분석은 **반드시 SubAgent에 위임**하여 부모 컨텍스트를 보호한다.
+   - 한 SubAgent는 **1페이지만 처리**하고 종료한다 (이미지 컨텍스트 자동 소멸).
+   - 이미지 파일은 **JPEG**, 상한 **10MB** — PNG 사용 금지.
+4. **패턴 발견이 핵심**: Phase 1을 충분히 수행해야 Phase 2 정확도가 올라감. 샘플을 3~4페이지 이상 확인할 것.
+5. **Vision 한계 인정**: 복잡한 도면이나 해상도가 낮은 영역은 판독이 어려울 수 있다. 불확실한 항목은 반드시 "확인 필요"로 표기하여 사용자가 수동 검수할 수 있게 한다.
+6. **SubAgent 환경 전달**: 병렬 처리 시 각 Agent에 추출 모드(text/vision), Phase 1 발견 패턴, `convert_page_safe` 함수를 모두 전달해야 한다.
+7. **새 패턴 대응**: Phase 2 도중 Phase 1에서 못 본 패턴이 나타나면 무시하지 말고 "확인 필요"로 수집하여 Phase 4에서 보고한다.

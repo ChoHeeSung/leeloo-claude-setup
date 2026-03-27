@@ -2,6 +2,8 @@
 # leeloo-its-util 환경 사전 점검 스크립트
 # Usage: bash check-env.sh [--fix]
 #   --fix: 누락된 의존성 자동 설치 시도
+#
+# 비전 모드 기반: tesseract 불필요, poppler(pdf2image)만 필수
 
 set -euo pipefail
 
@@ -22,27 +24,23 @@ echo ""
 # --- 1. 시스템 도구 ---
 echo "## 시스템 도구"
 
-# tesseract
-if command -v tesseract &>/dev/null; then
-  VER=$(tesseract --version 2>&1 | head -1)
-  ok "tesseract-ocr ($VER)"
-else
-  fail "tesseract-ocr 미설치"
-  if $FIX_MODE; then
-    echo "       → 설치 시도: brew install tesseract"
-    brew install tesseract && ok "tesseract-ocr 설치 완료" || fail "tesseract-ocr 설치 실패"
-  fi
-fi
-
-# poppler (pdftoppm)
+# poppler (pdftoppm) — 필수: PDF → 이미지 변환
 if command -v pdftoppm &>/dev/null; then
   ok "poppler-utils (pdftoppm)"
 else
-  fail "poppler-utils 미설치 (pdftoppm 없음)"
+  fail "poppler-utils 미설치 (pdftoppm 없음) — PDF → 이미지 변환에 필수"
   if $FIX_MODE; then
     echo "       → 설치 시도: brew install poppler"
     brew install poppler && ok "poppler 설치 완료" || fail "poppler 설치 실패"
   fi
+fi
+
+# python3
+if command -v python3 &>/dev/null; then
+  VER=$(python3 --version 2>&1)
+  ok "python3 ($VER)"
+else
+  fail "python3 미설치"
 fi
 
 echo ""
@@ -50,7 +48,8 @@ echo ""
 # --- 2. Python 패키지 ---
 echo "## Python 패키지"
 
-PACKAGES=(pypdf pdfplumber pdf2image pytesseract openpyxl Pillow)
+# pytesseract 제외 — Claude Vision으로 대체
+PACKAGES=(pypdf pdfplumber pdf2image openpyxl Pillow)
 MISSING_PKGS=()
 
 for pkg in "${PACKAGES[@]}"; do
@@ -74,53 +73,11 @@ fi
 
 echo ""
 
-# --- 3. Tesseract 학습 데이터 ---
-echo "## Tesseract 학습 데이터"
-
-# tessdata 경로 탐색
-TESSDATA_DIR=""
-if [[ -n "${TESSDATA_PREFIX:-}" ]] && [[ -d "$TESSDATA_PREFIX" ]]; then
-  TESSDATA_DIR="$TESSDATA_PREFIX"
-elif command -v tesseract &>/dev/null; then
-  # tesseract --print-parameters로 datapath 추출
-  CANDIDATE=$(tesseract --print-parameters 2>/dev/null | grep "tessdata" | head -1 | awk '{print $2}' 2>/dev/null || true)
-  if [[ -n "$CANDIDATE" ]] && [[ -d "$CANDIDATE" ]]; then
-    TESSDATA_DIR="$CANDIDATE"
-  fi
-  # brew 기본 경로 시도
-  if [[ -z "$TESSDATA_DIR" ]]; then
-    for d in /opt/homebrew/share/tessdata /usr/local/share/tessdata /usr/share/tesseract-ocr/*/tessdata /usr/share/tessdata; do
-      [[ -d "$d" ]] && TESSDATA_DIR="$d" && break
-    done
-  fi
-fi
-
-if [[ -z "$TESSDATA_DIR" ]]; then
-  warn "tessdata 디렉토리를 찾을 수 없음 (tesseract 미설치이거나 비표준 경로)"
-else
-  echo "  경로: $TESSDATA_DIR"
-
-  # eng
-  if [[ -f "$TESSDATA_DIR/eng.traineddata" ]]; then
-    ok "eng.traineddata"
-  else
-    fail "eng.traineddata 없음"
-  fi
-
-  # kor
-  if [[ -f "$TESSDATA_DIR/kor.traineddata" ]]; then
-    ok "kor.traineddata"
-  else
-    warn "kor.traineddata 없음 (한글 도면 OCR 시 필요)"
-    if $FIX_MODE; then
-      echo "       → 다운로드 시도..."
-      curl -fsSL -o "$TESSDATA_DIR/kor.traineddata" \
-        "https://github.com/tesseract-ocr/tessdata/raw/main/kor.traineddata" \
-        && ok "kor.traineddata 다운로드 완료" \
-        || fail "kor.traineddata 다운로드 실패"
-    fi
-  fi
-fi
+# --- 3. 참고 사항 ---
+echo "## 참고"
+echo "  - tesseract-ocr: 불필요 (Claude Vision이 도면을 직접 분석)"
+echo "  - pytesseract: 불필요 (CAD 도면 정확도 낮아 제외)"
+echo "  - 비전 모드: PDF → PNG 변환 후 Claude가 이미지를 직접 판독"
 
 echo ""
 
