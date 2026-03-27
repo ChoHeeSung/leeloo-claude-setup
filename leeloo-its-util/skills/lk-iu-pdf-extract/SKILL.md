@@ -72,6 +72,14 @@ PDF 경로가 없으면:
    - `eng.traineddata` 복사
    - `kor.traineddata` 없으면 다운로드: `https://github.com/tesseract-ocr/tessdata/raw/main/kor.traineddata`
    - `TESSDATA_PREFIX` 환경변수 설정
+9. **OCR 불가 시 대체 모드 (이미지 모드)**:
+   - tesseract 미설치 또는 OCR 실패 시 → **이미지 모드**로 전환
+   - 각 페이지를 이미지(PNG)로 변환하여 Claude의 비전(Vision) 기능으로 직접 분석
+   - 이미지 모드에서도 SubAgent에 동일한 권한이 필요:
+     · **Read**: PDF 파일 및 변환된 이미지 파일 읽기
+     · **Bash**: pdf2image로 페이지→이미지 변환 스크립트 실행
+     · **Write**: JSON 결과 파일 저장
+   - 이미지 모드 SubAgent도 `mode: "bypassPermissions"` 적용
 
 환경 준비 완료 후 요약 출력:
 ```
@@ -204,19 +212,40 @@ Phase 1에서 발견한 패턴 정보를 각 SubAgent에 전달한다.
 #### 2-2. SubAgent 병렬 발생
 
 Agent 도구로 각 그룹마다 SubAgent를 병렬 실행한다.
+
+**SubAgent 권한 설정 (모든 모드 공통):**
+- `mode`: `"bypassPermissions"` — 아래 작업을 사용자 확인 없이 수행해야 하므로 권한 우회 필수.
+  - **Read**: PDF 원본 파일, 변환된 이미지 파일 읽기
+  - **Bash**: Python 스크립트 실행 (pdf2image, pdfplumber, pytesseract, openpyxl)
+  - **Write**: JSON 결과 파일 저장 (/tmp/)
+
 각 SubAgent에 전달할 정보:
 - PDF 파일 경로
 - 담당 페이지 범위
 - Phase 1 발견 패턴 JSON (전체)
-- 텍스트 모드 / OCR 모드 여부
+- 추출 모드: `text` / `ocr` / `image` (3가지 중 하나)
 - OCR 모드인 경우 TESSDATA_PREFIX 경로
 - 결과 저장 경로: `/tmp/facility_result_p{시작}-{끝}.json`
 
 각 SubAgent가 담당 페이지에 대해 수행할 작업:
-1. 이미지 변환 (OCR 모드인 경우, DPI=300)
-2. 텍스트 추출 (OCR 또는 pdfplumber)
-3. Phase 1에서 발견한 패턴 기반으로 시설물 파싱
+
+**텍스트 모드** (pdfplumber 텍스트 추출 가능):
+1. pdfplumber로 텍스트 추출
+2. Phase 1 패턴 기반 시설물 파싱
+3. 결과를 JSON 파일로 저장
+
+**OCR 모드** (tesseract 사용 가능):
+1. 이미지 변환 (DPI=300)
+2. pytesseract로 OCR 텍스트 추출
+3. Phase 1 패턴 기반 시설물 파싱
 4. 결과를 JSON 파일로 저장
+
+**이미지 모드** (tesseract 미설치 또는 OCR 실패):
+1. pdf2image로 페이지를 PNG 이미지로 변환 (DPI=300)
+2. 이미지를 `/tmp/facility_page_{N}.png`로 저장
+3. Read 도구로 이미지 파일을 읽어 Claude Vision으로 직접 분석
+4. Vision 결과에서 Phase 1 패턴 기반 시설물 파싱
+5. 결과를 JSON 파일로 저장
 
 #### SubAgent 파싱 로직
 
