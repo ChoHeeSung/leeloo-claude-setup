@@ -32,8 +32,10 @@ leeloo-claude-setup/
 │   └── skills/                       # 5 skills (lk-bb- prefix)
 ├── leeloo-util/                  # 플러그인 4: 범용 유틸리티 모음
 │   ├── plugin.json
+│   ├── package.json                  # kordoc 의존성
 │   ├── CLAUDE.md
-│   └── skills/                       # 1 skill (lk-iu- prefix)
+│   ├── scripts/                      # kordoc 래퍼 스크립트
+│   └── skills/                       # 4 skills (lk-iu-, lk-doc- prefix)
 └── docs/                             # 공통 문서 (Plan, TODO 등)
 ```
 
@@ -54,15 +56,15 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 - Skills: lk-bb-setup, lk-bb-repo, lk-bb-branch, lk-bb-pr, lk-bb-commit
 - 상세: `leeloo-bitbucket/CLAUDE.md` 참조
 
-### leeloo-util (v1.0.0)
-Leeloo 범용 유틸리티 모음. ITS 도면 분석, 공문서 변환, 데이터 처리 등.
-- Skills: lk-iu-pdf-extract
+### leeloo-util (v1.1.0)
+Leeloo 범용 유틸리티 모음. ITS 도면 분석, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식.
+- Skills: lk-iu-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form
 - 상세: `leeloo-util/CLAUDE.md` 참조
 
 ## Key Design Decisions
 
 - **멀티 플러그인 레포**: marketplace.json의 plugins 배열로 복수 플러그인 제공. 각 플러그인은 독립 서브디렉토리.
-- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) vs lk-bb- (leeloo-bitbucket) vs lk-iu- (leeloo-util) 접두사로 skill 충돌 방지.
+- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) vs lk-bb- (leeloo-bitbucket) vs lk-iu- / lk-doc- (leeloo-util) 접두사로 skill 충돌 방지.
 - **독립 설치**: 각 플러그인은 개별적으로 활성화/비활성화 가능.
 
 ## Testing Changes

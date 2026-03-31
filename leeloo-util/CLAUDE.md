@@ -5,38 +5,52 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 `leeloo-util`은 Leeloo 범용 유틸리티 모음 플러그인입니다.
-ITS 도면 분석, 공문서 변환, 데이터 처리 등 다양한 현장 업무 자동화 스킬을 제공합니다.
+ITS 도면 분석, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식 등 현장 업무 자동화 스킬을 제공합니다.
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-util", version: "1.0.0").
+- `plugin.json` — Plugin manifest (name: "leeloo-util", version: "1.1.0").
+- `package.json` — Node.js 의존성 (kordoc ^1.6.1). `npm install` 필요.
 - `scripts/` — 유틸리티 스크립트:
   - `check-env.sh` — 의존성 일괄 점검 + `--fix` 자동 설치.
-- `skills/` — Skills (lk-iu- prefix):
-  - `lk-iu-pdf-extract/` — PDF 도면에서 시설물 정보 추출 → Excel 생성.
+  - `kordoc-compare.mjs` — kordoc compare() API 래퍼 (문서 비교).
+  - `kordoc-form.mjs` — kordoc extractFormFields() API 래퍼 (양식 인식).
+  - `kordoc-generate.mjs` — kordoc markdownToHwpx() API 래퍼 (HWPX 생성).
+  - `kordoc-table.mjs` — kordoc parse() → 테이블 추출 래퍼.
+- `skills/` — Skills:
+  - `lk-iu-pdf-extract/` — PDF 도면에서 시설물 정보 추출 → Excel 생성. (lk-iu- prefix)
+  - `lk-doc-parse/` — 한국 공문서(HWP/HWPX/PDF) → 마크다운 변환. (lk-doc- prefix)
+  - `lk-doc-compare/` — 두 공문서 비교 (크로스 포맷 HWP↔HWPX 지원).
+  - `lk-doc-form/` — 공문서 양식 인식 + 마크다운 → HWPX 역변환.
 
 ## Key Design Decisions
 
-- **하드코딩 금지**: 장비 유형, ID 접두사, 텍스트 레이아웃 등을 코드에 고정하지 않음. 모든 패턴은 Phase 1(탐색)에서 실제 도면을 분석하여 자동 발견.
+- **하드코딩 금지**: 장비 유형, ID 접두사, 텍스트 레이아웃 등을 코드에 고정하지 않음.
 - **기존 스킬 활용**: PDF 처리는 `pdf` 스킬, Excel 생성은 `xlsx` 스킬의 SKILL.md를 먼저 읽고 지침을 따름.
-- **4-Phase 워크플로우**: 환경 준비 → 패턴 탐색 → 병렬 추출 → 통합/검증.
-- **lk-iu- prefix**: ITS utility 네임스페이스 분리.
+- **kordoc 스킬 래핑**: kordoc CLI(parse)는 직접 호출, 라이브러리 API(compare/form/generate)는 래퍼 스크립트로 호출.
+- **네임스페이스 분리**: `lk-iu-*` (ITS utility) vs `lk-doc-*` (문서 도메인) 접두사.
+- **로컬 의존성**: kordoc를 package.json에 로컬 의존성으로 관리. 글로벌 설치 불필요.
 
 ## Dependencies
 
-### 필수 스킬 (실행 전 SKILL.md 참조)
+### 필수 스킬 (lk-iu-pdf-extract용)
 - `pdf` 스킬: PDF 읽기, OCR, 텍스트 추출
 - `xlsx` 스킬: Excel 생성, 서식, 수식
 
-### Python 패키지
-- pypdf, pdf2image, pytesseract, pdfplumber, openpyxl, Pillow
+### Node.js (lk-doc-* 스킬용)
+- kordoc ^1.6.1 (HWP/HWPX/PDF 파서)
+- Node.js >= 18
+
+### Python 패키지 (lk-iu-pdf-extract용)
+- pypdf, pdf2image, pdfplumber, openpyxl, Pillow
 
 ### 시스템
-- tesseract-ocr, poppler-utils
-- Tesseract data: eng.traineddata, kor.traineddata
+- poppler-utils (lk-iu-pdf-extract용)
 
 ## Testing Changes
 
-1. 플러그인 활성화 후 `/lk-iu-pdf-extract` 자동완성 확인
-2. 샘플 PDF 도면으로 시설물 추출 테스트
-3. 생성된 Excel 시트 구조 및 서식 확인
+1. 플러그인 활성화 후 스킬 자동완성 확인:
+   - `/lk-iu-pdf-extract`, `/lk-doc-parse`, `/lk-doc-compare`, `/lk-doc-form`
+2. `bash scripts/check-env.sh` — 환경 점검 통과 확인
+3. 샘플 HWP/HWPX 파일로 lk-doc-* 스킬 동작 확인
+4. 기존 lk-iu-pdf-extract 스킬 충돌 없음 확인
