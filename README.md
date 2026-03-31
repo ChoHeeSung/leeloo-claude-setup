@@ -123,7 +123,7 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 |------|------|
 | `/lk-doc-parse` | HWP/HWPX/PDF를 마크다운으로 변환. 메타데이터, 테이블 추출, 배치 변환 지원 |
 | `/lk-doc-compare` | 두 공문서 비교 (크로스 포맷 HWP↔HWPX 지원). 개정판 diff 분석 |
-| `/lk-doc-form` | 정부 양식에서 레이블-값 쌍 자동 추출 + 마크다운→HWPX 역변환 |
+| `/lk-doc-form` | 정부 양식에서 레이블-값 쌍 자동 추출 |
 
 **지원 포맷:**
 
@@ -145,9 +145,6 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 
 # 양식 인식
 /lk-doc-form 신청서.hwp
-
-# 마크다운 → HWPX 역변환
-/lk-doc-form report.md --to-hwpx 보고서.hwpx
 ```
 
 ### /lk-iu-pdf-extract 사용법
