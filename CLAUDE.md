@@ -30,10 +30,10 @@ leeloo-claude-setup/
 │   ├── plugin.json
 │   ├── CLAUDE.md
 │   └── skills/                       # 5 skills (lk-bb- prefix)
-├── leeloo-util/                      # 플러그인 4: 범용 유틸리티 모음
+├── leeloo-its-util/                  # 플러그인 4: ITS 시설물 도면 분석 유틸리티
 │   ├── plugin.json
 │   ├── CLAUDE.md
-│   └── skills/                       # 4 skills (lk-iu-, lk-hwp- prefix)
+│   └── skills/                       # 1 skill (lk-iu- prefix)
 └── docs/                             # 공통 문서 (Plan, TODO 등)
 ```
 
@@ -54,19 +54,19 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 - Skills: lk-bb-setup, lk-bb-repo, lk-bb-branch, lk-bb-pr, lk-bb-commit
 - 상세: `leeloo-bitbucket/CLAUDE.md` 참조
 
-### leeloo-util (v1.0.0)
-Leeloo 범용 유틸리티 모음. ITS 도면 분석, 공문서(HWP/HWPX/PDF) 변환 등.
-- Skills: lk-iu-pdf-extract, lk-hwp-setup, lk-hwp-parse, lk-hwp-compare
-- 상세: `leeloo-util/CLAUDE.md` 참조
+### leeloo-its-util (v1.0.0)
+ITS(지능형교통시스템) 업무 자동화 유틸리티 모음. 도면 분석, 시설물 관리, 데이터 변환 등.
+- Skills: lk-iu-pdf-extract
+- 상세: `leeloo-its-util/CLAUDE.md` 참조
 
 ## Key Design Decisions
 
 - **멀티 플러그인 레포**: marketplace.json의 plugins 배열로 복수 플러그인 제공. 각 플러그인은 독립 서브디렉토리.
-- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) vs lk-bb- (leeloo-bitbucket) vs lk-iu- / lk-hwp- (leeloo-util) 접두사로 skill 충돌 방지.
+- **네임스페이스 분리**: lk- (leeloo-kit) vs lk-n8n- (leeloo-n8n) vs lk-bb- (leeloo-bitbucket) vs lk-iu- (leeloo-its-util) 접두사로 skill 충돌 방지.
 - **독립 설치**: 각 플러그인은 개별적으로 활성화/비활성화 가능.
 
 ## Testing Changes
 
 1. 레포를 마켓플레이스에 등록
-2. 플러그인 목록에서 leeloo-kit, leeloo-n8n, leeloo-bitbucket, leeloo-util 네 개가 표시되는지 확인
+2. 플러그인 목록에서 leeloo-kit, leeloo-n8n, leeloo-bitbucket, leeloo-its-util 네 개가 표시되는지 확인
 3. 각 플러그인의 skill이 `/` 자동완성에 나타나는지 확인
