@@ -1,0 +1,6 @@
+{
+  "name": "leeloo-util",
+  "version": "1.0.0",
+  "description": "Leeloo 범용 유틸리티 모음 — ITS 도면 분석, 공문서(HWP/HWPX/PDF) 변환 등",
+  "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
+}

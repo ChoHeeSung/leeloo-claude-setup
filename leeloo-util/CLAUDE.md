@@ -4,16 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`leeloo-its-util`은 ITS(지능형교통시스템) 업무 자동화 유틸리티 모음 플러그인입니다.
-도면 분석, 시설물 관리, 데이터 변환 등 ITS 현장 업무에 필요한 스킬을 제공합니다.
+`leeloo-util`은 Leeloo 범용 유틸리티 모음 플러그인입니다.
+ITS 도면 분석, 공문서(HWP/HWPX/PDF) 변환 등 다양한 현장 업무 자동화 스킬을 제공합니다.
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-its-util", version: "1.0.0").
+- `plugin.json` — Plugin manifest (name: "leeloo-util", version: "1.0.0").
 - `scripts/` — 유틸리티 스크립트:
   - `check-env.sh` — 의존성 일괄 점검 + `--fix` 자동 설치.
 - `skills/` — Skills (lk-iu- prefix):
   - `lk-iu-pdf-extract/` — PDF 도면에서 시설물 정보 추출 → Excel 생성.
+  - `lk-hwp-setup/` — HWP/HWPX 처리 환경 설정 및 의존성 확인.
+  - `lk-hwp-parse/` — HWP/HWPX 문서 파싱 및 데이터 추출.
+  - `lk-hwp-compare/` — HWP/HWPX 문서 비교 및 변경사항 분석.
 
 ## Key Design Decisions
 
@@ -21,6 +24,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **기존 스킬 활용**: PDF 처리는 `pdf` 스킬, Excel 생성은 `xlsx` 스킬의 SKILL.md를 먼저 읽고 지침을 따름.
 - **4-Phase 워크플로우**: 환경 준비 → 패턴 탐색 → 병렬 추출 → 통합/검증.
 - **lk-iu- prefix**: ITS utility 네임스페이스 분리.
+- **lk-hwp- prefix**: HWP 문서 처리 네임스페이스 분리.
 
 ## Dependencies
 
