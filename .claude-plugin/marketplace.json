@@ -40,15 +40,15 @@
       "category": "devops"
     },
     {
-      "name": "leeloo-its-util",
-      "description": "ITS(지능형교통시스템) 업무 자동화 유틸리티 모음. 도면 분석, 시설물 관리, 데이터 변환 등을 제공합니다.",
+      "name": "leeloo-util",
+      "description": "Leeloo 범용 유틸리티 모음. ITS 도면 분석, 공문서 변환, 데이터 처리 등을 제공합니다.",
       "version": "1.0.0",
       "author": {
         "name": "Leeloo (이루기술)",
         "email": "leeloo.chs@gmail.com"
       },
-      "source": "./leeloo-its-util",
-      "category": "its-utility"
+      "source": "./leeloo-util",
+      "category": "utility"
     }
   ]
 }

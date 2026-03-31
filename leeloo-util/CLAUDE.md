@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`leeloo-its-util`은 ITS(지능형교통시스템) 업무 자동화 유틸리티 모음 플러그인입니다.
-도면 분석, 시설물 관리, 데이터 변환 등 ITS 현장 업무에 필요한 스킬을 제공합니다.
+`leeloo-util`은 Leeloo 범용 유틸리티 모음 플러그인입니다.
+ITS 도면 분석, 공문서 변환, 데이터 처리 등 다양한 현장 업무 자동화 스킬을 제공합니다.
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-its-util", version: "1.0.0").
+- `plugin.json` — Plugin manifest (name: "leeloo-util", version: "1.0.0").
 - `scripts/` — 유틸리티 스크립트:
   - `check-env.sh` — 의존성 일괄 점검 + `--fix` 자동 설치.
 - `skills/` — Skills (lk-iu- prefix):

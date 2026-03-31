@@ -1,6 +1,0 @@
-{
-  "name": "leeloo-its-util",
-  "version": "1.0.0",
-  "description": "ITS(지능형교통시스템) 업무 자동화 유틸리티 모음 — 도면 분석, 시설물 관리, 데이터 변환 등",
-  "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
-}
