@@ -35,7 +35,7 @@ leeloo-claude-setup/
 │   ├── package.json                  # kordoc 의존성
 │   ├── CLAUDE.md
 │   ├── scripts/                      # kordoc 래퍼 스크립트
-│   └── skills/                       # 4 skills (lk-iu-, lk-doc- prefix)
+│   └── skills/                       # 5 skills (lk-iu-, lk-doc-, lk-git- prefix)
 └── docs/                             # 공통 문서 (Plan, TODO 등)
 ```
 
@@ -58,7 +58,7 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 
 ### leeloo-util (v1.1.0)
 Leeloo 범용 유틸리티 모음. ITS 도면 분석, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식.
-- Skills: lk-iu-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form
+- Skills: lk-iu-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form, lk-git-init
 - 상세: `leeloo-util/CLAUDE.md` 참조
 
 ## Key Design Decisions

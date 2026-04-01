@@ -21,6 +21,7 @@ ITS 도면 분석, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식 
   - `lk-doc-parse/` — 한국 공문서(HWP/HWPX/PDF) → 마크다운 변환. (lk-doc- prefix)
   - `lk-doc-compare/` — 두 공문서 비교 (크로스 포맷 HWP↔HWPX 지원).
   - `lk-doc-form/` — 공문서 양식 인식 (레이블-값 추출).
+  - `lk-git-init/` — 대화형 Git 저장소 초기화 (remote, .gitignore, LFS).
 
 ## Key Design Decisions
 

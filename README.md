@@ -125,6 +125,12 @@ Bitbucket Cloud REST API 직접 호출 기반 저장소 관리 플러그인. MCP
 | `/lk-doc-compare` | 두 공문서 비교 (크로스 포맷 HWP↔HWPX 지원). 개정판 diff 분석 |
 | `/lk-doc-form` | 정부 양식에서 레이블-값 쌍 자동 추출 |
 
+#### Git 유틸리티
+
+| 스킬 | 설명 |
+|------|------|
+| `/lk-git-init` | 대화형 Git 저장소 초기화 — remote 설정, .gitignore 생성, LFS 초기화 |
+
 **지원 포맷:**
 
 | 포맷 | 확장자 | 비고 |
