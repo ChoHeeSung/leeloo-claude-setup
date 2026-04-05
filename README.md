@@ -12,6 +12,7 @@ Leeloo(이루기술) 사내 Claude Code 플러그인 마켓플레이스.
 | **leeloo-n8n** | 1.0.0 | n8n 워크플로우 자동화 — MCP 17개 도구를 사용자 친화적 skill로 래핑 |
 | **leeloo-bitbucket** | 1.0.0 | Bitbucket Cloud 저장소 관리 — REST API 직접 호출 기반 |
 | **leeloo-util** | 1.1.0 | 범용 유틸리티 모음 — ITS 도면 분석, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식 |
+| **its-ddl-tool** | 1.0.0 | ITS DB 관리 — Oracle DDL 생성/수정, 코드 관리, 시설물 등록 (대화형) |
 
 ## 설치
 
@@ -191,6 +192,23 @@ bash leeloo-util/scripts/check-env.sh        # 점검
 bash leeloo-util/scripts/check-env.sh --fix   # 자동 설치
 ```
 
+## its-ddl-tool
+
+ITS Oracle DB 대화형 관리 도구. DDL 생성/수정, 코드/패턴 관리, 시설물 등록을 대화형으로 처리하고 DB에 직접 실행.
+
+### 스킬 (lk-its- 접두사)
+
+| 스킬 | 서브커맨드 | 설명 |
+|------|-----------|------|
+| `/lk-its-ddl` | create, alter, show, check, dict | 테이블 DDL 생성/수정, 정합성 검증, 도메인 사전 검색 |
+| `/lk-its-code` | add-group, add-item, add-pattern, add-holiday, list, search | 코드 그룹/항목, 교통 패턴, 공휴일 관리 |
+| `/lk-its-equip` | add, modify, list, show, status, move, delete | 현장 시설물(VDS, CCTV, VMS 등) 등록/수정/조회 |
+
+### 사전 요구사항
+
+- Python 3 + `oracledb` 패키지 (`pip install oracledb`)
+- Oracle DB 접속 가능 (resources/db-connection.md 참조)
+
 ## 구조
 
 ```
@@ -220,8 +238,14 @@ leeloo-claude-setup/
 │   ├── plugin.json
 │   ├── package.json             # kordoc 의존성
 │   ├── CLAUDE.md
-│   ├── skills/                  # 4 skills (lk-iu-, lk-doc- prefix)
+│   ├── skills/                  # 5 skills (lk-iu-, lk-doc-, lk-git- prefix)
 │   └── scripts/                 # kordoc 래퍼 스크립트
+├── its-ddl-tool/                # 플러그인 5: ITS DB 관리 도구
+│   ├── plugin.json
+│   ├── CLAUDE.md
+│   ├── skills/                  # 3 skills (lk-its- prefix)
+│   ├── resources/               # DDL 규칙, 도메인 사전, DB 접속
+│   └── tools/                   # 정합성 검증 스크립트
 └── docs/                        # 공통 문서 (Plan, Design, Analysis 등)
 ```
 
@@ -229,7 +253,7 @@ leeloo-claude-setup/
 
 - **멀티 플러그인 레포** — marketplace.json의 plugins 배열로 복수 플러그인 제공
 - **순수 플러그인** — 셸 스크립트 없음. 플러그인 설치 = marketplace install 또는 enabledPlugins 경로
-- **네임스페이스 분리** — lk- / lk-n8n- / lk-bb- / lk-iu- / lk-doc- 접두사로 충돌 방지
+- **네임스페이스 분리** — lk- / lk-n8n- / lk-bb- / lk-iu- / lk-doc- / lk-its- 접두사로 충돌 방지
 - **독립 설치** — 각 플러그인은 개별적으로 활성화/비활성화 가능
 - **PDCA 워크플로우** — Plan → Design → Do → Check → Act → Report
 - **이중 검증** — Gemini 교차검증 + Claude 분석

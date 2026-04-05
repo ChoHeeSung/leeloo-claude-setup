@@ -1,0 +1,6 @@
+{
+  "name": "its-ddl-tool",
+  "version": "1.0.0",
+  "description": "ITS DB DDL 생성/수정 + 코드 관리 + 시설물 등록 — Oracle DB 대화형 관리 도구",
+  "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
+}

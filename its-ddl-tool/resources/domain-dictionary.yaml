@@ -1,0 +1,1532 @@
+# =============================================================================
+# ITS DB 재설계 — 데이터 표준 사전
+# Single Source of Truth: DDL 생성, 정합성 검증, RAG 파이프라인 공통 참조
+# =============================================================================
+# 작성일: 2026-04-02
+# 근거: Step 2 data-relationship-analysis.md, 기존 DB 98개 테이블 전수 컬럼 분석
+# 기존 고유 컬럼 약 350개 → 표준 컬럼 약 160개로 통합/정규화
+# =============================================================================
+version: "1.0"
+created: "2026-04-02"
+
+# =============================================================================
+# 1. 도메인 사전 (Domain Dictionary)
+# 동일 도메인은 어디서 사용되든 동일 타입/크기
+# =============================================================================
+domains:
+  ID:
+    type: VARCHAR2
+    length: 20
+    description: "엔티티 고유 식별자"
+
+  STD_LINK_ID:
+    type: VARCHAR2
+    length: 10
+    description: "표준 노드링크 식별자 (ITS_ERS 체계, 10자리 숫자)"
+
+  CD:
+    type: VARCHAR2
+    length: 30
+    description: "영문 코드값 (COM_CODE_ITEM 참조)"
+
+  # LEGACY_CD 도메인 삭제 (피드백 3) — 레거시 추적 컬럼도 CD 도메인(VARCHAR2(30)) 사용
+
+  NM:
+    type: VARCHAR2
+    length: 200
+    description: "한글/영문 명칭"
+
+  SHORT_NM:
+    type: VARCHAR2
+    length: 64
+    description: "짧은 명칭 (지점명, 구간명 등)"
+
+  DESC:
+    type: VARCHAR2
+    length: 500
+    description: "상세 설명"
+
+  LONG_DESC:
+    type: VARCHAR2
+    length: 4000
+    description: "장문 상세 설명 (사고 처리 내역 등)"
+
+  NUM:
+    type: NUMBER
+    precision: 10
+    scale: 2
+    description: "교통량/속도/점유율 등 수치"
+
+  SMALL_NUM:
+    type: NUMBER
+    precision: 5
+    scale: 2
+    description: "소규모 수치 (점유율, 비율, PHF 등)"
+
+  COUNT:
+    type: NUMBER
+    precision: 10
+    scale: 0
+    description: "건수/개수 (교통량, 차로수 등)"
+
+  COORD:
+    type: NUMBER
+    precision: 12
+    scale: 8
+    description: "위도/경도 좌표 (WGS84)"
+
+  MILG:
+    type: NUMBER
+    precision: 8
+    scale: 3
+    description: "이정 (km 단위, 소수점 3자리)"
+
+  LEN:
+    type: NUMBER
+    precision: 8
+    scale: 0
+    description: "길이/거리 (m 단위)"
+
+  SPD:
+    type: NUMBER
+    precision: 5
+    scale: 2
+    description: "속도 (km/h)"
+
+  DTM:
+    type: TIMESTAMP
+    description: "일시 (수집/생성/수정)"
+
+  DT:
+    type: DATE
+    description: "날짜 (설치일, 점검일 등)"
+
+  YN:
+    type: VARCHAR2
+    length: 1
+    description: "여부 ('Y'/'N')"
+    check: "IN ('Y','N')"
+
+  FLAG:
+    type: NUMBER
+    precision: 1
+    scale: 0
+    description: "플래그 (0/1)"
+
+  SEQ:
+    type: NUMBER
+    precision: 10
+    scale: 0
+    description: "정렬 순서/시퀀스"
+
+  IP:
+    type: VARCHAR2
+    length: 45
+    description: "IP 주소 (IPv4/IPv6)"
+
+  PORT:
+    type: NUMBER
+    precision: 5
+    scale: 0
+    description: "네트워크 포트"
+
+  URL:
+    type: VARCHAR2
+    length: 500
+    description: "URL (RTSP, HLS, WebRTC 등)"
+
+  BLOB:
+    type: BLOB
+    description: "바이너리 대형 객체 (이미지 등)"
+
+  JSON:
+    type: CLOB
+    description: "JSON 문자열 (VMS 현시 데이터 등)"
+
+  PARAM:
+    type: NUMBER
+    precision: 7
+    scale: 3
+    description: "알고리즘 파라미터 (칼만필터 등)"
+
+  PASSWORD:
+    type: VARCHAR2
+    length: 128
+    description: "암호화된 비밀번호"
+
+  TOKEN:
+    type: VARCHAR2
+    length: 500
+    description: "인증 토큰"
+
+  ADDRESS:
+    type: VARCHAR2
+    length: 200
+    description: "주소 (도로명, 설치위치 등)"
+
+  TIME_PART:
+    type: VARCHAR2
+    length: 10
+    description: "시간 구성요소 — 통계/패턴 집계 차원, JOIN 키 아님"
+
+# =============================================================================
+# 2. 용어 사전 (Term Dictionary)
+# 한글 용어 → 영문 약어 1:1 고정 매핑
+# 기존 약어 → Semantic 명칭 전환
+# =============================================================================
+terms:
+  # --- 식별자 ---
+  장비식별자: EQUIP_ID
+  구간식별자: LINK_ID
+  표준링크식별자: STD_LINK_ID
+  VDS구간식별자: VDS_LINK_ID
+  지점식별자: SPOT_ID
+  차로식별자: LANE_ID
+  사고접수번호: INCIDENT_RECEIPT_NO
+  터널식별자: TUNNEL_ID
+  카메라식별자: CAMERA_ID
+  운영자식별자: USER_ID
+  GPS일련번호: GPS_SN
+  루프검지기식별자: LOOP_ID
+  현시식별자: PHASE_ID
+  정책식별자: POLICY_ID
+  코드그룹식별자: CODE_GROUP_ID
+  코드값: CODE_VALUE
+  메뉴식별자: MENU_ID
+  시설물식별자: FACILITY_ID
+  보고서식별자: REPORT_ID
+  경보번호: ALARM_NUMBER
+  유관기관식별자: AGENCY_ID
+
+  # --- 명칭 ---
+  장비명: EQUIP_NM
+  구간명: LINK_NM
+  지점명: SPOT_NM
+  시작지점명: BEGIN_SPOT_NM
+  종료지점명: END_SPOT_NM
+  시작구간명: BEGIN_LINK_NM
+  종료구간명: END_LINK_NM
+  운영자명: OPERATOR_NM
+  프리셋명: PRESET_NM
+  코드그룹명: CODE_GROUP_NM
+  코드값명: CODE_VALUE_NM
+  도로명: ROAD_NM
+  시작노드명: BEGIN_NODE_NM
+  종료노드명: END_NODE_NM
+
+  # --- 좌표/위치 ---
+  위도: LATITUDE
+  경도: LONGITUDE
+  설치이정: INSTALL_MILEAGE
+  설치이정설명: INSTALL_MILEAGE_DESC
+  이정: MILEAGE
+  시작지점이정: BEGIN_SPOT_MILEAGE
+  종료지점이정: END_SPOT_MILEAGE
+
+  # --- 일시 ---
+  수집일시: COLLECT_DTM
+  생성일시: CREATE_DTM
+  수정일시: UPDATE_DTM
+  설치일: INSTALL_DT
+  접수일시: RECEIPT_DTM
+  선언일시: DECLARE_DTM
+  취소일시: CANCEL_DTM
+  해지일시: TERMINATE_DTM
+  작업시작일시: WORK_BEGIN_DTM
+  작업종료일시: WORK_END_DTM
+  발생일시: OCCUR_DTM
+  점검일: CHECK_DT
+
+  # --- 코드/분류 ---
+  방향코드: DIRECTION_CD
+  장비유형코드: EQUIP_TYPE_CD
+  장비상세유형코드: EQUIP_DETAIL_TYPE_CD
+  도로그룹코드: ROAD_GROUP_CD
+  소유권코드: OWNERSHIP_CD
+  프로토콜유형코드: PROTOCOL_TYPE_CD
+  상황유형코드: INCIDENT_TYPE_CD
+  상황상세유형코드: INCIDENT_DETAIL_TYPE_CD
+  핵심상황유형코드: KEY_INCIDENT_TYPE_CD
+  핵심상황상세유형코드: KEY_INCIDENT_DETAIL_TYPE_CD
+  사고상태코드: INCIDENT_STATUS_CD
+  사고등급코드: INCIDENT_GRADE_CD
+  기상유형코드: WEATHER_TYPE_CD
+  기상강도코드: WEATHER_INTENSITY_CD
+  교통등급코드: TRAFFIC_GRADE_CD
+  구간유형코드: LINK_TYPE_CD
+  지점유형코드: SPOT_TYPE_CD
+  운영자권한코드: OPERATOR_ROLE_CD
+  운영자그룹코드: OPERATOR_GROUP_CD
+  현시유형코드: PHASE_TYPE_CD
+  통계구분코드: STATS_TYPE_CD
+  패턴코드: PATTERN_CD
+  패턴하위코드: PATTERN_SUB_CD
+  구간설정유형코드: LINK_SETTING_TYPE_CD
+  휘도모드코드: LUMINANCE_MODE_CD
+
+  # --- 여부 ---
+  사용여부: USE_YN
+  접속여부: CONNECT_YN
+  통계사용여부: STAT_USE_YN
+  상태정보반영여부: STATUS_REFLECT_YN
+  정체구간판정포함여부: CONGESTION_INCLUDE_YN
+  돌발대응여부: INCIDENT_RESPONSE_YN
+
+  # --- 교통 데이터 ---
+  교통량: VOLUME
+  속도: SPEED
+  점유율: OCCUPANCY
+  통과시간: PASSING_TIME
+  정체길이: CONGESTION_LENGTH
+  제한속도: RESTRICT_SPEED
+  구간길이: LINK_LENGTH
+  차로수: LANE_COUNT
+  비율: RATIO
+  첨두시간계수: PHF
+
+  # --- 장비 속성 ---
+  장비주소: EQUIPMENT_ADDRESS
+  장비IP: EQUIP_IP
+  장비포트: EQUIP_PORT
+  제조사: MANUFACTURER
+  모듈크기: MODULE_SIZE
+  수평모듈수: HORIZONTAL_MODULE_COUNT
+  수직모듈수: VERTICAL_MODULE_COUNT
+
+  # --- 사고 관련 ---
+  발생이정: INCIDENT_MILEAGE
+  신고자: INFORMANT
+  작업자: WORKER
+  대응방법: RESPONSE_METHOD
+  처리상세: PROCESS_DETAIL
+  정체원인: CONGESTION_CAUSE
+  사고전시거리: SHOW_DISTANCE
+
+  # --- 기상 ---
+  기온: TEMPERATURE
+  강수량: RAINFALL
+  풍속: WIND_SPEED
+  풍향: WIND_DIRECTION
+  습도: HUMIDITY
+  하늘상태: SKY_STATUS
+
+# =============================================================================
+# 3. 컬럼 사전 (Column Dictionary)
+# 표준 컬럼별 도메인 + 한글 코멘트 (전체 테이블에서 동일 적용)
+#
+# legacy_columns: 기존 DB 컬럼명 매핑 (마이그레이션 참조)
+# =============================================================================
+columns:
+
+  # ===== 공통 식별자 =====
+  EQUIP_ID:
+    domain: ID
+    comment: "장비 식별자 — COM_EQUIPMENT PK. 패턴: {nnnn}{TYPE}{nn}S"
+    nullable: false
+    legacy_columns: ["EQUIP_ID VARCHAR2(13)"]
+
+  LINK_ID:
+    domain: ID
+    comment: "정보제공 구간 식별자 (ITS_PROC 체계). 패턴: 0000LV{n}{E/S}{nnnn}"
+    nullable: false
+    legacy_columns: ["LINK_ID VARCHAR2(13)"]
+
+  STD_LINK_ID:
+    domain: STD_LINK_ID
+    comment: "표준 링크 식별자 (ITS_ERS 체계, LINK_ID와 별개). 10자리 숫자"
+    nullable: false
+    legacy_columns: ["LINK_ID VARCHAR2(10) -- ITS_ERS 스키마에서만"]
+
+  VDS_LINK_ID:
+    domain: ID
+    comment: "VDS 검지 구간 식별자. 패턴: 0000LV{n}E{nnnn}"
+    nullable: false
+    legacy_columns: ["VDS_LINK_ID VARCHAR2(13)", "LINK_ID VARCHAR2(13) -- VDS_LINK_INFO에서"]
+
+  SPOT_ID:
+    domain: ID
+    comment: "교통 지점 식별자. 패턴: 0000SP{E/S}{nnnn}"
+    nullable: false
+    legacy_columns: ["SPOT_ID VARCHAR2(13)"]
+
+  LANE_ID:
+    domain: ID
+    comment: "차로 식별자"
+    nullable: false
+    legacy_columns: ["LANE_ID VARCHAR2(14)"]
+
+  TUNNEL_ID:
+    domain: ID
+    comment: "터널 식별자"
+    nullable: true
+    legacy_columns: ["TUNNEL_ID VARCHAR2(13)"]
+
+  CAMERA_ID:
+    domain: ID
+    comment: "CCTV 카메라 식별자 — COM_EQUIPMENT.EQUIP_ID 참조"
+    nullable: true
+    legacy_columns: ["CAMERA_ID VARCHAR2(13)"]
+
+  USER_ID:
+    domain: ID
+    comment: "운영자 식별자"
+    nullable: false
+    legacy_columns: ["USER_ID VARCHAR2(10)"]
+
+  INCIDENT_RECEIPT_NO:
+    domain: SEQ
+    comment: "사고 접수 번호 (시퀀스)"
+    nullable: false
+    legacy_columns: ["ACCDNT_RCEPT_NO NUMBER"]
+
+  PHASE_ID:
+    domain: SEQ
+    comment: "VMS 현시 식별자"
+    nullable: false
+    legacy_columns: ["PHASE_ID NUMBER"]
+
+  POLICY_ID:
+    domain: SEQ
+    comment: "VMS 정책 식별자"
+    nullable: false
+    legacy_columns: ["POLICY_ID NUMBER"]
+
+  ALARM_NUMBER:
+    domain: SEQ
+    comment: "VIDS 경보 번호"
+    nullable: false
+    legacy_columns: ["ALARM_NUMBER NUMBER(8)"]
+
+  FACILITY_ID:
+    domain: ID
+    comment: "센터 시설물 식별자"
+    nullable: false
+    legacy_columns: ["FACILITY_ID VARCHAR2(9)", "FACILITY_ID VARCHAR2(13)"]
+
+  REPORT_ID:
+    domain: SEQ
+    comment: "보고서 식별자"
+    nullable: false
+    legacy_columns: ["RPT_ID NUMBER"]
+
+  GPS_SN:
+    domain: SEQ
+    comment: "GPS 일련번호"
+    nullable: false
+    legacy_columns: ["GPS_SN NUMBER(4)"]
+
+  LOOP_ID:
+    domain: ID
+    comment: "루프 검지기 식별자"
+    nullable: false
+    legacy_columns: ["LOOP_ID VARCHAR2(15)"]
+
+  PRESET_ID:
+    domain: SEQ
+    comment: "CCTV 프리셋 번호"
+    nullable: false
+    legacy_columns: ["PRESET_ID NUMBER(3)"]
+
+  # ===== 명칭 =====
+  EQUIP_NM:
+    domain: NM
+    comment: "장비 명칭"
+    legacy_columns: ["INSTL_MILG_DESC VARCHAR2(100) -- 장비 테이블에서 명칭 겸용"]
+
+  LINK_NM:
+    domain: NM
+    comment: "구간 명칭"
+    legacy_columns: ["LINK_NM VARCHAR2(128)", "LINK_NM VARCHAR2(100)"]
+    type_conflict: "VARCHAR2(128) vs VARCHAR2(100) → 통일: NM(200)"
+
+  SPOT_NM:
+    domain: SHORT_NM
+    comment: "지점 명칭"
+    legacy_columns: ["SPOT_NM VARCHAR2(64)"]
+
+  BEGIN_SPOT_NM:
+    domain: SHORT_NM
+    comment: "시작 지점 명칭"
+    legacy_columns: ["BEGIN_SPOT_NM VARCHAR2(48)"]
+
+  END_SPOT_NM:
+    domain: SHORT_NM
+    comment: "종료 지점 명칭"
+    legacy_columns: ["END_SPOT_NM VARCHAR2(48)"]
+
+  BEGIN_LINK_NM:
+    domain: SHORT_NM
+    comment: "시작 구간 명칭"
+    legacy_columns: ["BEGIN_LINK_NM VARCHAR2(64)"]
+
+  END_LINK_NM:
+    domain: SHORT_NM
+    comment: "종료 구간 명칭"
+    legacy_columns: ["END_LINK_NM VARCHAR2(64)"]
+
+  OPERATOR_NM:
+    domain: NM
+    comment: "운영자 명칭"
+    legacy_columns: ["OPRTR_NM VARCHAR2(20)"]
+
+  PRESET_NM:
+    domain: NM
+    comment: "CCTV 프리셋 명칭"
+    legacy_columns: ["PRESET_NM VARCHAR2(128)", "PRESET_NM VARCHAR2(255)"]
+    type_conflict: "VARCHAR2(128) vs VARCHAR2(255) → 통일: NM(200)"
+
+  ROAD_NM:
+    domain: SHORT_NM
+    comment: "도로 명칭"
+    legacy_columns: ["ROAD_NM VARCHAR2(64)"]
+
+  BEGIN_NODE_NM:
+    domain: SHORT_NM
+    comment: "시작 노드 명칭 (표준 노드링크)"
+    legacy_columns: ["BEGIN_NODE_NM VARCHAR2(64)"]
+
+  END_NODE_NM:
+    domain: SHORT_NM
+    comment: "종료 노드 명칭 (표준 노드링크)"
+    legacy_columns: ["END_NODE_NM VARCHAR2(64)"]
+
+  CODE_GROUP_NM:
+    domain: NM
+    comment: "코드 분류 명칭"
+    legacy_columns: ["CODE_CL_NM VARCHAR2(255)"]
+
+  CODE_VALUE_NM:
+    domain: NM
+    comment: "코드값 명칭"
+    legacy_columns: ["CODE_VALUE_NM VARCHAR2(255)"]
+
+  # ===== 좌표/위치 =====
+  LATITUDE:
+    domain: COORD
+    comment: "위도 (WGS84)"
+    legacy_columns: ["LA NUMBER(14,8)"]
+
+  LONGITUDE:
+    domain: COORD
+    comment: "경도 (WGS84)"
+    legacy_columns: ["LONGD NUMBER(14,8)"]
+
+  MIN_LATITUDE:
+    domain: COORD
+    comment: "최소 위도 (GPS 영역)"
+    legacy_columns: ["MIN_LATITUDE NUMBER(14,8)"]
+
+  MIN_LONGITUDE:
+    domain: COORD
+    comment: "최소 경도 (GPS 영역)"
+    legacy_columns: ["MIN_LONGITUDE NUMBER(14,8)"]
+
+  MAX_LATITUDE:
+    domain: COORD
+    comment: "최대 위도 (GPS 영역)"
+    legacy_columns: ["MAX_LATITUDE NUMBER(14,8)"]
+
+  MAX_LONGITUDE:
+    domain: COORD
+    comment: "최대 경도 (GPS 영역)"
+    legacy_columns: ["MAX_LONGITUDE NUMBER(14,8)"]
+
+  INSTALL_MILEAGE:
+    domain: MILG
+    comment: "장비 설치 이정 (km)"
+    legacy_columns: ["INSTL_MILG NUMBER(5,3)", "INSTL_MILG NUMBER(6,3)"]
+    type_conflict: "NUMBER(5,3) vs NUMBER(6,3) → 통일: MILG(8,3)"
+
+  INSTALL_MILEAGE_DESC:
+    domain: NM
+    comment: "장비 설치 위치 설명"
+    legacy_columns: ["INSTL_MILG_DESC VARCHAR2(100)"]
+
+  MILEAGE:
+    domain: MILG
+    comment: "이정 (km)"
+    legacy_columns: ["MILG NUMBER(5,2)", "MILEPOST NUMBER(6,3)", "MILEPOST NUMBER(6,0)", "MILEPOST NUMBER(22)"]
+    type_conflict: "NUMBER(5,2)/NUMBER(6,0)/NUMBER(6,3)/NUMBER(22) → 통일: MILG(8,3)"
+
+  BEGIN_SPOT_MILEAGE:
+    domain: MILG
+    comment: "시작 지점 이정 (km)"
+    legacy_columns: ["BEGIN_SPOT_MILG NUMBER(6,0)"]
+
+  END_SPOT_MILEAGE:
+    domain: MILG
+    comment: "종료 지점 이정 (km)"
+    legacy_columns: ["END_SPOT_MILG NUMBER(6,0)"]
+
+  INCIDENT_MILEAGE:
+    domain: MILG
+    comment: "사고 발생 이정 (km)"
+    legacy_columns: ["OUTBRK_MILG NUMBER(6,3)"]
+
+  INCIDENT_MILEAGE_END:
+    domain: MILG
+    comment: "사고 종료 이정 (km)"
+    legacy_columns: ["OUTBRK_MILG_END NUMBER(6,3)"]
+
+  # ===== 일시 =====
+  COLLECT_DTM:
+    domain: DTM
+    comment: "수집 일시"
+    nullable: false
+    legacy_columns: ["COL_DTM DATE -- 48개 테이블에서 사용"]
+
+  CREATE_DTM:
+    domain: DTM
+    comment: "생성 일시"
+    legacy_columns: ["CREATE_DTM DATE"]
+
+  UPDATE_DTM:
+    domain: DTM
+    comment: "수정 일시"
+    legacy_columns: ["UPDT_DE DATE", "UPD_DTM DATE"]
+
+  INSTALL_DT:
+    domain: DT
+    comment: "장비 설치일"
+    legacy_columns: ["INSTALL_DT DATE -- 8개 장비 테이블"]
+
+  RECEIPT_DTM:
+    domain: DTM
+    comment: "사고 접수 일시"
+    legacy_columns: ["RCEPT_DT DATE"]
+
+  DECLARE_DTM:
+    domain: DTM
+    comment: "사고 선언 일시"
+    legacy_columns: ["DCLR_TIME DATE"]
+
+  CANCEL_DTM:
+    domain: DTM
+    comment: "사고 취소 일시"
+    legacy_columns: ["CANCL_TIME DATE"]
+
+  TERMINATE_DTM:
+    domain: DTM
+    comment: "사고 해지 일시"
+    legacy_columns: ["TRMNAT_TIME DATE"]
+
+  WORK_BEGIN_DTM:
+    domain: DTM
+    comment: "작업 시작 일시"
+    legacy_columns: ["CNTRWK_BEGIN_TIME DATE"]
+
+  WORK_END_DTM:
+    domain: DTM
+    comment: "작업 종료 일시"
+    legacy_columns: ["CNTRWK_END_TIME DATE"]
+
+  KEY_DATE:
+    domain: DTM
+    comment: "핵심 일시 (사고 주요 시점)"
+    legacy_columns: ["KEY_DATE DATE"]
+
+  OCCUR_DTM:
+    domain: DTM
+    comment: "발생 일시"
+    legacy_columns: ["OCCUR_DTM DATE"]
+
+  EXPRESSION_BEGIN_DTM:
+    domain: DTM
+    comment: "VMS 현시 표출 시작 일시"
+    legacy_columns: ["EPRSS_BEGIN DATE"]
+
+  EXPRESSION_END_DTM:
+    domain: DTM
+    comment: "VMS 현시 표출 종료 일시"
+    legacy_columns: ["EPRSS_END DATE"]
+
+  PASSWORD_CHANGE_FROM:
+    domain: DT
+    comment: "비밀번호 변경 시작일"
+    legacy_columns: ["PSWD_CHNG_DATE_FROM DATE"]
+
+  PASSWORD_CHANGE_TO:
+    domain: DT
+    comment: "비밀번호 변경 종료일"
+    legacy_columns: ["PSWD_CHNG_DATE_TO DATE"]
+
+  # ===== 코드/분류 =====
+  EQUIP_TYPE_CD:
+    domain: CD
+    comment: "장비 유형 코드 — 참조: COM_CODE_ITEM(EQUIP_TYPE). 허용값: CCTV/VDS/VMS/LCS/EMC/VIDS/FIRE_DETECT/QWS"
+    legacy_columns: ["EQUIP_TP VARCHAR2(7)"]
+
+  EQUIP_DETAIL_TYPE_CD:
+    domain: CD
+    comment: "장비 상세 유형 코드 — 참조: COM_CODE_ITEM(EQUIP_DETAIL_TYPE). 허용값: LOOP/DOME_CAM 등"
+    legacy_columns: ["EQPMN_DETAIL_TY VARCHAR2(7) -- 10개 테이블"]
+
+  ROAD_GROUP_CD:
+    domain: CD
+    comment: "도로 그룹 코드 — 참조: COM_CODE_ITEM(ROAD_GROUP). 허용값: MAIN/BRANCH/TUNNEL"
+    legacy_columns: ["EQPMN_GROUP VARCHAR2(7) -- 8개 장비 테이블"]
+
+  DIRECTION_CD:
+    domain: CD
+    comment: "방향 코드 — 참조: COM_CODE_ITEM(DIRECTION). 허용값: HAEUNDAE/GIMHAE/HAEUNDAE_BR/GIMHAE_BR"
+    legacy_columns: ["DRC VARCHAR2(7) -- 6개 테이블", "INSTL_DRC VARCHAR2(7) -- 8개 장비 테이블"]
+
+  INSTALL_DIRECTION_CD:
+    domain: CD
+    comment: "장비 설치 방향 코드 — DIRECTION_CD와 동일 도메인"
+    legacy_columns: ["INSTL_DRC VARCHAR2(7)"]
+
+  OWNERSHIP_CD:
+    domain: CD
+    comment: "소유권 코드 — 참조: COM_CODE_ITEM(OWNERSHIP). 허용값: NEW/TRANSFER/SHARED"
+    legacy_columns: ["OWNSHIP VARCHAR2(7) -- 8개 장비 테이블"]
+
+  PROTOCOL_TYPE_CD:
+    domain: CD
+    comment: "프로토콜 유형 코드 — 참조: COM_CODE_ITEM(PROTOCOL_TYPE). 허용값: EX_STANDARD/CUSTOM"
+    legacy_columns: ["PRTCL_TP VARCHAR2(7) -- 7개 장비 테이블"]
+
+  INCIDENT_TYPE_CD:
+    domain: CD
+    comment: "상황 유형 코드 — 참조: COM_CODE_ITEM(INCIDENT_TYPE). 허용값: WORK/WEATHER/WARNING/CONGESTION/TRAFFIC/COMPLAINT/FIRE"
+    legacy_columns: ["INC_TP VARCHAR2(7)"]
+
+  INCIDENT_DETAIL_TYPE_CD:
+    domain: CD
+    comment: "상황 상세 유형 코드 — 참조: COM_CODE_ITEM(INCIDENT_DETAIL_TYPE). INCIDENT_TYPE_CD에 종속"
+    legacy_columns: ["INC_DTL_TP VARCHAR2(7)"]
+
+  KEY_INCIDENT_TYPE_CD:
+    domain: CD
+    comment: "핵심 상황 유형 코드 (사고 핵심 분류)"
+    legacy_columns: ["KEY_INC_TP VARCHAR2(7)"]
+
+  KEY_INCIDENT_DETAIL_TYPE_CD:
+    domain: CD
+    comment: "핵심 상황 상세 유형 코드"
+    legacy_columns: ["KEY_INC_DTL_TP VARCHAR2(7)"]
+
+  INCIDENT_STATUS_CD:
+    domain: CD
+    comment: "사고 상태 코드 — 참조: COM_CODE_ITEM(INCIDENT_STATUS). 허용값: RECEIVED/DECLARED/TERMINATED/CANCELLED"
+    legacy_columns: ["ACCDNT_STTUS VARCHAR2(7)"]
+
+  INCIDENT_GRADE_CD:
+    domain: CD
+    comment: "사고 등급 코드 — 참조: COM_CODE_ITEM(INCIDENT_GRADE). 허용값: NORMAL/MAJOR"
+    legacy_columns: ["ACDNT_GRADE VARCHAR2(7)"]
+
+  WEATHER_TYPE_CD:
+    domain: CD
+    comment: "기상 유형 코드 — 참조: COM_CODE_ITEM(WEATHER_TYPE). 허용값: RAIN/SNOW/WIND/FOG/ICE/WET/SLIP/NONE"
+    legacy_columns: ["WEATHER_TP VARCHAR2(7)"]
+
+  WEATHER_INTENSITY_CD:
+    domain: CD
+    comment: "기상 강도 코드 — 참조: COM_CODE_ITEM(WEATHER_INTENSITY). 허용값: HIGH/MID/LOW/NONE"
+    legacy_columns: ["WEATHER_INTENSITY VARCHAR2(7)"]
+
+  TRAFFIC_GRADE_CD:
+    domain: CD
+    comment: "교통 등급 코드 — 참조: COM_CODE_ITEM(TRAFFIC_GRADE). 허용값: SMOOTH/SLOW/DELAY/CONGESTION/STOP/UNKNOWN/NO_DATA"
+    legacy_columns: ["TRAFFIC_GRADE VARCHAR2(7)"]
+
+  LINK_TYPE_CD:
+    domain: CD
+    comment: "구간 유형 코드 — 참조: COM_CODE_ITEM(LINK_TYPE). 허용값: IC_SECTION/STD_LINK_SECTION/VMS_INFO_SECTION"
+    legacy_columns: ["LINK_TYPE VARCHAR2(7) -- 6개 테이블"]
+
+  SPOT_TYPE_CD:
+    domain: CD
+    comment: "지점 유형 코드 — 참조: COM_CODE_ITEM(SPOT_TYPE). 허용값: ALL_LANE/UP_LANE/DOWN_LANE"
+    legacy_columns: ["SPOT_TYPE VARCHAR2(7) -- 5개 테이블"]
+
+  OPERATOR_ROLE_CD:
+    domain: CD
+    comment: "운영자 권한 코드 — 참조: COM_CODE_ITEM(OPERATOR_ROLE). 허용값: ADMIN/OPERATOR/MAINTENANCE/PATROL/SAFETY/TOLL/DASHBOARD"
+    legacy_columns: ["OPRTR_AUTHOR VARCHAR2(7)"]
+
+  OPERATOR_GROUP_CD:
+    domain: CD
+    comment: "운영자 그룹 코드 — 참조: COM_CODE_ITEM(OPERATOR_GROUP). 허용값: ADMIN/OPERATOR/MAINTENANCE"
+    legacy_columns: ["OPR_GROUP VARCHAR2(7)"]
+
+  PHASE_TYPE_CD:
+    domain: CD
+    comment: "VMS 현시 유형 코드 — 참조: COM_CODE_ITEM(PHASE_TYPE). 허용값: WORK/WEATHER/WARNING/CONGESTION/TRAFFIC/SMOOTH/CUSTOM/FIRE"
+    legacy_columns: ["PHASE_TP VARCHAR2(7)"]
+
+  STATS_TYPE_CD:
+    domain: CD
+    comment: "통계 구분 코드"
+    legacy_columns: ["STATS_SE VARCHAR2(7)"]
+
+  PATTERN_CD:
+    domain: CD
+    comment: "패턴 코드 — 독자 체계 (CODE 테이블과 무관). PATT_CODE 테이블 참조"
+    legacy_columns: ["PATT_CD VARCHAR2(7) -- 11개 테이블"]
+
+  PATTERN_SUB_CD:
+    domain: CD
+    comment: "패턴 하위 코드 — PATT_CODE.PATT_SUB_CD PK"
+    legacy_columns: ["PATT_SUB_CD VARCHAR2(7)"]
+
+  LUMINANCE_MODE_CD:
+    domain: CD
+    comment: "VMS 휘도 제어 모드 코드"
+    legacy_columns: ["LUMINANCE_MODE VARCHAR2(7)"]
+
+  CONGESTION_CAUSE_CD:
+    domain: CD
+    comment: "정체 사유 코드"
+    legacy_columns: ["CONGESTION_CAUSE VARCHAR2(100) -- 재설계 시 코드화"]
+
+  ALARM_TYPE_CD:
+    domain: CD
+    comment: "VIDS 경보 유형 코드"
+    legacy_columns: ["ALARM_TYPE VARCHAR2(7)"]
+
+  LINK_SETTING_TYPE_CD:
+    domain: CD
+    comment: "구간 설정 유형 코드"
+    legacy_columns: ["LINK_SETTING_TYPE VARCHAR2(7)"]
+
+  REPORT_TYPE_CD:
+    domain: CD
+    comment: "보고서 유형 코드"
+    legacy_columns: ["RPT_TY VARCHAR2(7)"]
+
+  ROAD_SURFACE_STATUS_CD:
+    domain: CD
+    comment: "RWIS 노면 상태 코드 — 참조: COM_CODE_ITEM(ROAD_SURFACE). 허용값: SNOW/ICE/WET/DRY"
+    legacy_columns: ["(신규)"]
+
+  # ===== 여부 (Y/N) =====
+  USE_YN:
+    domain: YN
+    comment: "사용 여부"
+    default: "'Y'"
+    legacy_columns: ["USE_YN VARCHAR2(7) -- 통일: VARCHAR2(1)"]
+    type_conflict: "기존 VARCHAR2(7) → 통일: YN VARCHAR2(1)"
+
+  CONNECT_YN:
+    domain: YN
+    comment: "접속 여부"
+    legacy_columns: ["CONECT_YN VARCHAR2(7)"]
+
+  STAT_USE_YN:
+    domain: YN
+    comment: "통계 사용 여부"
+    legacy_columns: ["IS_STAT_USE VARCHAR2(7)"]
+
+  STATUS_REFLECT_YN:
+    domain: YN
+    comment: "상태 정보 반영 여부"
+    legacy_columns: ["STTUS_INFO_REFLCT_AT VARCHAR2(1)", "STTUS_INFO_REFLCT_AT VARCHAR2(7)"]
+    type_conflict: "VARCHAR2(1) vs VARCHAR2(7) → 통일: YN VARCHAR2(1)"
+
+  CONGESTION_INCLUDE_YN:
+    domain: YN
+    comment: "정체 구간 판정 포함 여부"
+    legacy_columns: ["CNGSTN_LEN_JDGMNT_INCLS_AT VARCHAR2(7)"]
+
+  INCIDENT_RESPONSE_YN:
+    domain: YN
+    comment: "돌발 대응 여부"
+    legacy_columns: ["OUTBRK_CNTRMSR_YN VARCHAR2(7)"]
+
+  REVISION_YN:
+    domain: YN
+    comment: "보정 여부"
+    legacy_columns: ["REVISN_YN VARCHAR2(1)"]
+
+  # ===== 교통 데이터 =====
+  VOLUME:
+    domain: COUNT
+    comment: "교통량 (대/5분)"
+    legacy_columns: ["VOL NUMBER(22) -- 21개 테이블"]
+
+  SPEED:
+    domain: SPD
+    comment: "속도 (km/h)"
+    legacy_columns: ["SPD NUMBER(5,2) -- 22개 테이블"]
+
+  OCCUPANCY:
+    domain: SMALL_NUM
+    comment: "점유율 (%)"
+    legacy_columns: ["OCC NUMBER(5,2) -- 21개 테이블"]
+
+  PASSING_TIME:
+    domain: COUNT
+    comment: "통과 시간 (초)"
+    legacy_columns: ["PASSING_TIME NUMBER(5,0) -- 11개 테이블"]
+
+  CONGESTION_LENGTH:
+    domain: LEN
+    comment: "정체 길이 (m)"
+    legacy_columns: ["CONGESTION_LENGTH NUMBER(10,0)", "CONGESTION_LENGTH NUMBER(6,3)", "CNGSTN_LEN NUMBER(8,0)"]
+    type_conflict: "NUMBER(10,0) vs NUMBER(6,3) → 통일: LEN(8,0) 미터 단위"
+
+  RESTRICT_SPEED:
+    domain: COUNT
+    comment: "제한 속도 (km/h)"
+    legacy_columns: ["RESTRCT_SPD NUMBER(3,0)"]
+
+  LINK_LENGTH:
+    domain: LEN
+    comment: "구간 길이 (m)"
+    legacy_columns: ["LINK_LEN NUMBER(5,0)", "LINK_LEN NUMBER(6,0)"]
+    type_conflict: "NUMBER(5,0) vs NUMBER(6,0) → 통일: LEN(8,0)"
+
+  LANE_COUNT:
+    domain: COUNT
+    comment: "차로 수"
+    legacy_columns: ["LANE_CNT NUMBER(2,0)"]
+
+  ROAD_LANE_NUM:
+    domain: COUNT
+    comment: "도로 차로 번호"
+    legacy_columns: ["ROAD_LANE_NUM NUMBER(2,0)", "INSTL_CARTRK NUMBER(2,0)"]
+
+  RATIO:
+    domain: SMALL_NUM
+    comment: "비율"
+    legacy_columns: ["RATIO NUMBER(5,2)"]
+
+  PHF:
+    domain: SMALL_NUM
+    comment: "첨두 시간 계수 (Peak Hour Factor)"
+    legacy_columns: ["PHF NUMBER(5,2)"]
+
+  AVG_SPEED:
+    domain: SPD
+    comment: "평균 속도 (km/h)"
+    legacy_columns: ["AVG_SPD NUMBER(3,0)"]
+
+  PATTERN_MATCH_COUNT:
+    domain: COUNT
+    comment: "패턴 매칭 횟수"
+    legacy_columns: ["PATTERN_MATCH_COUNT NUMBER(22)"]
+
+  E_FLAG:
+    domain: FLAG
+    comment: "오류 플래그"
+    legacy_columns: ["E_FLAG NUMBER(2,0)"]
+
+  TOTAL_COUNT:
+    domain: COUNT
+    comment: "합계 건수"
+    legacy_columns: ["TOTAL NUMBER(5,0)", "SF NUMBER(10,0)"]
+
+  SUM_VOLUME:
+    domain: COUNT
+    comment: "합계 교통량"
+    legacy_columns: ["SUM_VOL NUMBER(5,0)"]
+
+  # ===== 통계 집계 =====
+  MAX_VOLUME:
+    domain: COUNT
+    comment: "최대 교통량"
+    legacy_columns: ["MAX_VOL NUMBER(10,0)"]
+
+  MIN_VOLUME:
+    domain: COUNT
+    comment: "최소 교통량"
+    legacy_columns: ["MIN_VOL NUMBER(10,0)"]
+
+  MAX_SPEED:
+    domain: SPD
+    comment: "최대 속도"
+    legacy_columns: ["MAX_SPD NUMBER(5,2)"]
+
+  MIN_SPEED:
+    domain: SPD
+    comment: "최소 속도"
+    legacy_columns: ["MIN_SPD NUMBER(5,2)"]
+
+  MAX_OCCUPANCY:
+    domain: SMALL_NUM
+    comment: "최대 점유율"
+    legacy_columns: ["MAX_OCC NUMBER(5,2)"]
+
+  MIN_OCCUPANCY:
+    domain: SMALL_NUM
+    comment: "최소 점유율"
+    legacy_columns: ["MIN_OCC NUMBER(5,2)"]
+
+  MAX_VOLUME_15MIN:
+    domain: COUNT
+    comment: "15분 최대 교통량"
+    legacy_columns: ["MAX_VOL_15MIN NUMBER(10,0)"]
+
+  MAX_VOLUME_1HOUR:
+    domain: COUNT
+    comment: "1시간 최대 교통량"
+    legacy_columns: ["MAX_VOL_1HOUR NUMBER(10,0)"]
+
+  STAT_DAY:
+    domain: TIME_PART
+    comment: "통계 일자 (YYYYMMDD) — 통계 집계 차원, JOIN 키 아님"
+    legacy_columns: ["STAT_DAY VARCHAR2(8)"]
+
+  STAT_HOUR:
+    domain: TIME_PART
+    comment: "통계 시간 (HH) — 통계 집계 차원, JOIN 키 아님"
+    legacy_columns: ["STAT_HOUR VARCHAR2(2)"]
+
+  STAT_MIN:
+    domain: TIME_PART
+    comment: "통계 분 (MM) — 통계 집계 차원, JOIN 키 아님"
+    legacy_columns: ["STAT_MIN VARCHAR2(2)"]
+
+  STAT_WEEKDAY:
+    domain: TIME_PART
+    comment: "통계 요일 (1=일~7=토) — 통계 집계 차원, JOIN 키 아님"
+    legacy_columns: ["STAT_WEEKDAY VARCHAR2(1)"]
+
+  PATTERN_HOUR:
+    domain: TIME_PART
+    comment: "패턴 시간 (HH) — 패턴 집계 차원, JOIN 키 아님"
+    legacy_columns: ["PTTRN_HOUR VARCHAR2(2)"]
+
+  PATTERN_MINUTE:
+    domain: TIME_PART
+    comment: "패턴 분 (MM) — 패턴 집계 차원, JOIN 키 아님"
+    legacy_columns: ["PTTRN_MNT VARCHAR2(2)"]
+
+  # ===== 장비 속성 =====
+  EQUIPMENT_ADDRESS:
+    domain: ADDRESS
+    comment: "장비 통신 주소"
+    legacy_columns: ["EQPMN_ADRES VARCHAR2(6) -- 9개 장비 테이블"]
+
+  EQUIP_IP:
+    domain: IP
+    comment: "장비 IP 주소"
+    legacy_columns: ["EQUIP_IP VARCHAR2(15)", "EQUIP_IP VARCHAR2(20)"]
+    type_conflict: "VARCHAR2(15) vs VARCHAR2(20) → 통일: IP VARCHAR2(45)"
+
+  EQUIP_PORT:
+    domain: PORT
+    comment: "장비 포트 번호"
+    legacy_columns: ["EQUIP_PORT NUMBER(5,0) -- 8개 장비 테이블"]
+
+  MANUFACTURER:
+    domain: NM
+    comment: "제조사"
+    legacy_columns: ["MAKR VARCHAR2(255) -- 8개 장비 테이블"]
+
+  MODULE_SIZE:
+    domain: COUNT
+    comment: "VMS 모듈 크기 (mm)"
+    legacy_columns: ["MODULE_SIZE NUMBER(2,0)"]
+
+  HORIZONTAL_MODULE_COUNT:
+    domain: COUNT
+    comment: "수평 모듈 수"
+    legacy_columns: ["HORIZONTAL_MODULE_REPR NUMBER(2,0)"]
+
+  VERTICAL_MODULE_COUNT:
+    domain: COUNT
+    comment: "수직 모듈 수"
+    legacy_columns: ["VERTICAL_MODULE_REPR NUMBER(2,0)"]
+
+  DEFAULT_SPEED:
+    domain: SPD
+    comment: "VDS 기본 속도"
+    legacy_columns: ["DFLT_VE NUMBER(3,0)"]
+
+  SOURCE_ID:
+    domain: ID
+    comment: "영상 소스 식별자"
+    legacy_columns: ["SOURCE_ID VARCHAR2(50)"]
+
+  RTSP_URL:
+    domain: URL
+    comment: "RTSP 스트리밍 URL"
+    legacy_columns: ["RTSP_URL VARCHAR2(255)"]
+
+  HLS_URL:
+    domain: URL
+    comment: "HLS 스트리밍 URL"
+    legacy_columns: ["HLS_URL VARCHAR2(255)"]
+
+  WEBRTC_URL:
+    domain: URL
+    comment: "WebRTC 스트리밍 URL"
+    legacy_columns: ["WEBRTC_URL VARCHAR2(64)"]
+
+  WEBCAM_URL:
+    domain: URL
+    comment: "웹캠 URL"
+    legacy_columns: ["WEB_CAM_URL VARCHAR2(255)", "WEB_CAM_IP VARCHAR2(100)"]
+
+  # ===== 네트워크 연결 =====
+  OSD_IP:
+    domain: IP
+    comment: "OSD 서버 IP"
+    legacy_columns: ["OSD_IP VARCHAR2(20)"]
+
+  OSD_PORT:
+    domain: PORT
+    comment: "OSD 서버 포트"
+    legacy_columns: ["OSD_PORT NUMBER(5,0)"]
+
+  MAC_ADDRESS:
+    domain: ID
+    comment: "MAC 주소"
+    legacy_columns: ["MAC_ADDRESS VARCHAR2(32)"]
+
+  # ===== FK 참조 (교통 계층) =====
+  BEGIN_SPOT_ID:
+    domain: ID
+    comment: "시작 지점 식별자 — TFC_SPOT.SPOT_ID FK"
+    legacy_columns: ["BEGIN_SPOT_ID VARCHAR2(14)"]
+
+  END_SPOT_ID:
+    domain: ID
+    comment: "종료 지점 식별자 — TFC_SPOT.SPOT_ID FK"
+    legacy_columns: ["END_SPOT_ID VARCHAR2(14)"]
+
+  BEFORE_LINK_ID:
+    domain: ID
+    comment: "이전 구간 식별자 (자기 참조 FK)"
+    legacy_columns: ["BEFORE_LINK VARCHAR2(13)"]
+
+  NEXT_LINK_ID:
+    domain: ID
+    comment: "다음 구간 식별자 (자기 참조 FK)"
+    legacy_columns: ["NEXT_LINK VARCHAR2(13)"]
+
+  BEGIN_LINK_ID:
+    domain: ID
+    comment: "시작 구간 식별자 — TFC_VDS_LINK.VDS_LINK_ID FK"
+    legacy_columns: ["BEGIN_LINK_ID VARCHAR2(13)"]
+
+  END_LINK_ID:
+    domain: ID
+    comment: "종료 구간 식별자 — TFC_VDS_LINK.VDS_LINK_ID FK"
+    legacy_columns: ["END_LINK_ID VARCHAR2(13)"]
+
+  ALT_SPOT_ID:
+    domain: ID
+    comment: "대체 지점 식별자 — TFC_SPOT.SPOT_ID FK"
+    legacy_columns: ["ALT_SPOT_ID VARCHAR2(13)"]
+
+  BEGIN_NODE_ID:
+    domain: STD_LINK_ID
+    comment: "시작 노드 식별자 (표준 노드링크)"
+    legacy_columns: ["BEGIN_NODE_ID VARCHAR2(10)"]
+
+  END_NODE_ID:
+    domain: STD_LINK_ID
+    comment: "종료 노드 식별자 (표준 노드링크)"
+    legacy_columns: ["END_NODE_ID VARCHAR2(10)"]
+
+  # ===== 사고 관련 =====
+  INCIDENT_ID:
+    domain: ID
+    comment: "사고/돌발 식별자"
+    legacy_columns: ["OUTBRK_ID VARCHAR2(13)"]
+
+  INFORMANT:
+    domain: NM
+    comment: "신고자"
+    legacy_columns: ["INFORMANT VARCHAR2(100)"]
+
+  WORKER:
+    domain: NM
+    comment: "작업자"
+    legacy_columns: ["WORKER VARCHAR2(100)"]
+
+  RESPONSE_METHOD:
+    domain: DESC
+    comment: "대응 방법"
+    legacy_columns: ["CNTRMSR_METHOD VARCHAR2(15)"]
+
+  PROCESS_DETAIL:
+    domain: LONG_DESC
+    comment: "처리 상세 내역"
+    legacy_columns: ["PROCESS_DETAIL VARCHAR2(4000)"]
+
+  DETAIL_MATTER:
+    domain: DESC
+    comment: "상세 내용"
+    legacy_columns: ["DETAIL_MATTER VARCHAR2(1000)"]
+
+  INCIDENT_LINK_TEXT:
+    domain: NM
+    comment: "사고 구간 텍스트"
+    legacy_columns: ["OUTBRK_LINK_TEXT VARCHAR2(100)"]
+
+  SHOW_DISTANCE:
+    domain: MILG
+    comment: "사고 전시 거리"
+    legacy_columns: ["SHOW_DISTANCE NUMBER(6,3)"]
+
+  # ===== VMS =====
+  PHASE_DESCRIPTION:
+    domain: DESC
+    comment: "VMS 현시 설명"
+    legacy_columns: ["PHASE_DC VARCHAR2(400)"]
+
+  POLICY_DESCRIPTION:
+    domain: DESC
+    comment: "VMS 정책 설명"
+    legacy_columns: ["POLICY_DC VARCHAR2(400)"]
+
+  EXPRESSION_IMAGE:
+    domain: BLOB
+    comment: "VMS 표출 이미지 (바이너리)"
+    legacy_columns: ["EPRSS_IMAGE BLOB"]
+
+  EXPRESSION_TEXT:
+    domain: NM
+    comment: "VMS 표출 문안"
+    legacy_columns: ["EPRSS_TEXT VARCHAR2(255)"]
+
+  JSON_STRING:
+    domain: JSON
+    comment: "VMS 현시 JSON 데이터"
+    legacy_columns: ["JSON_STRING CLOB"]
+
+  PHASE_SEQ:
+    domain: SEQ
+    comment: "현시 순서"
+    legacy_columns: ["PHASE_SEQ NUMBER(2,0)"]
+
+  DISPLAY_TIME:
+    domain: COUNT
+    comment: "표출 시간 (초)"
+    legacy_columns: ["DISPLAY_TIME NUMBER(3,0)"]
+
+  WIDTH:
+    domain: COUNT
+    comment: "VMS 가로 픽셀"
+    legacy_columns: ["WIDTH NUMBER(5,0)"]
+
+  HEIGHT:
+    domain: COUNT
+    comment: "VMS 세로 픽셀"
+    legacy_columns: ["HEIGHT NUMBER(5,0)"]
+
+  # ===== 기상 =====
+  TEMPERATURE:
+    domain: SMALL_NUM
+    comment: "기온 (celsius)"
+    legacy_columns: ["T1H NUMBER(5,2)"]
+
+  RAINFALL:
+    domain: SMALL_NUM
+    comment: "강수량 (mm)"
+    legacy_columns: ["RN1 NUMBER(5,0)"]
+
+  WIND_SPEED:
+    domain: SMALL_NUM
+    comment: "풍속 (m/s)"
+    legacy_columns: ["WSD NUMBER(5,2)"]
+
+  WIND_DIRECTION:
+    domain: COUNT
+    comment: "풍향 (도)"
+    legacy_columns: ["VEC NUMBER(5,2)"]
+
+  HUMIDITY:
+    domain: SMALL_NUM
+    comment: "습도 (%)"
+    legacy_columns: ["REH NUMBER(5,2)"]
+
+  SKY_STATUS:
+    domain: CD
+    comment: "하늘 상태 코드"
+    legacy_columns: ["SKY VARCHAR2(7)"]
+
+  STATION_ID:
+    domain: SEQ
+    comment: "기상 관측소 식별자"
+    legacy_columns: ["STN_ID NUMBER(5,0)"]
+
+  STATION_NM:
+    domain: SHORT_NM
+    comment: "기상 관측소 명칭"
+    legacy_columns: ["STN_NM VARCHAR2(64)"]
+
+  # ===== 운영자/인증 =====
+  USER_PASSWORD:
+    domain: PASSWORD
+    comment: "운영자 비밀번호 (암호화)"
+    legacy_columns: ["USER_PW VARCHAR2(64)"]
+
+  EQUIP_TOKEN:
+    domain: TOKEN
+    comment: "장비 인증 토큰"
+    legacy_columns: ["EQUIP_TOKEN VARCHAR2(255)"]
+
+  DEPARTMENT:
+    domain: SHORT_NM
+    comment: "소속 부서"
+    legacy_columns: ["DEPT VARCHAR2(20)"]
+
+  MENU_ID:
+    domain: ID
+    comment: "메뉴 식별자"
+    legacy_columns: ["MENU_ID VARCHAR2(7)"]
+
+  MENU_NM:
+    domain: NM
+    comment: "메뉴 명칭"
+    legacy_columns: ["MENU_NM VARCHAR2(256)"]
+
+  PERMISSION_ID:
+    domain: ID
+    comment: "권한 식별자"
+    legacy_columns: ["PID VARCHAR2(7)"]
+
+  PERMISSION_NM:
+    domain: NM
+    comment: "권한 명칭"
+    legacy_columns: ["PID_NM VARCHAR2(256)"]
+
+  # ===== 순서/SEQ =====
+  SEQ:
+    domain: SEQ
+    comment: "정렬 순서"
+    legacy_columns: ["SEQ NUMBER(2,0)", "SEQ NUMBER(3,0)", "SEQ NUMBER(22)"]
+    type_conflict: "NUMBER(2,0)/NUMBER(3,0)/NUMBER(22) → 통일: SEQ NUMBER(10,0)"
+
+  PRIORITY:
+    domain: SEQ
+    comment: "우선순위"
+    legacy_columns: ["PRIORITY NUMBER(3,0)"]
+
+  EXT_ORDER:
+    domain: SEQ
+    comment: "외부 정렬 순서"
+    legacy_columns: ["EXT_ORDER NUMBER(2,0)", "EXT_ORDER NUMBER(22)"]
+    type_conflict: "NUMBER(2,0) vs NUMBER(22) → 통일: SEQ NUMBER(10,0)"
+
+  POSITION_ORDER:
+    domain: SEQ
+    comment: "위치 순서"
+    legacy_columns: ["POSTION_ORDER NUMBER(22)"]
+
+  # ===== 알고리즘 파라미터 =====
+  KALMAN_AX:
+    domain: PARAM
+    comment: "칼만 필터 AX 파라미터"
+    legacy_columns: ["AX1_1, AX1_2, AX2_1, AX2_2 NUMBER(7,3)"]
+
+  KALMAN_PB:
+    domain: PARAM
+    comment: "칼만 필터 PB 파라미터"
+    legacy_columns: ["PB1_1, PB1_2, PB2_1, PB2_2 NUMBER(7,3)"]
+
+  KALMAN_H:
+    domain: PARAM
+    comment: "칼만 필터 H 파라미터"
+    legacy_columns: ["H1, H2 NUMBER(7,3)"]
+
+  KALMAN_Q:
+    domain: PARAM
+    comment: "칼만 필터 Q 파라미터"
+    legacy_columns: ["Q NUMBER(7,3)"]
+
+  KALMAN_R:
+    domain: PARAM
+    comment: "칼만 필터 R 파라미터"
+    legacy_columns: ["R NUMBER(7,3)"]
+
+  KALMAN_RESULT:
+    domain: PARAM
+    comment: "칼만 필터 결과값"
+    legacy_columns: ["RESULT NUMBER(7,3)"]
+
+  KALMAN_RESULT_TYPE_CD:
+    domain: CD
+    comment: "칼만 결과 유형 코드"
+    legacy_columns: ["RESULT_SE VARCHAR2(7)"]
+
+  KALMAN_PARAM_TYPE_CD:
+    domain: CD
+    comment: "칼만 파라미터 유형 코드"
+    legacy_columns: ["PARAMTR_SE VARCHAR2(7)"]
+
+  # ===== 돌발 검지 파라미터 =====
+  THRESHOLD_VALUE:
+    domain: PARAM
+    comment: "임계값 (돌발 검지 알고리즘)"
+    legacy_columns: ["TH_ID1~3, TH_CW1~2, TH_DELOS_ID1~2 등 NUMBER(7,3)"]
+
+  SMOOTH_FACTOR:
+    domain: PARAM
+    comment: "평활 계수"
+    legacy_columns: ["SMOOTH_FACTOR NUMBER(6,2)", "SMOOTH_CURR NUMBER(4,0)"]
+
+  # ===== 코드 테이블 전용 (LEGACY 컬럼 삭제됨) =====
+  # CODE_GROUP_ID, CODE_VALUE: 레거시 추적 컬럼 완전 제거 (2026-04-02)
+
+  CODE_DESCRIPTION:
+    domain: DESC
+    comment: "패턴 코드 설명"
+    legacy_columns: ["CODE_DESC VARCHAR2(400)"]
+
+  # ===== 공휴일/스케줄 =====
+  HOLIDAY_NM:
+    domain: NM
+    comment: "공휴일 한국어 명칭"
+
+  YEAR:
+    domain: COUNT
+    comment: "연도"
+    legacy_columns: ["YY NUMBER(4,0)", "YEAR NUMBER(4,0)"]
+
+  MONTH:
+    domain: COUNT
+    comment: "월"
+    legacy_columns: ["MONTH NUMBER(2,0)"]
+
+  DAY:
+    domain: COUNT
+    comment: "일"
+    legacy_columns: ["DAY NUMBER(2,0)"]
+
+  # ===== 공통 감사 =====
+  REMARK:
+    domain: DESC
+    comment: "비고"
+    legacy_columns: ["RM VARCHAR2(255)", "BIGO VARCHAR2(100)", "COMMENTS VARCHAR2(128)", "COMMENTS VARCHAR2(255)"]
+
+# =============================================================================
+# 4. 타입 불일치 통일 규칙 (Type Conflict Resolution)
+# 기존 DB에서 동일 컬럼명이 다른 타입을 가지는 26건 전수 통일 방침
+# =============================================================================
+type_conflicts:
+  - column: BACKDOR_OPEN_YN
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "모든 _YN 컬럼은 VARCHAR2(1) 통일"
+
+  - column: CONGESTION_LENGTH
+    old: ["NUMBER(10,0)", "NUMBER(6,3)"]
+    new: "LEN NUMBER(8,0)"
+    rule: "미터 단위 정수로 통일"
+
+  - column: DOR_OPEN_YN
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "_YN 통일"
+
+  - column: EQUIP_ID
+    old: ["VARCHAR2(13)", "VARCHAR2(14)"]
+    new: "ID VARCHAR2(20)"
+    rule: "ID 도메인 통일 (여유 확보)"
+
+  - column: EQUIP_IP
+    old: ["VARCHAR2(15)", "VARCHAR2(20)"]
+    new: "IP VARCHAR2(45)"
+    rule: "IPv6 대비"
+
+  - column: FAC_TYPE
+    old: ["NUMBER(22)", "VARCHAR2(7)"]
+    new: "CD VARCHAR2(30)"
+    rule: "코드값은 문자열로 통일"
+
+  - column: FAN_EXECUT_YN
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "_YN 통일"
+
+  - column: FRONTDOR_OPEN_YN
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "_YN 통일"
+
+  - column: HEATER_EXECUT_YN
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "_YN 통일"
+
+  - column: INSTL_MILG
+    old: ["NUMBER(5,3)", "NUMBER(6,3)"]
+    new: "MILG NUMBER(8,3)"
+    rule: "이정 도메인 통일"
+
+  - column: LINK_ID
+    old: ["VARCHAR2(10)", "VARCHAR2(13)", "VARCHAR2(100)"]
+    new: "LINK_ID VARCHAR2(20), STD_LINK_ID VARCHAR2(10)"
+    rule: "ITS_PROC 체계와 ITS_ERS 체계 컬럼명 분리"
+
+  - column: LINK_LEN
+    old: ["NUMBER(5,0)", "NUMBER(6,0)"]
+    new: "LEN NUMBER(8,0)"
+    rule: "길이 도메인 통일"
+
+  - column: LINK_NM
+    old: ["VARCHAR2(100)", "VARCHAR2(128)"]
+    new: "NM VARCHAR2(200)"
+    rule: "명칭 도메인 통일"
+
+  - column: MILEPOST
+    old: ["NUMBER(22)", "NUMBER(6,0)", "NUMBER(6,3)"]
+    new: "MILG NUMBER(8,3)"
+    rule: "이정 도메인 통일"
+
+  - column: PHASE_ID
+    old: ["NUMBER(22)", "NUMBER(38,0)"]
+    new: "SEQ NUMBER(10,0)"
+    rule: "시퀀스 도메인 통일"
+
+  - column: PID
+    old: ["NUMBER(22)", "VARCHAR2(7)"]
+    new: "ID VARCHAR2(20)"
+    rule: "OPR_ROLE_TM의 NUMBER → VARCHAR2 전환"
+
+  - column: POLICY_ID
+    old: ["NUMBER(22)", "NUMBER(4,0)"]
+    new: "SEQ NUMBER(10,0)"
+    rule: "시퀀스 도메인 통일"
+
+  - column: PRESET_NM
+    old: ["VARCHAR2(128)", "VARCHAR2(255)"]
+    new: "NM VARCHAR2(200)"
+    rule: "명칭 도메인 통일"
+
+  - column: SEQ
+    old: ["NUMBER(2,0)", "NUMBER(3,0)", "NUMBER(22)"]
+    new: "SEQ NUMBER(10,0)"
+    rule: "시퀀스 도메인 통일"
+
+  - column: STTUS_INFO_REFLCT_AT
+    old: ["VARCHAR2(1)", "VARCHAR2(7)"]
+    new: "YN VARCHAR2(1)"
+    rule: "_AT 접미어 → _YN으로 변경, VARCHAR2(1) 통일"
+
+  - column: EXT_ORDER
+    old: ["NUMBER(2,0)", "NUMBER(22)"]
+    new: "SEQ NUMBER(10,0)"
+    rule: "시퀀스 도메인 통일"
+
+  - column: COMMENTS
+    old: ["VARCHAR2(128)", "VARCHAR2(255)"]
+    new: "DESC VARCHAR2(500)"
+    rule: "설명 도메인 통일 (여유 확보)"
+
+  - column: END_TIME
+    old: ["VARCHAR2(8)", "VARCHAR2(100)"]
+    new: "TIME_PART VARCHAR2(10)"
+    rule: "시간 구성요소 도메인 통일"
+
+  - column: FACILITY_ID
+    old: ["VARCHAR2(9)", "VARCHAR2(13)"]
+    new: "ID VARCHAR2(20)"
+    rule: "ID 도메인 통일"
+
+  - column: RESERVED
+    old: ["VARCHAR2(20)", "VARCHAR2(100)"]
+    new: "DESC VARCHAR2(500)"
+    rule: "예약 필드는 설명 도메인으로 통일"
+
+  - column: START_TIME
+    old: ["VARCHAR2(8)", "VARCHAR2(100)"]
+    new: "TIME_PART VARCHAR2(10)"
+    rule: "시간 구성요소 도메인 통일"

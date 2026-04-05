@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-05 09:02 | its-ddl-tool 마켓플레이스 마이그레이션 — 스킬 3개, lk-its- 접두사 | [상세](history/2026-04-05_0902_its-ddl-tool-migration.md) |
 | 2026-04-01 14:54 | lk-git-init 스킬 추가 — 대화형 Git 초기화 (remote, .gitignore, LFS) | [상세](history/2026-04-01_1454_lk-git-init.md) |
 | 2026-04-01 08:48 | HWPX 역변환 기능 제거 — kordoc 한글 호환 불가로 --to-hwpx 제거 | [상세](history/2026-04-01_0848_hwpx-generate-remove.md) |
 | 2026-03-31 17:13 | HISTORY.md 작성 규칙 변경 — lk-commit 시 선택적 작성으로 전환 | [상세](history/2026-03-31_1713_history-commit-workflow.md) |
