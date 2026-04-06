@@ -5,7 +5,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { readStdin, respond, sessionMessage } = require('./lib/io');
 const { ensureStateDir } = require('./lib/paths');
-const { loadStatus } = require('./lib/pdca-status');
+const { getFailureMemoryStats } = require('./lib/failure-log');
 
 function isCommandAvailable(cmd) {
   const result = spawnSync('which', [cmd], { stdio: 'ignore' });
@@ -41,19 +41,14 @@ async function main() {
     messages.push('[안내] gemini-cli 미설치. 교차검증(/lk-cross-validate)에 필요: npm install -g @google/gemini-cli');
   }
 
-  // 4. pdca-status.json 로드
+  // 4. Failure Memory 상태 표시
   try {
-    const status = loadStatus();
-    const features = Object.keys(status);
-    if (features.length > 0) {
-      const activeFeatures = features.filter((f) => status[f].phase && status[f].phase !== 'done');
-      if (activeFeatures.length > 0) {
-        messages.push('진행 중인 PDCA:');
-        activeFeatures.forEach((f) => {
-          const updatedAt = status[f].updatedAt ? status[f].updatedAt.slice(0, 10) : '';
-          messages.push(`  - ${f}: ${status[f].phase} (${updatedAt})`);
-        });
-      }
+    const stats = getFailureMemoryStats();
+    if (stats) {
+      const typeSummary = Object.entries(stats.stats)
+        .map(([type, count]) => `${type}(${count})`)
+        .join(', ');
+      messages.push(`실패 패턴 ${stats.total}건 활성: ${typeSummary} — .leeloo/failure-memory/ 참조`);
     }
   } catch (e) {
     // 무시
@@ -96,8 +91,8 @@ async function main() {
 
   // 출력
   const systemMsg = messages.length > 0
-    ? ['leeloo-kit v2.0.0', ...messages].join('\n')
-    : 'leeloo-kit v2.0.0 세션 시작';
+    ? ['leeloo-kit v3.0.0', ...messages].join('\n')
+    : 'leeloo-kit v3.0.0 세션 시작';
 
   sessionMessage(systemMsg);
 }

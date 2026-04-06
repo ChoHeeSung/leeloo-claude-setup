@@ -4,31 +4,19 @@ const { readStdin, respond, postContext } = require('./lib/io');
 const { setActiveSkill } = require('./lib/context');
 
 /**
- * skill-post.js — Skill 실행 후 오케스트레이션 (PostToolUse:Skill)
+ * skill-post.js — Skill 실행 후 안내 (PostToolUse:Skill)
+ *
+ * Back-pressure 원칙: 필요한 안내만 최소한으로 출력
  */
 
-function getNextStepMessage(skillName, event) {
+function getNextStepMessage(skillName) {
   switch (skillName) {
     case 'lk-plan':
       return [
         '[leeloo-kit] lk-plan 완료. 사용자에게 다음 각 항목의 실행 여부를 반드시 확인하세요:',
         '  1. /lk-plan-cross-review — Gemini 교차검증 실행할까요?',
-        '  2. /lk-todo create    — Plan을 TODO 리스트로 변환할까요?',
-        '  3. /lk-pdca design    — 바로 Design 단계로 진행할까요?'
+        '  2. /lk-todo create       — Plan을 TODO 리스트로 변환할까요?'
       ].join('\n');
-
-    case 'lk-pdca': {
-      const phase = (event.tool_input && event.tool_input.phase) || '';
-      const phaseMap = {
-        plan:     '  - /lk-pdca design    — Design 단계로 진행\n  - /lk-plan-cross-review — Plan 교차검증',
-        design:   '  - /lk-pdca do        — Do(실행) 단계로 진행\n  - /lk-plan-cross-review — Design 교차검증',
-        do:       '  - /lk-pdca analyze   — Analyze(검증) 단계로 진행',
-        analyze:  '  - /lk-pdca report    — Report 생성\n  - /lk-code-review         — 코드 리뷰 실행',
-        report:   '  - /lk-todo create    — 후속 작업을 TODO로 변환'
-      };
-      const hint = phaseMap[phase] || '  - /lk-pdca [phase]   — 다음 단계로 진행';
-      return `[leeloo-kit] lk-pdca ${phase || ''} 완료. 다음 단계:\n${hint}`;
-    }
 
     case 'lk-plan-cross-review':
       return '[leeloo-kit] 교차검증 완료. 검증 결과를 확인하고 다음 단계를 선택하세요.';
@@ -58,8 +46,8 @@ async function main() {
     }
   }
 
-  // 스킬별 다음 단계 제안
-  const message = skillName ? getNextStepMessage(skillName, event) : null;
+  // 스킬별 다음 단계 제안 (최소한만)
+  const message = skillName ? getNextStepMessage(skillName) : null;
 
   if (message) {
     postContext(message);

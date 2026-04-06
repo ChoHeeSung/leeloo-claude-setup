@@ -1,5 +1,5 @@
 {
-  "description": "leeloo-kit 런타임 자동화",
+  "description": "leeloo-kit 하네스 엔지니어링 런타임",
   "hooks": {
     "SessionStart": [{
       "hooks": [{
@@ -18,11 +18,27 @@
     }],
     "PostToolUse": [
       {
+        "matcher": "Bash",
+        "hooks": [{
+          "type": "command",
+          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/bash-post.js",
+          "timeout": 3000
+        }]
+      },
+      {
         "matcher": "Write|Edit",
         "hooks": [{
           "type": "command",
-          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/write-post.js",
-          "timeout": 5000
+          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/tool-failure-post.js",
+          "timeout": 3000
+        }]
+      },
+      {
+        "matcher": "mcp_",
+        "hooks": [{
+          "type": "command",
+          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/tool-failure-post.js",
+          "timeout": 3000
         }]
       },
       {

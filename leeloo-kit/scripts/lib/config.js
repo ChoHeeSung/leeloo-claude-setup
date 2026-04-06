@@ -25,17 +25,35 @@ function loadConfig() {
   } catch (e) {
     // 설정 파일 없으면 기본값 반환
     _config = {
-      version: '2.0.0',
-      pdca: {
-        docPaths: {
-          plan: 'docs/plan/{feature}.plan.md',
-          design: 'docs/design/{feature}.design.md',
-          analysis: 'docs/analysis/{feature}.analysis.md',
-          report: 'docs/report/{feature}.report.md'
+      version: '3.0.0',
+      harness: {
+        failureMemory: {
+          enabled: true,
+          repeatThreshold: 2,
+          maxEntriesPerType: 10,
+          summaryCount: 3,
+          targetSection: '## Failure Memory'
         },
-        matchRateThreshold: 90,
-        autoIterate: true,
-        maxIterations: 5
+        backPressure: {
+          silentOnSuccess: true,
+          verboseOnFailure: true,
+          autoCheck: {
+            enabled: true,
+            extensions: ['.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.go', '.rs', '.erl', '.ex', '.exs'],
+            commands: [],
+            autoDetect: true
+          }
+        },
+        failureTypes: {
+          build: ['npm run build', 'tsc', 'webpack', 'vite build', 'esbuild'],
+          test: ['npm test', 'jest', 'vitest', 'pytest', 'mocha'],
+          lint: ['eslint', 'prettier', 'biome', 'stylelint'],
+          git: ['git push', 'git merge', 'git rebase', 'git pull', 'git checkout'],
+          dependency: ['npm install', 'npm ci', 'pip install', 'yarn', 'pnpm install'],
+          'file-io': ['Write', 'Edit'],
+          mcp: ['mcp_'],
+          judgment: []
+        }
       },
       crossValidation: {
         enabled: true,
@@ -45,7 +63,9 @@ function loadConfig() {
       },
       statePaths: {
         root: '.leeloo',
-        pdcaStatus: '.leeloo/pdca-status.json',
+        failureLog: '.leeloo/failure-log.json',
+        failureMemory: '.leeloo/failure-memory',
+        failureArchive: '.leeloo/failure-archive',
         activeContext: '.leeloo/active-context.json'
       }
     };
@@ -54,16 +74,4 @@ function loadConfig() {
   return _config;
 }
 
-/**
- * docPaths에서 경로 생성 ({feature} 치환)
- * @param {string} phase - plan|design|analysis|report
- * @param {string} feature - 기능명
- * @returns {string}
- */
-function getDocPath(phase, feature) {
-  const config = loadConfig();
-  const template = (config.pdca && config.pdca.docPaths && config.pdca.docPaths[phase]) || '';
-  return template.replace('{feature}', feature || 'unknown');
-}
-
-module.exports = { loadConfig, getDocPath };
+module.exports = { loadConfig };

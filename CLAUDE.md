@@ -12,10 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 leeloo-claude-setup/
 ├── .claude-plugin/marketplace.json   # 마켓플레이스 매니페스트 (plugins 배열)
-├── leeloo-kit/                       # 플러그인 1: PDCA 워크플로우 + AI 개발 키트
+├── leeloo-kit/                       # 플러그인 1: 하네스 엔지니어링 + AI 개발 키트
 │   ├── plugin.json
 │   ├── CLAUDE.md
-│   ├── skills/                       # 9 skills (lk- prefix)
+│   ├── skills/                       # 8 skills (lk- prefix)
 │   ├── hooks/
 │   ├── scripts/
 │   ├── agents/
@@ -47,9 +47,9 @@ leeloo-claude-setup/
 
 ## Plugins
 
-### leeloo-kit (v2.0.0)
-사내 표준 AI 개발 키트. PDCA 워크플로우 + 다중 검증 자동화 + 에이전트 시스템.
-- Skills: lk-plan, lk-pdca, lk-code-review, lk-plan-cross-review, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
+### leeloo-kit (v3.0.0)
+사내 표준 AI 개발 키트. 하네스 엔지니어링 기반 자동화 (Failure Memory Loop) + 다중 검증.
+- Skills: lk-plan, lk-code-review, lk-plan-cross-review, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
 - 상세: `leeloo-kit/CLAUDE.md` 참조
 
 ### leeloo-n8n (v1.0.0)

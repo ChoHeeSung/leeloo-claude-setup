@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-07 08:30 | leeloo-kit v3.0.0 — PDCA 제거, 하네스 엔지니어링 전환 (Failure Memory Loop + 자동 품질 검사) | [상세](history/2026-04-07_0830_harness-engineering.md) |
 | 2026-04-05 09:02 | its-ddl-tool 마켓플레이스 마이그레이션 — 스킬 3개, lk-its- 접두사 | [상세](history/2026-04-05_0902_its-ddl-tool-migration.md) |
 | 2026-04-01 14:54 | lk-git-init 스킬 추가 — 대화형 Git 초기화 (remote, .gitignore, LFS) | [상세](history/2026-04-01_1454_lk-git-init.md) |
 | 2026-04-01 08:48 | HWPX 역변환 기능 제거 — kordoc 한글 호환 불가로 --to-hwpx 제거 | [상세](history/2026-04-01_0848_hwpx-generate-remove.md) |

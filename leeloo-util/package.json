@@ -2,6 +2,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "kordoc": "^1.6.1"
+    "kordoc": "^1.9.0",
+    "pdfjs-dist": "^5.6.205"
   }
 }
