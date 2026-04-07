@@ -8,6 +8,9 @@ Thumbs.db
 # Marker file
 .leeloo-setup-done
 
+# leeloo-kit runtime state (프로젝트별 생성됨)
+.leeloo/
+
 # IDE
 .idea/
 
