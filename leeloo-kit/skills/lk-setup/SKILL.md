@@ -1,8 +1,8 @@
 ---
 name: lk-setup
-description: "선택적 환경 강화 도구. /lk-setup [status|statusline|claude-md|gemini|serena|plugins]"
+description: "선택적 환경 강화 도구. /lk-setup [status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
 user_invocable: true
-argument-hint: "[status|statusline|claude-md|gemini|serena|plugins]"
+argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
 ---
 
 # /lk-setup — 선택적 환경 강화
@@ -15,6 +15,8 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 ```
 /lk-setup            — 현재 환경 상태 표시 (기본 동작 = status)
 /lk-setup status     — 현재 환경 상태 표시
+/lk-setup install    — 미설치 항목 일괄 설치 (이미 설치된 항목은 건너뜀)
+/lk-setup reinstall  — 전체 재설치 (기존 설정 덮어쓰기)
 /lk-setup statusline — statusline-leeloo.sh를 ~/.claude/에 복사
 /lk-setup claude-md  — CLAUDE.md를 ~/.claude/CLAUDE.md에 설치
 /lk-setup gemini     — gemini-cli 설치 가이드 표시
@@ -28,6 +30,8 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 
 사용자 입력에서 서브커맨드를 파싱합니다:
 - 인자 없음 또는 `status` → **status** 동작
+- `install` → **install** 동작
+- `reinstall` → **reinstall** 동작
 - `statusline` → **statusline** 동작
 - `claude-md` → **claude-md** 동작
 - `gemini` → **gemini** 동작
@@ -255,4 +259,105 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
    | document-skills 플러그인 | ✅ 설치됨 |
 
    Claude Code를 재시작하거나 /reload-plugins 로 적용하세요.
+   ```
+
+---
+
+### install 동작
+
+미설치 항목을 일괄 설치합니다. 이미 설치된 항목은 건너뜁니다.
+**사용자 확인 없이** 자동으로 진행합니다 (개별 서브커맨드와 달리 덮어쓰기 확인을 하지 않음).
+
+1. **상태 확인**: Bash로 모든 항목 상태를 한 번에 확인:
+   ```bash
+   echo "=== STATUS ==="
+   echo "NODE=$(node --version 2>/dev/null || echo 'NOT_INSTALLED')"
+   echo "GEMINI=$(command -v gemini 2>/dev/null && echo 'INSTALLED' || echo 'NOT_INSTALLED')"
+   echo "STATUSLINE=$(test -f ~/.claude/statusline-leeloo.sh && echo 'INSTALLED' || echo 'NOT_INSTALLED')"
+   echo "CLAUDEMD=$(test -f ~/.claude/CLAUDE.md && echo 'INSTALLED' || echo 'NOT_INSTALLED')"
+   echo "SERENA=$(grep -q 'web_dashboard_open_on_launch: false' ~/.serena/serena_config.yml 2>/dev/null && echo 'CONFIGURED' || echo 'NOT_CONFIGURED')"
+   echo "MARKETPLACE=$(grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo 'REGISTERED' || echo 'NOT_REGISTERED')"
+   echo "DOCSKILLS=$(grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo 'INSTALLED' || echo 'NOT_INSTALLED')"
+   ```
+
+2. **미설치 항목만 순차 설치** (각 항목에 대해):
+
+   a. **statusline** — `STATUSLINE=NOT_INSTALLED`이면:
+      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
+      - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장
+      - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
+
+   b. **CLAUDE.md** — `CLAUDEMD=NOT_INSTALLED`이면:
+      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
+      - Write 도구로 `~/.claude/CLAUDE.md`에 저장
+
+   c. **serena** — `SERENA=NOT_CONFIGURED`이면:
+      - serena 동작과 동일한 절차 수행 (파일 생성 또는 수정)
+
+   d. **plugins** — `MARKETPLACE=NOT_REGISTERED` 또는 `DOCSKILLS=NOT_INSTALLED`이면:
+      - plugins 동작과 동일한 절차 수행 (마켓플레이스 등록 + document-skills 설치)
+
+   e. **gemini** — `GEMINI=NOT_INSTALLED`이면:
+      - 설치 가이드 텍스트를 결과에 포함 (자동 설치 불가, 가이드만 표시)
+
+3. **결과 요약**: 설치 결과를 테이블로 표시:
+   ```
+   leeloo-kit 일괄 설치 완료
+
+   | 항목 | 결과 |
+   |------|------|
+   | statusline-leeloo.sh | ✅ 설치됨 / ⏭️ 이미 설치됨 |
+   | CLAUDE.md | ✅ 설치됨 / ⏭️ 이미 설치됨 |
+   | serena 대시보드 | ✅ 비활성화 완료 / ⏭️ 이미 설정됨 |
+   | anthropic-agent-skills | ✅ 등록됨 / ⏭️ 이미 등록됨 |
+   | document-skills | ✅ 설치됨 / ⏭️ 이미 설치됨 |
+   | gemini-cli | ⚠️ 수동 설치 필요: npm i -g @google/gemini-cli / ⏭️ 이미 설치됨 |
+
+   Claude Code를 재시작하면 모든 설정이 적용됩니다.
+   ```
+
+---
+
+### reinstall 동작
+
+모든 항목을 강제로 재설치합니다. 기존 파일을 **확인 없이 덮어씁니다**.
+
+1. **사용자 확인**: AskUserQuestion — "모든 leeloo-kit 설정 파일을 덮어쓰고 재설치합니다. 진행할까요?"
+   - Options: "재설치" / "취소"
+   - "취소" 선택 시 중단.
+
+2. **전체 재설치** (각 항목에 대해 무조건 실행):
+
+   a. **statusline**:
+      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
+      - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장 (덮어쓰기)
+      - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
+
+   b. **CLAUDE.md**:
+      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
+      - Write 도구로 `~/.claude/CLAUDE.md`에 저장 (덮어쓰기)
+
+   c. **serena**:
+      - serena 동작과 동일한 절차 수행 (파일 생성 또는 값 강제 변경)
+
+   d. **plugins**:
+      - plugins 동작과 동일한 절차 수행 (마켓플레이스 등록 + document-skills 설치)
+
+   e. **gemini**:
+      - gemini-cli 미설치 시 설치 가이드 표시
+
+3. **결과 요약**: 재설치 결과를 테이블로 표시:
+   ```
+   leeloo-kit 재설치 완료
+
+   | 항목 | 결과 |
+   |------|------|
+   | statusline-leeloo.sh | 🔄 재설치됨 |
+   | CLAUDE.md | 🔄 재설치됨 |
+   | serena 대시보드 | 🔄 재설정됨 |
+   | anthropic-agent-skills | ✅ 등록됨 |
+   | document-skills | ✅ 설치됨 |
+   | gemini-cli | ⚠️ 수동 설치 필요 / ✅ 이미 설치됨 |
+
+   Claude Code를 재시작하면 모든 설정이 적용됩니다.
    ```
