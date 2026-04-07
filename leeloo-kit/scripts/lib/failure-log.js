@@ -161,9 +161,14 @@ function updateClaudeMdSummary(failures) {
   const targetSection = (config.harness && config.harness.failureMemory && config.harness.failureMemory.targetSection) || '## Failure Memory';
 
   const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
-  if (!fs.existsSync(claudeMdPath)) return;
 
-  let content = fs.readFileSync(claudeMdPath, 'utf8');
+  let content = '';
+  if (fs.existsSync(claudeMdPath)) {
+    content = fs.readFileSync(claudeMdPath, 'utf8');
+  } else {
+    // CLAUDE.md가 없으면 Failure Memory 섹션만 포함하여 자동 생성
+    content = `# ${path.basename(process.cwd())}\n\n${targetSection}\n`;
+  }
 
   // 유형별 건수 집계
   const typeCounts = {};
