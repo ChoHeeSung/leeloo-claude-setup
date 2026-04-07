@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-07 09:05 | SessionStart 린터 미설치 자동 감지 — 사용자 확인 후 설치 안내 | [상세](history/2026-04-07_0905_lint-auto-detect.md) |
 | 2026-04-07 08:55 | CLAUDE.md 미존재 시 자동 생성 — Failure Memory Loop 버그 수정 | [상세](history/2026-04-07_0855_claudemd-auto-create.md) |
 | 2026-04-07 08:45 | lk-setup install/reinstall 파라미터 추가 — 일괄 설치 + 강제 재설치 | [상세](history/2026-04-07_0845_lk-setup-install-reinstall.md) |
 | 2026-04-07 08:30 | leeloo-kit v3.0.0 — PDCA 제거, 하네스 엔지니어링 전환 (Failure Memory Loop + 자동 품질 검사) | [상세](history/2026-04-07_0830_harness-engineering.md) |

@@ -1,10 +1,10 @@
 [
   {
     "pattern": "Edit /Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md",
-    "command": "Edit({\"file_path\":\"/Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md\",\"old_string\":\"| 2026-04-07 08:45 | lk-setup install/reinstall 파라미터 추가 — 일괄 설치 + 강제 재설치 | [상세](history/2026-04-07_0845_lk-setup-i)",
-    "error": "{\"filePath\":\"/Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md\",\"oldString\":\"| 2026-04-07 08:45 | lk-setup install/reinstall 파라미터 추가 — 일괄 설치 + 강제 재설치 | [상세](history/2026-04-07_0845_lk-setup-ins",
+    "command": "Edit({\"file_path\":\"/Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md\",\"old_string\":\"| 2026-04-07 08:55 | CLAUDE.md 미존재 시 자동 생성 — Failure Memory Loop 버그 수정 | [상세](history/2026-04-07_0855_claudemd-aut)",
+    "error": "{\"filePath\":\"/Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md\",\"oldString\":\"| 2026-04-07 08:55 | CLAUDE.md 미존재 시 자동 생성 — Failure Memory Loop 버그 수정 | [상세](history/2026-04-07_0855_claudemd-auto-",
     "exitCode": null,
-    "timestamp": "2026-04-07T02:43:47.062Z",
+    "timestamp": "2026-04-07T02:49:30.796Z",
     "type": "file-io"
   }
 ]
