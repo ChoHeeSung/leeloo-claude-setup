@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-08 09:30 | PDCA 잔존 참조 정리 + 필수 원칙 2개 추가 (미루기 금지, 재탐색 원칙) | [상세](history/2026-04-08_0930_pdca-cleanup-and-rules.md) |
 | 2026-04-07 09:20 | lk-commit 커밋 메시지 표준 적용 — commit-messages-guide 기반 3부분 구조 | [상세](history/2026-04-07_0920_commit-message-standard.md) |
 | 2026-04-07 09:05 | SessionStart 린터 미설치 자동 감지 — 사용자 확인 후 설치 안내 | [상세](history/2026-04-07_0905_lint-auto-detect.md) |
 | 2026-04-07 08:55 | CLAUDE.md 미존재 시 자동 생성 — Failure Memory Loop 버그 수정 | [상세](history/2026-04-07_0855_claudemd-auto-create.md) |

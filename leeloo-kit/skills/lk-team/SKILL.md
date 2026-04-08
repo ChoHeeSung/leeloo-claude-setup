@@ -29,7 +29,7 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 | `review-squad` | reviewer-1(sonnet) + reviewer-2(sonnet) + summarizer(haiku) | 다각도 코드 리뷰 |
 | `refactor` | analyzer(opus/plan) + implementer(sonnet) + tester(haiku) | 리팩토링 |
 | `research` | explorer-1(haiku) + explorer-2(haiku) + synthesizer(opus) | 코드베이스 조사 |
-| `pdca-verify` | gap-detector(opus/plan) + code-analyzer(opus/plan) + summarizer(haiku/plan) | PDCA Check 전문 |
+| `quality-check` | analyzer(opus/plan) + code-analyzer(opus/plan) + summarizer(haiku/plan) | 코드 품질 검증 |
 
 ## 프리셋 상세
 
@@ -73,11 +73,11 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 태스크: #1, #2 병렬 → #3 순차
 ```
 
-### pdca-verify
+### quality-check
 
 ```
-팀: pdca-verify (3명)
-1. gap-detector (plan, opus) — 설계-구현 갭 분석, Match Rate 산출
+팀: quality-check (3명)
+1. analyzer (plan, opus) — 설계-구현 일치도 분석
 2. code-analyzer (plan, opus) — 코드 품질/보안/성능 분석
 3. summarizer (plan, haiku) — 두 분석 결과를 종합하여 최종 리포트 작성
 태스크: #1, #2 병렬 → #3 순차
@@ -163,7 +163,7 @@ Agent Team을 대화형으로 구성하고 관리합니다. TeamCreate, SendMess
 
 ### preset create 동작
 
-1. **프리셋 검증**: 요청된 프리셋 이름이 5종(`fullstack`, `review-squad`, `refactor`, `research`, `pdca-verify`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
+1. **프리셋 검증**: 요청된 프리셋 이름이 5종(`fullstack`, `review-squad`, `refactor`, `research`, `quality-check`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
 
 2. **TODO.md 확인**: Read 도구로 프로젝트 루트의 `TODO.md` 읽기 (있는 경우).
    - TODO.md가 있으면 AskUserQuestion — "TODO.md에서 태스크를 자동 분배할까요? (분배/직접 설정)"

@@ -47,15 +47,12 @@ feature 인자가 없으면:
 1. **CLAUDE.md 읽기**: Read 도구로 프로젝트 루트의 `CLAUDE.md` 읽기 (없으면 생략).
 2. **Git 히스토리 확인**: Bash로 `git log --oneline -10` 실행하여 최근 작업 파악.
 3. **기존 docs 확인**: Glob으로 `docs/**/*.md` 패턴 검색, 관련 문서 확인.
-4. **PDCA 상태 확인**: Read 도구로 `.leeloo/pdca-status.json` 읽기 (없으면 생략). feature와 관련된 기존 항목 파악.
-
 탐색 결과 요약을 사용자에게 표시:
 ```
 ## 컨텍스트 탐색 완료
 
 - 프로젝트 유형: {파악된 내용}
 - 관련 문서: {있으면 목록, 없으면 "없음"}
-- 기존 PDCA 항목: {있으면 목록, 없으면 "없음"}
 - 최근 커밋 흐름: {주요 패턴 요약}
 ```
 
@@ -157,18 +154,7 @@ Plan 문서 내용 (템플릿 기반 + 추가 섹션):
 | ... | 높음/중간/낮음 | ... |
 ```
 
-4. **PDCA 상태 갱신**: `.leeloo/pdca-status.json`에 feature 항목 추가/갱신:
-   ```json
-   {
-     "feature": "{feature}",
-     "plan": "docs/plan/{feature}.plan.md",
-     "planDate": "{날짜}",
-     "stage": "plan"
-   }
-   ```
-   - 파일이 없으면 `mkdir -p .leeloo` 후 새로 생성.
-
-5. **완료 안내**:
+4. **완료 안내**:
    ```
    Plan 작성 완료
 
@@ -176,8 +162,8 @@ Plan 문서 내용 (템플릿 기반 + 추가 섹션):
 
    다음 단계:
    - /lk-plan-cross-review docs/plan/{feature}.plan.md  — Gemini 교차검증
-   - /lk-pdca design {feature}                       — 설계 문서 작성
+   - /lk-todo create                                    — Plan을 TODO 리스트로 변환
    ```
 
-6. **교차검증 제안**: AskUserQuestion — "Gemini로 이 Plan을 교차검증할까요? (검증/나중에)"
+5. **교차검증 제안**: AskUserQuestion — "Gemini로 이 Plan을 교차검증할까요? (검증/나중에)"
    - "검증" 선택 시: `/lk-plan-cross-review docs/plan/{feature}.plan.md` 로직 실행
