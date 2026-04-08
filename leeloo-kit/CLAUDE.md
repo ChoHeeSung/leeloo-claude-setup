@@ -6,18 +6,17 @@
 
 플러그인 설치만으로 자동 적용. 스킬 호출 불필요.
 
-1. **Failure Memory Loop**: 모든 도구 실패(Bash/Write/Edit/MCP) 자동 감지 + 사용자 거부 시 자기 기록(judgment) → 유형별 `.leeloo/failure-memory/{type}.md`에 기록 → CLAUDE.md에 최근 3건 요약 → 다음 세션에서 자동 방지
-2. **Back-Pressure + Auto Quality Check**: 성공은 침묵, 실패만 장황하게 출력. 소스 파일 저장 시 lint/typecheck 자동 실행
+1. **Failure Memory Loop**: Claude가 모든 실패를 직접 `.leeloo/failure-memory/{type}.md`에 기록 → CLAUDE.md에 최근 3건 요약 → 다음 세션에서 자동 방지. CLAUDE.md Failure Memory 규칙에 따라 동작.
+2. **Back-Pressure + Auto Quality Check**: 성공은 침묵, 실패만 장황하게 출력. Write|Edit 시 자동 품질 검사
 3. **Control Flow**: PreToolUse로 위험 명령 차단 (rm -rf, git push --force)
-4. **Session Persistence**: `.leeloo/` 디렉토리에 실패 로그, 활성 컨텍스트 유지
+4. **Session Persistence**: `.leeloo/` 디렉토리에 실패 기록, 활성 컨텍스트 유지
 
 ## Architecture
 
-- `hooks/hooks.json` — 4 hook events: SessionStart, PreToolUse(Bash), PostToolUse(Bash, Write|Edit, mcp_, Skill), Stop
+- `hooks/hooks.json` — 4 hook events: SessionStart, PreToolUse(Bash), PostToolUse(Write|Edit, mcp_, Skill), Stop
 - `scripts/` — Hook runtime (Node.js v18+ CommonJS):
-  - `session-start.js` — Failure Memory 요약, TODO 진행률
+  - `session-start.js` — Failure Memory 요약, 린터 미설치 감지, TODO 진행률
   - `bash-pre.js` — 위험 명령 차단
-  - `bash-post.js` — Bash 실패 감지 (exit_code 기반)
   - `tool-failure-post.js` — Write/Edit/MCP 실패 감지 + 소스 저장 시 자동 품질 검사 (lint/typecheck)
   - `skill-post.js` — 스킬 완료 후 다음 단계 안내
   - `unified-stop.js` — Failure Memory Loop: 반복 실패 → 유형별 파일 + CLAUDE.md 기록

@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-08 10:10 | Failure Memory — hook 기반 → 자기 기록 방식 전환 (tool_response 비어있음 발견) | [상세](history/2026-04-08_1010_failure-memory-self-record.md) |
 | 2026-04-08 09:45 | plugin.json hooks 등록 누락 수정 — PostToolUse hook 미실행 원인 해결 | [상세](history/2026-04-08_0945_hook-registration-fix.md) |
 | 2026-04-08 09:30 | PDCA 잔존 참조 정리 + 필수 원칙 2개 추가 (미루기 금지, 재탐색 원칙) | [상세](history/2026-04-08_0930_pdca-cleanup-and-rules.md) |
 | 2026-04-07 09:20 | lk-commit 커밋 메시지 표준 적용 — commit-messages-guide 기반 3부분 구조 | [상세](history/2026-04-07_0920_commit-message-standard.md) |

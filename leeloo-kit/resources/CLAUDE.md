@@ -57,21 +57,39 @@
 
 ## Failure Memory 규칙
 
-도구 실패(Bash, Write/Edit, MCP)는 hook이 자동 감지하여 기록합니다.
-아래는 hook이 감지할 수 없는 **판단 오류**를 직접 기록하는 규칙입니다.
+**모든 실패는 Claude가 직접 기록합니다.** 에러를 목격하면 즉시 해당 유형 파일에 기록하세요.
 
-### 자기 기록 (judgment 유형)
-사용자가 다음과 같이 반응하면, `.leeloo/failure-memory/judgment.md`에 기록하세요:
-- "아니야", "그게 아니라", "다시 해" — 접근법 거부
-- "왜 이렇게 했어?", "이건 맞지 않아" — 결과물 부정
-- 동일 작업을 2회 이상 재시도 요청 — 반복 실패
+### 기록 대상 (모든 유형)
+| 감지 조건 | 유형 파일 |
+|-----------|----------|
+| Bash 명령 에러 (exit code != 0, 에러 메시지) | `.leeloo/failure-memory/general.md` (또는 build/test/lint/git/dependency) |
+| Write/Edit 도구 실패 | `.leeloo/failure-memory/file-io.md` |
+| MCP 도구 에러 | `.leeloo/failure-memory/mcp.md` |
+| 사용자 거부 ("아니야", "다시 해", "이건 아닌데") | `.leeloo/failure-memory/judgment.md` |
+| 동일 작업 2회+ 재시도 | `.leeloo/failure-memory/judgment.md` |
 
-기록 형식:
+### Bash 실패 유형 분류
+- `npm test|jest|vitest|pytest` → `test.md`
+- `npm run build|tsc|webpack` → `build.md`
+- `eslint|prettier|biome` → `lint.md`
+- `git push|merge|rebase` → `git.md`
+- `npm install|pip install` → `dependency.md`
+- 기타 → `general.md`
+
+### 기록 형식
 ```
-- [날짜] `상황 요약` — 잘못된 접근: {무엇을 했는지} → 올바른 접근: {사용자가 원한 것}
+- [날짜] `명령/상황` — 에러: {에러 메시지} → 해결: {해결 방법 또는 "미해결"}
 ```
 
-기록 후 CLAUDE.md의 이 섹션도 최근 3건 요약으로 업데이트하세요.
+### 기록 절차
+1. 에러 발생 시 `.leeloo/failure-memory/{type}.md`에 위 형식으로 기록 (디렉토리 없으면 생성)
+2. 동일 패턴이 이미 기록되어 있으면 **이전 해결책을 먼저 확인**하고 적용
+3. **반드시 프로젝트 로컬 CLAUDE.md** (`process.cwd()`의 CLAUDE.md)의 `## Failure Memory` 섹션에 최근 3건 요약만 유지 + "상세: .leeloo/failure-memory/ 참조". 없으면 자동 생성.
+4. **글로벌 `~/.claude/CLAUDE.md`는 절대 수정하지 않는다.** 실패 기록은 항상 프로젝트 로컬에만 남긴다.
+
+### 기록하지 않는 경우
+- 의도된 실패 (예: `test -f` 존재 확인, `|| echo` 패턴)
+- 사용자가 명시적으로 무시 지시한 에러
 
 ## Failure Memory
 
