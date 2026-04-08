@@ -26,10 +26,10 @@ async function main() {
     return;
   }
 
-  // tool_response에서 exit_code 확인
-  const toolResponse = event.tool_response || {};
-  const exitCode = toolResponse.exit_code;
-  const command = (event.tool_input && event.tool_input.command) || '';
+  // tool_response 또는 tool_result에서 exit_code 확인 (필드명 호환)
+  const toolResponse = event.tool_response || event.tool_result || event.response || {};
+  const exitCode = toolResponse.exit_code != null ? toolResponse.exit_code : toolResponse.exitCode;
+  const command = (event.tool_input && (event.tool_input.command || event.tool_input.cmd)) || '';
 
   // 성공: 침묵 (back-pressure)
   if (exitCode === 0 || exitCode === undefined || exitCode === null) {

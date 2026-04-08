@@ -3,5 +3,6 @@
   "version": "3.0.0",
   "description": "Leeloo 사내 표준 AI 개발 키트 — 하네스 엔지니어링 기반 자동화 + 다중 검증",
   "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
+  "hooks": "./hooks/hooks.json",
   "outputStyles": "./output-styles/"
 }
