@@ -39,7 +39,7 @@ function loadConfig() {
           verboseOnFailure: true,
           autoCheck: {
             enabled: true,
-            extensions: ['.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.go', '.rs', '.erl', '.ex', '.exs'],
+            extensions: ['.js', '.ts', '.tsx', '.jsx', '.py', '.java', '.go', '.rs', '.erl', '.ex', '.exs', '.html', '.htm'],
             commands: [],
             autoDetect: true
           }
@@ -66,7 +66,11 @@ function loadConfig() {
         failureLog: '.leeloo/failure-log.json',
         failureMemory: '.leeloo/failure-memory',
         failureArchive: '.leeloo/failure-archive',
-        activeContext: '.leeloo/active-context.json'
+        activeContext: '.leeloo/active-context.json',
+        sessions: '.leeloo/sessions',
+        mcpHealth: '.leeloo/mcp-health.json',
+        compactionLog: '.leeloo/compaction-log.txt',
+        editedFiles: '.leeloo/edited-files.tmp'
       }
     };
   }

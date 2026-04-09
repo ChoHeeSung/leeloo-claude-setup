@@ -54,6 +54,7 @@
 | `/lk-agent` | Sub Agent 생성/관리 |
 | `/lk-team` | Agent Team 구성/관리 |
 | `/lk-setup` | 선택적 환경 강화 |
+| `/lk-skill-create <name>` | Skill 자동 생성 |
 
 ## Failure Memory 규칙
 

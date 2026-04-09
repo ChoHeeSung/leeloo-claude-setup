@@ -15,7 +15,7 @@ leeloo-claude-setup/
 ├── leeloo-kit/                       # 플러그인 1: 하네스 엔지니어링 + AI 개발 키트
 │   ├── plugin.json
 │   ├── CLAUDE.md
-│   ├── skills/                       # 8 skills (lk- prefix)
+│   ├── skills/                       # 9 skills (lk- prefix)
 │   ├── hooks/
 │   ├── scripts/
 │   ├── agents/
@@ -47,9 +47,9 @@ leeloo-claude-setup/
 
 ## Plugins
 
-### leeloo-kit (v3.0.0)
-사내 표준 AI 개발 키트. 하네스 엔지니어링 기반 자동화 (Failure Memory Loop) + 다중 검증.
-- Skills: lk-plan, lk-code-review, lk-plan-cross-review, lk-agent, lk-team, lk-todo, lk-commit, lk-setup
+### leeloo-kit (v3.1.0)
+사내 표준 AI 개발 키트. 하네스 엔지니어링 기반 자동화 (배치 품질체크 + Failure Memory Loop + 세션 라이프사이클) + 다중 검증.
+- Skills: lk-plan, lk-code-review, lk-plan-cross-review, lk-agent, lk-team, lk-todo, lk-commit, lk-setup, lk-skill-create
 - 상세: `leeloo-kit/CLAUDE.md` 참조
 
 ### leeloo-n8n (v1.0.0)

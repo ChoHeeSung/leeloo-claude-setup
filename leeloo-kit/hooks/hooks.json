@@ -18,11 +18,18 @@
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "hooks": [{
-          "type": "command",
-          "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/tool-failure-post.js",
-          "timeout": 3000
-        }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/post-edit-accumulator.js",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/tool-failure-post.js",
+            "timeout": 3000
+          }
+        ]
       },
       {
         "matcher": "mcp_",
@@ -41,10 +48,32 @@
         }]
       }
     ],
+    "PostToolUseFailure": [{
+      "matcher": "mcp_",
+      "hooks": [{
+        "type": "command",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/mcp-health-check.js",
+        "timeout": 5000
+      }]
+    }],
+    "PreCompact": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pre-compact.js",
+        "timeout": 5000
+      }]
+    }],
     "Stop": [{
       "hooks": [{
         "type": "command",
-        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/unified-stop.js",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/stop-quality-check.js",
+        "timeout": 30000
+      }]
+    }],
+    "SessionEnd": [{
+      "hooks": [{
+        "type": "command",
+        "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-end.js",
         "timeout": 10000
       }]
     }]

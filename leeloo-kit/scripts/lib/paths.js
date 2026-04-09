@@ -46,6 +46,17 @@ function ensureFailureArchiveDir() {
 }
 
 /**
+ * .leeloo/sessions/ 디렉토리 생성 (없으면)
+ */
+function ensureSessionsDir() {
+  const sessDir = path.join(process.cwd(), '.leeloo/sessions');
+  if (!fs.existsSync(sessDir)) {
+    fs.mkdirSync(sessDir, { recursive: true });
+  }
+  return sessDir;
+}
+
+/**
  * statePaths에서 경로 반환
  * @param {string} key - statePaths의 키 (예: 'failureLog', 'activeContext')
  * @returns {string} 절대 경로
@@ -59,4 +70,4 @@ function getStatePath(key) {
   return path.join(process.cwd(), relativePath);
 }
 
-module.exports = { ensureStateDir, ensureFailureMemoryDir, ensureFailureArchiveDir, getStatePath };
+module.exports = { ensureStateDir, ensureFailureMemoryDir, ensureFailureArchiveDir, ensureSessionsDir, getStatePath };
