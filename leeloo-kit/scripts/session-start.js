@@ -8,7 +8,8 @@ const { ensureStateDir } = require('./lib/paths');
 const { getFailureMemoryStats } = require('./lib/failure-log');
 
 function isCommandAvailable(cmd) {
-  const result = spawnSync('which', [cmd], { stdio: 'ignore', timeout: 3000 });
+  // POSIX 호환: 'which' 대신 'command -v' 사용 (최소 설치 Linux 지원)
+  const result = spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore', timeout: 3000 });
   return result.status === 0;
 }
 

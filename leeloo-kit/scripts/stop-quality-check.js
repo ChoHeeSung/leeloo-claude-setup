@@ -125,7 +125,7 @@ function detectHtmlCommands() {
 }
 
 function isAvailable(cmd) {
-  const result = spawnSync('which', [cmd], { stdio: 'ignore', timeout: 3000 });
+  const result = spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore', timeout: 3000 });
   return result.status === 0;
 }
 

@@ -282,6 +282,36 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
 
 2. **미설치 항목만 순차 설치** (각 항목에 대해):
 
+   **0단계. Node.js** — `NODE=NOT_INSTALLED`이면:
+      - OS 감지 후 자동 설치:
+        ```bash
+        # OS 감지
+        if [[ "$(uname)" == "Darwin" ]]; then
+          OS="macOS"
+        elif [[ -f /etc/debian_version ]]; then
+          OS="debian"
+        elif [[ -f /etc/redhat-release ]]; then
+          OS="rhel"
+        else
+          OS="unknown"
+        fi
+        ```
+      - AskUserQuestion — "Node.js가 설치되지 않았습니다. 자동 설치할까요?"
+        - Options: "자동 설치 (Recommended)" / "수동 설치"
+      - "자동 설치" 선택 시 OS별 실행:
+        - **macOS**: `brew install node` (brew 없으면 안내)
+        - **debian** (Ubuntu/Debian): `curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs`
+        - **rhel** (RHEL/CentOS/Fedora): `curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash - && sudo dnf install -y nodejs`
+        - **unknown**: nvm 설치 안내 — `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && source ~/.bashrc && nvm install 22`
+      - 설치 후 `node --version`으로 확인
+      - "수동 설치" 선택 시: 설치 가이드 텍스트만 표시
+        ```
+        Node.js 수동 설치 방법:
+        - macOS: brew install node
+        - Ubuntu/Debian: https://deb.nodesource.com/
+        - 범용: https://nodejs.org/ 또는 nvm (https://github.com/nvm-sh/nvm)
+        ```
+
    a. **statusline** — `STATUSLINE=NOT_INSTALLED`이면:
       - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
       - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장
@@ -298,7 +328,8 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
       - plugins 동작과 동일한 절차 수행 (마켓플레이스 등록 + document-skills 설치)
 
    e. **gemini** — `GEMINI=NOT_INSTALLED`이면:
-      - 설치 가이드 텍스트를 결과에 포함 (자동 설치 불가, 가이드만 표시)
+      - Node.js가 설치되어 있으면 자동 설치: `npm install -g @google/gemini-cli`
+      - Node.js가 없으면 설치 가이드만 표시
 
 3. **결과 요약**: 설치 결과를 테이블로 표시:
    ```
@@ -306,12 +337,13 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
 
    | 항목 | 결과 |
    |------|------|
+   | Node.js | ✅ 설치됨 (vXX) / ⏭️ 이미 설치됨 |
    | statusline-leeloo.sh | ✅ 설치됨 / ⏭️ 이미 설치됨 |
    | CLAUDE.md | ✅ 설치됨 / ⏭️ 이미 설치됨 |
    | serena 대시보드 | ✅ 비활성화 완료 / ⏭️ 이미 설정됨 |
    | anthropic-agent-skills | ✅ 등록됨 / ⏭️ 이미 등록됨 |
    | document-skills | ✅ 설치됨 / ⏭️ 이미 설치됨 |
-   | gemini-cli | ⚠️ 수동 설치 필요: npm i -g @google/gemini-cli / ⏭️ 이미 설치됨 |
+   | gemini-cli | ✅ 자동 설치됨 / ⏭️ 이미 설치됨 |
 
    Claude Code를 재시작하면 모든 설정이 적용됩니다.
    ```
