@@ -109,16 +109,23 @@ leeloo-kit 환경 상태
 
 5. **실행 권한 부여**: Bash로 `chmod +x ~/.claude/statusline-leeloo.sh` 실행.
 
-6. **설정 안내**:
+6. **settings.json에 statusLine 등록**: Read 도구로 `~/.claude/settings.json` 읽은 후:
+   - `statusLine` 필드가 이미 `statusline-leeloo.sh`를 포함하면: 건너뜀.
+   - `statusLine` 필드가 없거나 다른 값이면: Edit 도구로 `statusLine` 필드를 다음으로 설정:
+     ```json
+     "statusLine": {
+       "type": "command",
+       "command": "bash ~/.claude/statusline-leeloo.sh"
+     }
+     ```
+   - `statusLine` 필드가 아예 없으면: `"hooks": {}` 또는 다른 최상위 키 뒤에 추가.
+
+7. **결과 안내**:
    ```
    statusline-leeloo.sh 설치 완료
 
    경로: ~/.claude/statusline-leeloo.sh
-
-   Claude Code에서 활성화하려면:
-   ~/.claude/settings.json의 statusLine 항목에 다음을 추가하세요:
-
-   "statusLine": "~/.claude/statusline-leeloo.sh"
+   설정: ~/.claude/settings.json → statusLine 자동 등록됨
 
    Claude Code를 재시작하면 적용됩니다.
    ```
@@ -316,6 +323,7 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
       - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
       - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장
       - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
+      - settings.json에 statusLine 자동 등록 (statusline 동작 6단계와 동일)
 
    b. **CLAUDE.md** — `CLAUDEMD=NOT_INSTALLED`이면:
       - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
@@ -364,6 +372,7 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
       - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
       - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장 (덮어쓰기)
       - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
+      - settings.json에 statusLine 자동 등록 (statusline 동작 6단계와 동일)
 
    b. **CLAUDE.md**:
       - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
