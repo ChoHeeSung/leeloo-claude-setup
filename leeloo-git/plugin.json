@@ -1,0 +1,6 @@
+{
+  "name": "leeloo-git",
+  "version": "1.0.0",
+  "description": "Git 작업 자동화 — 커밋 메시지 생성, 저장소 초기화",
+  "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
+}

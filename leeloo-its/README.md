@@ -1,4 +1,4 @@
-# its-ddl-tool
+# leeloo-its
 
 ITS DB 테이블 DDL 생성/수정 Claude Code 플러그인.
 

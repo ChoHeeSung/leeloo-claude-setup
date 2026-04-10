@@ -1,6 +1,6 @@
 # leeloo-kit
 
-사내 표준 AI 개발 키트. 하네스 엔지니어링 기반 자동화 + 다중 검증.
+하네스 엔지니어링 코어 + 환경/도구. 모든 프로젝트에 자동 적용되는 자동화 엔진.
 
 ## Harness Engineering
 
@@ -25,7 +25,7 @@
   - `session-end.js` — 세션 요약 영속화 + Failure Memory Loop
   - `lib/` — io.js, config.js, paths.js, context.js, failure-log.js, edit-accumulator.js
 - `leeloo.config.json` — 하네스 설정 (failure memory, back-pressure, cross-validation)
-- `skills/` — 9 skills (lk- prefix). 각 스킬 상세는 SKILL.md 참조.
+- `skills/` — 2 skills: lk-setup (환경 강화), lk-skill-create (스킬 자동 생성)
 - `agents/` — code-analyzer
 - `output-styles/` — lk-dual-verify, lk-mentor, lk-ops
 
