@@ -17,9 +17,10 @@ const { clearEditedFiles } = require('./lib/edit-accumulator');
 /**
  * session-end.js — 세션 종료 처리 (SessionEnd 이벤트)
  *
- * 두 가지 역할:
+ * 세 가지 역할:
  * 1. 세션 요약 영속화 (.leeloo/sessions/{date}-session.md)
- * 2. Failure Memory Loop (기존 unified-stop.js 로직)
+ * 2. Context Checkpoint 병합 (context-summary.md → 세션 파일 → 초기화)
+ * 3. Failure Memory Loop (기존 unified-stop.js 로직)
  *
  * ECC 패턴: 디스크에 요약 기록 → 다음 SessionStart에서 복원
  * HTML 주석 마커로 멱등성 보장
@@ -68,10 +69,38 @@ function collectModifiedFiles() {
   return [];
 }
 
-function buildSessionSummary(meta, modifiedFiles) {
+function loadContextSummary() {
+  try {
+    const summaryPath = path.join(process.cwd(), '.leeloo/context-summary.md');
+    if (!fs.existsSync(summaryPath)) return '';
+    return fs.readFileSync(summaryPath, 'utf8').trim();
+  } catch (e) {
+    return '';
+  }
+}
+
+function clearContextSummary() {
+  try {
+    const summaryPath = path.join(process.cwd(), '.leeloo/context-summary.md');
+    if (fs.existsSync(summaryPath)) {
+      fs.writeFileSync(summaryPath, '', 'utf8');
+    }
+  } catch (e) {
+    // 무시
+  }
+}
+
+function buildSessionSummary(meta, modifiedFiles, contextSummary) {
   const lines = [];
   lines.push(`프로젝트: ${meta.project} (${meta.branch})`);
   lines.push(`종료: ${meta.date}`);
+
+  if (contextSummary) {
+    lines.push(`작업 맥락:`);
+    // 최대 20줄
+    const ctxLines = contextSummary.split('\n').slice(-20);
+    lines.push(...ctxLines);
+  }
 
   if (modifiedFiles.length > 0) {
     lines.push(`수정 파일 (${modifiedFiles.length}개):`);
@@ -162,12 +191,15 @@ async function main() {
   const config = loadConfig();
   const messages = [];
 
-  // 1. 세션 요약 영속화
+  // 1. 세션 요약 영속화 (Context Checkpoint 포함)
   try {
     const meta = collectSessionMetadata();
     const modifiedFiles = collectModifiedFiles();
-    const summary = buildSessionSummary(meta, modifiedFiles);
+    const contextSummary = loadContextSummary();
+    const summary = buildSessionSummary(meta, modifiedFiles, contextSummary);
     writeSessionFile(summary);
+    // context-summary.md 초기화 (세션 파일로 이동 완료)
+    if (contextSummary) clearContextSummary();
   } catch (e) {
     // 무시
   }

@@ -125,6 +125,6 @@ if [[ $FAIL -gt 0 ]]; then
   exit 1
 else
   echo ""
-  echo "  환경 준비 완료. /lk-iu-pdf-extract, /lk-doc-parse, /lk-doc-compare, /lk-doc-form 을 사용할 수 있습니다."
+  echo "  환경 준비 완료. /lk-doc-pdf-extract, /lk-doc-parse, /lk-doc-compare, /lk-doc-form 을 사용할 수 있습니다."
   exit 0
 fi

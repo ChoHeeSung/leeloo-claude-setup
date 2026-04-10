@@ -1,11 +1,11 @@
 ---
-name: lk-iu-pdf-extract
-description: "설계 도면 PDF에서 시설물·장비 정보를 자동 추출하여 Excel로 정리. /lk-iu-pdf-extract <pdf-path> [--output <dir>] [--pages <range>]"
+name: lk-doc-pdf-extract
+description: "설계 도면 PDF에서 시설물·장비 정보를 자동 추출하여 Excel로 정리. /lk-doc-pdf-extract <pdf-path> [--output <dir>] [--pages <range>]"
 user_invocable: true
 argument-hint: "<pdf-path> [--output <dir>] [--pages <range>]"
 ---
 
-# /lk-iu-pdf-extract — PDF 도면 시설물 추출
+# /lk-doc-pdf-extract — PDF 도면 시설물 추출
 
 설계 도면 PDF에서 시설물·장비 정보를 자동 추출하여 Excel로 정리하는 범용 스킬.
 특정 장비 유형이나 ID 체계에 의존하지 않고, 도면을 먼저 분석하여 패턴을 스스로 발견한 뒤 전체 페이지에 적용한다.
@@ -13,9 +13,9 @@ argument-hint: "<pdf-path> [--output <dir>] [--pages <range>]"
 ## 사용 예시
 
 ```
-/lk-iu-pdf-extract CM-001_통신관로_평면도.pdf
-/lk-iu-pdf-extract 전력배선평면도.pdf --output 수정본/
-/lk-iu-pdf-extract 도면.pdf --pages 3-7
+/lk-doc-pdf-extract CM-001_통신관로_평면도.pdf
+/lk-doc-pdf-extract 전력배선평면도.pdf --output 수정본/
+/lk-doc-pdf-extract 도면.pdf --pages 3-7
 ```
 
 ## 핵심 설계 원칙
@@ -37,10 +37,10 @@ argument-hint: "<pdf-path> [--output <dir>] [--pages <range>]"
 
 PDF 경로가 없으면:
 ```
-사용법: /lk-iu-pdf-extract <pdf-path> [--output <dir>] [--pages <range>]
-예: /lk-iu-pdf-extract CM-001_평면도.pdf
-    /lk-iu-pdf-extract 도면.pdf --pages 3-7
-    /lk-iu-pdf-extract 도면.pdf --output 결과/
+사용법: /lk-doc-pdf-extract <pdf-path> [--output <dir>] [--pages <range>]
+예: /lk-doc-pdf-extract CM-001_평면도.pdf
+    /lk-doc-pdf-extract 도면.pdf --pages 3-7
+    /lk-doc-pdf-extract 도면.pdf --output 결과/
 ```
 출력 후 중단.
 

@@ -11,6 +11,7 @@ const { getFailureMemoryStats } = require('./lib/failure-log');
  *
  * ECC 패턴: 경량 마커만 기록 + 핵심 정보 postContext로 보존
  * - compaction-log.txt에 타임스탬프 기록
+ * - Context Checkpoint (작업 맥락/결정 이력) 보존
  * - Failure Memory 최근 3건 + 현재 작업 상태 주입
  */
 
@@ -40,6 +41,20 @@ function getRecentFailures() {
 
     // 최근 3건
     return allEntries.slice(-3).map(e => `  ${e.type}: ${e.line}`).join('\n');
+  } catch (e) {
+    return '';
+  }
+}
+
+function getContextSummary() {
+  try {
+    const summaryPath = path.join(process.cwd(), '.leeloo/context-summary.md');
+    if (!fs.existsSync(summaryPath)) return '';
+    const content = fs.readFileSync(summaryPath, 'utf8').trim();
+    if (!content) return '';
+    // 최대 20줄로 제한
+    const lines = content.split('\n').slice(-20);
+    return lines.join('\n');
   } catch (e) {
     return '';
   }
@@ -82,6 +97,11 @@ async function main() {
   const recentFailures = getRecentFailures();
   if (recentFailures) {
     parts.push(`최근 실패:\n${recentFailures}`);
+  }
+
+  const contextSummary = getContextSummary();
+  if (contextSummary) {
+    parts.push(`작업 맥락 (Context Checkpoint):\n${contextSummary}`);
   }
 
   const todoState = getCurrentTodoState();

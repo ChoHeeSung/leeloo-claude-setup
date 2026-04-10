@@ -38,8 +38,8 @@ function loadPreviousSessionSummary() {
 
     if (startIdx !== -1 && endIdx !== -1) {
       const summary = content.slice(startIdx + startMarker.length, endIdx).trim();
-      // 최대 500자로 요약
-      return summary.length > 500 ? summary.slice(0, 500) + '...' : summary;
+      // 최대 800자로 요약 (작업 맥락 포함 시 여유 확보)
+      return summary.length > 800 ? summary.slice(0, 800) + '...' : summary;
     }
 
     return null;
