@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-10 10:30 | README.md v3.1.0 반영 — 버전, 훅 7개 이벤트, lk-skill-create, 다양한 개발언어 지원 추가 | [상세](history/2026-04-10_1030_readme-v310-update.md) |
 | 2026-04-09 09:45 | ECC Hooks & Skill-Creator 통합 — v3.1.0 (배치 품질체크, 세션 라이프사이클, MCP 헬스체크, lk-skill-create) | [상세](history/2026-04-09_0945_ecc-hooks-skill-creator.md) |
 | 2026-04-08 10:10 | Failure Memory — hook 기반 → 자기 기록 방식 전환 (tool_response 비어있음 발견) | [상세](history/2026-04-08_1010_failure-memory-self-record.md) |
 | 2026-04-08 09:45 | plugin.json hooks 등록 누락 수정 — PostToolUse hook 미실행 원인 해결 | [상세](history/2026-04-08_0945_hook-registration-fix.md) |
