@@ -159,18 +159,51 @@ Refs: #321
 1. label: "작성" — HISTORY.md + history/ 상세 파일 생성
 2. label: "건너뛰기" — HISTORY.md 작성 없이 커밋 진행
 
-**"작성" 선택 시:**
+**"작성" 선택 시 (Haiku Task):**
 
-1. `mkdir -p history` (없으면 생성)
-2. 현재 한국 시각(KST, UTC+9)을 기준으로 상세 파일 작성: `history/{YYYY-MM-DD}_{HHMM}_{제목}.md`
+HISTORY.md 작성은 Haiku 서브 에이전트에게 위임한다. 메인 세션은 프롬프트 구성 + 결과 확인만 수행.
+
+**Agent tool 호출:**
+- `subagent_type`: `task`
+- `task_model`: `haiku`
+- `prompt`: 아래 템플릿에 커밋 메시지와 diff 요약을 삽입
+
+```
+아래 커밋 정보를 바탕으로 HISTORY.md와 history/ 상세 파일을 작성하라.
+
+## 작업 절차
+
+1. `mkdir -p history` 실행 (없으면 생성)
+2. 현재 한국 시각(KST, UTC+9)을 `TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M'` 로 획득
+3. 상세 파일 작성: `history/{YYYY-MM-DD}_{HHMM}_{제목}.md`
    - 제목은 커밋 메시지의 type 제외 핵심 키워드로 자동 생성 (예: `kordoc-integration`)
    - 내용: 지시 요약, 작업 내용, 결과, 핵심 코드 스니펫(있으면), 현실 비유(복잡한 개념이 있으면)
-3. HISTORY.md 테이블에 한 줄 추가 (파일이 없으면 테이블 헤더 포함 신규 생성):
+4. HISTORY.md 테이블에 한 줄 추가 (파일이 없으면 테이블 헤더 포함 신규 생성):
    ```
    | {YYYY-MM-DD HH:MM} | {작업 요약 한 줄} | [상세](history/{파일명}) |
    ```
    - 최신 항목이 테이블 맨 위에 오도록 삽입
-4. 생성한 HISTORY.md + history/ 파일을 `git add`로 스테이징에 포함
+5. 생성한 HISTORY.md + history/ 파일을 `git add`로 스테이징에 포함
+6. 생성한 파일 경로만 출력 (다른 설명 없이)
+
+## 입력 데이터
+
+### 커밋 메시지
+{confirmed_commit_message}
+
+### git diff --stat
+{diff_stat 결과}
+
+### git diff (핵심 부분)
+{diff 요약 — 너무 크면 파일명 + 주요 변경 위주}
+
+## 출력
+생성한 파일 경로 2개만 출력:
+- history/{filename}.md
+- HISTORY.md (갱신)
+```
+
+서브 에이전트 완료 후 메인 세션은 반환된 파일 경로를 확인만 한다 (재읽기 불필요).
 
 **"건너뛰기" 선택 시:** 이 단계를 건너뛰고 바로 커밋 확인으로 진행.
 
@@ -260,6 +293,38 @@ Push 하려면:
   브랜치: [branch] → origin/[branch]
   변경 파일: [N]개
 ```
+
+### 11. 세션 정리 여부 확인 (커밋 완료 후)
+
+커밋(또는 커밋+push) 완료 후 AskUserQuestion으로 세션 정리 옵션을 제시한다.
+
+**Question**: "커밋 완료. 세션을 정리할까요?"
+**Header**: "Session"
+**Options**:
+1. label: "계속" (Recommended) — 아무것도 하지 않음. 연관 작업을 이어갈 때
+2. label: "compact" — 관련 작업을 계속하되 대화 요약으로 컨텍스트 축약
+3. label: "clear" — 작업 단위 종료. 새 세션으로 시작 (글로벌 원칙 8 "작업 단위별 /clear" 기본 권장)
+
+**선택별 동작:**
+
+- **"계속"**: 아무 출력 없이 종료.
+- **"compact"**: 사용자에게 `/compact` 입력을 안내한다 (슬래시 명령은 사용자가 직접 입력해야 실행됨):
+  ```
+  컨텍스트를 정리하려면 다음을 입력하세요:
+    /compact
+  ```
+- **"clear"**: 사용자에게 `/clear` 입력을 안내한다:
+  ```
+  새 작업을 시작하려면 다음을 입력하세요:
+    /clear
+
+  (TODO.md, HISTORY.md, Failure Memory, auto memory는 파일로 보존되므로 clear 후에도 자동 복원됩니다)
+  ```
+
+**판단 가이드 (사용자가 고민하면 제공):**
+- 바로 이어서 같은 맥락의 작업 → `계속` 또는 `compact`
+- 커밋이 작업 단위의 완료 → `clear` (권장)
+- 컨텍스트가 무거워졌지만 연관 작업 예정 → `compact`
 
 ## Notes
 
