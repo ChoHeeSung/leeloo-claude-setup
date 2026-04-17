@@ -8,14 +8,14 @@ Leeloo(이루기술) 사내 Claude Code 플러그인 마켓플레이스.
 
 | 유형 | 플러그인 | 버전 | 설명 |
 |------|---------|------|------|
-| 환경/도구 | **leeloo-kit** | 3.1.0 | 하네스 엔지니어링 코어 — Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint |
-| 워크플로우 | **leeloo-workflow** | 1.0.0 | Plan 작성, 코드 리뷰, Gemini 교차검증, TODO 관리 |
-| Git | **leeloo-git** | 1.0.0 | 커밋 메시지 자동 생성, 저장소 초기화 |
-| 에이전트/팀 | **leeloo-agent** | 1.0.0 | Sub Agent 생성, Agent Team 구성·운영 |
-| 문서/도면 | **leeloo-doc** | 1.1.0 | 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식 |
-| 외부 연동 | **leeloo-bitbucket** | 1.0.0 | Bitbucket Cloud 저장소 관리 — REST API 직접 호출 |
-| 외부 연동 | **leeloo-n8n** | 1.0.0 | n8n 워크플로우 자동화 — MCP 17개 도구 래핑 |
-| 외부 연동 | **leeloo-its** | 1.0.0 | ITS Oracle DB 대화형 관리 — DDL, 코드, 시설물 |
+| 환경/도구 | **leeloo-kit** | 3.2.0 | 하네스 엔지니어링 코어 — Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint |
+| 워크플로우 | **leeloo-workflow** | 1.0.1 | Plan 작성, 코드 리뷰, Gemini 교차검증, TODO 관리 |
+| Git | **leeloo-git** | 1.0.1 | 커밋 메시지 자동 생성, 저장소 초기화 |
+| 에이전트/팀 | **leeloo-agent** | 1.0.1 | Sub Agent 생성, Agent Team 구성·운영 |
+| 문서/도면 | **leeloo-doc** | 1.1.1 | 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식 |
+| 외부 연동 | **leeloo-bitbucket** | 1.0.1 | Bitbucket Cloud 저장소 관리 — REST API 직접 호출 |
+| 외부 연동 | **leeloo-n8n** | 1.0.1 | n8n 워크플로우 자동화 — MCP 17개 도구 래핑 |
+| 외부 연동 | **leeloo-its** | 1.0.1 | ITS Oracle DB 대화형 관리 — DDL, 코드, 시설물 |
 
 ## 설치
 

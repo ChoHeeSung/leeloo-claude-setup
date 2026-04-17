@@ -25,7 +25,6 @@ function loadConfig() {
   } catch (e) {
     // 설정 파일 없으면 기본값 반환
     _config = {
-      version: '3.0.0',
       harness: {
         failureMemory: {
           enabled: true,

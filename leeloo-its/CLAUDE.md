@@ -5,7 +5,7 @@ ITS(지능형교통시스템) Oracle DB 대화형 관리 플러그인.
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-its", version: "1.0.0").
+- `plugin.json` — Plugin manifest (name: "leeloo-its", version: "1.0.1").
 - `skills/` — 3 skills (lk-its- prefix):
   - `lk-its-ddl/` — DDL 생성/수정 (create, alter, show, check, dict).
   - `lk-its-code/` — 코드/패턴코드 관리 (add-group, add-item, add-pattern, add-holiday, list, search).

@@ -4,7 +4,7 @@
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-doc", version: "1.1.0").
+- `plugin.json` — Plugin manifest (name: "leeloo-doc", version: "1.1.1").
 - `package.json` — Node.js 의존성 (kordoc). `npm install` 필요.
 - `scripts/` — 유틸리티 스크립트:
   - `check-env.sh` — 의존성 일괄 점검 + `--fix` 자동 설치.

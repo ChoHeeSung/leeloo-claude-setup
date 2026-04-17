@@ -117,7 +117,7 @@ Max 5 요금제 환경에서도 이 원칙은 유효하다. Sonnet 버킷은 관
 
 ## Testing
 
-1. SessionStart에서 `leeloo-kit v3.1.0` 메시지 확인
+1. SessionStart에서 `leeloo-kit v{plugin.json version}` 메시지 확인 (하드코딩 아님 — plugin.json에서 동적 로드)
 2. Write/Edit 시 `.leeloo/edited-files.tmp`에 경로 축적 확인
 3. Stop에서 배치 품질체크 일괄 실행 확인
 4. SessionEnd에서 `.leeloo/sessions/` 세션 요약 생성 확인

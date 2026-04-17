@@ -13,6 +13,16 @@ function isCommandAvailable(cmd) {
   return result.status === 0;
 }
 
+function getPluginVersion() {
+  try {
+    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
+    const pkg = JSON.parse(fs.readFileSync(path.join(pluginRoot, 'plugin.json'), 'utf8'));
+    return pkg.version || '';
+  } catch (e) {
+    return '';
+  }
+}
+
 /**
  * 이전 세션 요약 로드 (.leeloo/sessions/ 최신 파일)
  */
@@ -233,9 +243,11 @@ async function main() {
   }
 
   // 출력
+  const version = getPluginVersion();
+  const banner = version ? `leeloo-kit v${version}` : 'leeloo-kit';
   const systemMsg = messages.length > 0
-    ? ['leeloo-kit v3.1.0', ...messages].join('\n')
-    : 'leeloo-kit v3.1.0 세션 시작';
+    ? [banner, ...messages].join('\n')
+    : `${banner} 세션 시작`;
 
   sessionMessage(systemMsg);
 }

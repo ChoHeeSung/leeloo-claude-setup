@@ -59,42 +59,42 @@ leeloo-claude-setup/
 
 ## Plugins
 
-### leeloo-kit (v3.1.0) — 환경/도구
+### leeloo-kit (v3.2.0) — 환경/도구
 하네스 엔지니어링 코어. Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint.
 - Skills: lk-setup, lk-skill-create
 - 상세: `leeloo-kit/CLAUDE.md` 참조
 
-### leeloo-workflow (v1.0.0) — 워크플로우
+### leeloo-workflow (v1.0.1) — 워크플로우
 Plan 작성, 코드 리뷰, Gemini 교차검증, TODO 관리.
 - Skills: lk-plan, lk-plan-cross-review, lk-code-review, lk-todo
 - 상세: `leeloo-workflow/CLAUDE.md` 참조
 
-### leeloo-git (v1.0.0) — Git
+### leeloo-git (v1.0.1) — Git
 커밋 메시지 자동 생성 + 저장소 초기화.
 - Skills: lk-commit, lk-git-init
 - 상세: `leeloo-git/CLAUDE.md` 참조
 
-### leeloo-agent (v1.0.0) — 에이전트/팀
+### leeloo-agent (v1.0.1) — 에이전트/팀
 Sub Agent 생성 + Agent Team 구성·운영.
 - Skills: lk-agent, lk-team
 - 상세: `leeloo-agent/CLAUDE.md` 참조
 
-### leeloo-doc (v1.1.0) — 문서/도면
+### leeloo-doc (v1.1.1) — 문서/도면
 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식.
 - Skills: lk-doc-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form
 - 상세: `leeloo-doc/CLAUDE.md` 참조
 
-### leeloo-bitbucket (v1.0.0) — 외부 연동
+### leeloo-bitbucket (v1.0.1) — 외부 연동
 Bitbucket Cloud REST API 직접 호출 기반 저장소 관리.
 - Skills: lk-bb-setup, lk-bb-repo, lk-bb-branch, lk-bb-pr, lk-bb-commit
 - 상세: `leeloo-bitbucket/CLAUDE.md` 참조
 
-### leeloo-n8n (v1.0.0) — 외부 연동
+### leeloo-n8n (v1.0.1) — 외부 연동
 n8n MCP 17개 도구를 8개 skill로 래핑.
 - Skills: lk-n8n-setup, lk-n8n-workflow, lk-n8n-run, lk-n8n-validate, lk-n8n-node, lk-n8n-template, lk-n8n-version, lk-n8n-docs
 - 상세: `leeloo-n8n/CLAUDE.md` 참조
 
-### leeloo-its (v1.0.0) — 외부 연동
+### leeloo-its (v1.0.1) — 외부 연동
 ITS Oracle DB 대화형 관리. DDL 생성/수정, 코드 관리, 시설물 등록.
 - Skills: lk-its-ddl, lk-its-code, lk-its-equip
 - 상세: `leeloo-its/CLAUDE.md` 참조
