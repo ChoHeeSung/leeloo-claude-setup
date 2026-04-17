@@ -1,7 +1,8 @@
 # TODO
 
-> 생성 기준: 2026-03-18-leeloo-kit-rebranding.md | 2026-03-18
-> 설계 문서: .claude/plans/2026-03-18-leeloo-kit-rebranding.md
+> 생성 기준: model-delegation-optimization.plan.md | 2026-04-17
+> 설계 문서: /Users/heesung/work/M_CHO/leeloo-claude-setup/docs/plan/model-delegation-optimization.plan.md
+> 이전 기준: .claude/plans/2026-03-18-leeloo-kit-rebranding.md (완료, #1~22)
 
 ## 작업 목록
 
@@ -29,7 +30,27 @@
 | 20 | ✅ | CLAUDE.md 템플릿 갱신 — PDCA 워크플로우 안내 추가 | 03-18 06:48 | 03-18 06:49 | 1분 |
 | 21 | ✅ | 셸 스크립트 제거 — setup-claude-code.sh, uninstall-claude-code.sh 삭제 | 03-18 06:48 | 03-18 06:49 | 1분 |
 | 22 | ✅ | 불필요 리소스 제거 — settings-template.json, resources/settings.local.json 삭제 | 03-18 06:48 | 03-18 06:49 | 1분 |
+| 23 | ✅ | §Step1 모델 선택 가이드라인 문서화 — leeloo-kit/CLAUDE.md에 Haiku/Sonnet/Opus 판단 기준 테이블 추가 | 04-17 09:16 | 04-17 09:16 | 1분 |
+| 24 | ✅ | §Step2 [파일럿A] lk-its-ddl Haiku 위임 — Task tool + task_model:haiku, 결과 검증 체크리스트 | 04-17 09:16 | 04-17 09:17 | 1분 |
+| 25 | ✅ | §Step3 [파일럿B] lk-its-code Haiku 위임 — YAML→INSERT 변환 SubAgent + 체크리스트 | 04-17 09:17 | 04-17 09:18 | 1분 |
+| 26 | ⏸ | §Step4 파일럿 결과 검토 — 2~3일 실사용 피드백 수집, 폴백 발동률 확인 | - | - | - |
+| 27 | ✅ | §Step5 lk-doc-parse Haiku 위임 — kordoc 결과 포맷팅 SubAgent 전환 | 04-17 09:18 | 04-17 09:19 | 1분 |
+| 28 | ✅ | §Step6 lk-n8n-node Haiku 위임 — search/info 서브커맨드만 SubAgent 위임 | 04-17 09:19 | 04-17 09:20 | 1분 |
+| 29 | ✅ | §Step7 lk-bb-pr Haiku 위임 — list/get 서브커맨드만 SubAgent 위임 | 04-17 09:20 | 04-17 09:21 | 1분 |
+| 30 | ⬜ | §Step8 Haiku 5개 완료 커밋 + HISTORY.md 기록 | - | - | - |
+| 31 | ✅ | §Step9 lk-code-review Sonnet 위임 — Claude 단독 모드 리뷰 분석 SubAgent | 04-17 09:21 | 04-17 09:22 | 1분 |
+| 32 | ✅ | §Step10 lk-todo create Sonnet 위임 — Plan→태스크 분해 SubAgent | 04-17 09:22 | 04-17 09:23 | 1분 |
+| 33 | ✅ | §Step11 lk-doc-compare Sonnet 위임 — 공문서 diff 해석 SubAgent | 04-17 09:23 | 04-17 09:24 | 1분 |
+| 34 | ✅ | §Step12 lk-plan Phase 3·4 Sonnet 위임 — 대안 탐색 + YAGNI 리뷰 SubAgent | 04-17 09:24 | 04-17 09:25 | 1분 |
+| 35 | ✅ | §Step13 lk-skill-create Phase 3 Sonnet 위임 — SKILL.md 본문 생성 SubAgent | 04-17 09:25 | 04-17 09:26 | 1분 |
+| 36 | ⬜ | §Step14 Sonnet 5개 완료 커밋 + HISTORY.md 기록 | - | - | - |
+| 37 | ⬜ | §Step15 최종 검증 — 10개 Skill 샘플 10건 이상 체크리스트 통과, 가이드라인 문서화 확인 | - | - | - |
 
 ## 진행 상황
 
-완료: 22/22 (100%)
+완료: 33/37 (89%)
+남은 항목:
+- #26 파일럿 실사용 검증 (사용자) — `lk-its-ddl` / `lk-its-code` 2~3일 사용 후 폴백 발동률 확인
+- #30 Haiku 5개 완료 커밋 — `/lk-commit`으로 진행
+- #36 Sonnet 5개 완료 커밋 — `/lk-commit`으로 진행 (Haiku 커밋과 통합 가능)
+- #37 최종 검증 (사용자) — 10개 Skill 실사용 샘플 10건 이상

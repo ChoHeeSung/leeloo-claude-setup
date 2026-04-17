@@ -40,9 +40,9 @@ Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
 
 ---
 
-### list 동작
+### list 동작 (Haiku Task)
 
-PR이 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
+PR이 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다. JSON → 마크다운 테이블 포맷팅은 Haiku 서브 에이전트에 위임.
 
 Bash로 실행:
 ```bash
@@ -52,16 +52,43 @@ Bash로 실행:
 ```
 - `--all` 플래그 시 `--query` 생략 (전체 상태).
 
-결과 표시:
+**Agent tool 호출 (bb-fetch-all.sh 결과 포맷팅):**
+- `subagent_type`: `task`
+- `task_model`: `haiku`
+- `prompt`:
 
+```
+아래 Bitbucket PR 목록 JSON을 마크다운 테이블로 변환하라.
+
+## 입력
+### 저장소
+{repo_slug}
+
+### JSON 배열
+{json_result}
+
+## 출력 형식
 ```
 PR 목록: {repo_slug} — 총 {N}개
 
 | # | ID | 제목 | 작성자 | 소스 → 대상 | 상태 | 생성일 |
 |---|-----|------|--------|------------|------|-------|
 | 1 | 42 | Fix login | user | feat → main | OPEN | 2026-03-20 |
-| ... | | | | | | |
 ```
+
+## 규칙
+- JSON 배열의 모든 항목을 누락 없이 포함.
+- 생성일은 YYYY-MM-DD 형식으로 짧게.
+- 제목이 60자 초과 시 말줄임.
+- 입력에 없는 필드는 "-"로 표시.
+```
+
+**결과 검증 (메인 세션):**
+- [ ] 테이블 행 수 = JSON 배열 길이
+- [ ] ID/제목이 원본과 일치
+- [ ] 입력에 없는 PR hallucination 없음
+
+**품질 미달 시 폴백:** 메인 세션이 직접 테이블 생성.
 
 ---
 
@@ -79,7 +106,26 @@ curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.o
   --jq-filter '{id: .id, user: .user.display_name, content: .content.raw, created: .created_on, inline: .inline}'
 ```
 
-결과 표시:
+**결과 포맷팅 (Haiku Task):**
+
+PR 상세 JSON + 댓글 JSON을 통합 마크다운으로 변환하는 작업은 Haiku 서브 에이전트에 위임.
+
+**Agent tool 호출:**
+- `subagent_type`: `task`
+- `task_model`: `haiku`
+- `prompt`:
+
+```
+아래 Bitbucket PR 상세와 댓글 JSON을 통합 마크다운으로 표시하라.
+
+## 입력
+### PR 상세
+{pr_detail_json}
+
+### 댓글 목록
+{comments_json}
+
+## 출력 형식
 ```
 PR #{pr_id}: {title}
 
@@ -96,8 +142,18 @@ PR #{pr_id}: {title}
 
 ### 댓글 ({N}개)
 - **{user}** ({date}): {content}
-- ...
 ```
+
+## 규칙
+- 모든 댓글을 작성 시각 오름차순으로 표시.
+- 입력에 없는 정보는 "-" 또는 해당 섹션 생략.
+- 본문 내용은 요약/변경 금지.
+```
+
+**결과 검증 (메인 세션):**
+- [ ] PR 메타 필드 모두 포함
+- [ ] 댓글 수가 입력과 일치
+- [ ] 설명/댓글 본문이 원문과 일치
 
 ---
 

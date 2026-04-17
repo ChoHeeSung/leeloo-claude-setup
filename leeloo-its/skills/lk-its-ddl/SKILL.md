@@ -87,9 +87,70 @@ FK 참조가 있나요?
 ```
 "예" 선택 시: 부모 테이블과 참조 컬럼 입력
 
-**Step 5: DDL 프리뷰**
-Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/system-prompt.md` 읽어 규칙 적용.
-생성된 CREATE TABLE + COMMENT ON + FK + CHECK를 표시.
+**Step 5: DDL 프리뷰 (Haiku Task)**
+
+DDL 문자열 생성은 Haiku 서브 에이전트에게 위임한다. 메인 세션은 프롬프트 구성 + 결과 검증만 수행.
+
+먼저 Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/system-prompt.md`를 읽어 규칙 전문을 확보한다.
+
+**Agent tool 호출:**
+- `subagent_type`: `task`
+- `task_model`: `haiku`
+- `prompt`: 아래 템플릿에 데이터를 삽입
+
+```
+아래 테이블 설계 내역을 기반으로 Oracle DDL을 생성하라.
+
+## DDL 생성 규칙 (system-prompt.md 전문)
+{system_prompt_md 본문 삽입}
+
+## 입력 데이터
+
+### 테이블 기본 정보
+- 도메인 접두사: {domain_prefix}
+- 테이블명: {full_table_name} (예: ITS.COM_WEATHER_ALERT)
+- 설명: {table_desc}
+
+### 컬럼 매핑 결과 (Step 3 확정)
+| 컬럼 | 영문명 | 도메인 | 타입 | PK | NOT NULL | FK 참조 | 코멘트 |
+{column_rows}
+
+### FK/INDEX/CHECK (Step 4 확정)
+{fk_list}
+
+## 출력 형식
+순서대로 4개 섹션으로 출력:
+
+```sql
+-- 1) CREATE TABLE
+CREATE TABLE ITS.{TABLE} (
+  ...
+);
+
+-- 2) COMMENT ON
+COMMENT ON TABLE ITS.{TABLE} IS '...';
+COMMENT ON COLUMN ITS.{TABLE}.{COL} IS '...';
+
+-- 3) PK / FK / CHECK
+ALTER TABLE ITS.{TABLE} ADD CONSTRAINT ...;
+
+-- 4) INDEX (있으면)
+CREATE INDEX ... ON ITS.{TABLE}(...);
+```
+
+다른 설명이나 마크다운 코드블록 래핑 없이 SQL만 출력.
+```
+
+**결과 검증 (메인 세션):**
+- [ ] CREATE TABLE, COMMENT ON, PK/FK, INDEX 4개 섹션이 모두 존재
+- [ ] 입력 컬럼 목록의 모든 컬럼이 DDL에 포함됨
+- [ ] 입력에 없는 컬럼/FK/CHECK가 hallucination되지 않음
+- [ ] 모든 COMMENT ON이 한글 코멘트를 포함
+- [ ] FK 참조 테이블/컬럼이 입력과 일치
+
+**품질 미달 시 폴백:** 메인 세션에서 system-prompt.md 규칙을 직접 적용해 재생성.
+
+검증 통과한 DDL을 사용자에게 표시한다.
 
 AskUserQuestion:
 ```
@@ -154,7 +215,21 @@ AskUserQuestion:
 **Step 4: 변경 내용 입력** (선택에 따라)
 대화형으로 변경 사항 수집.
 
-**Step 5: ALTER DDL 생성 + 프리뷰**
+**Step 5: ALTER DDL 생성 + 프리뷰 (Haiku Task)**
+
+ALTER 문 생성도 동일하게 Haiku 서브 에이전트에 위임한다.
+
+**Agent tool 호출:**
+- `subagent_type`: `task`
+- `task_model`: `haiku`
+- `prompt`: "아래 변경 내용을 Oracle ALTER TABLE/COMMENT ON/DROP INDEX 등 DDL로 생성하라. 입력 외 변경은 추가하지 않는다." + 현재 구조/변경 내용/system-prompt.md 규칙 삽입.
+
+**결과 검증 (메인 세션):**
+- [ ] 변경 유형(ADD/MODIFY/RENAME/DROP) 정확히 매핑됨
+- [ ] 입력 외 컬럼 변경 없음
+- [ ] COMMENT ON이 변경된 컬럼에만 갱신됨
+
+**품질 미달 시 폴백:** 메인 세션 재생성.
 
 **Step 6: DB 실행**
 ALTER TABLE 실행 + COMMENT ON 갱신 + ddl/ 원본 파일도 동기화.

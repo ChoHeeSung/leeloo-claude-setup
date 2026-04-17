@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-17 09:25 | 10개 Skill에 Haiku/Sonnet 위임 패턴 적용 + 모델 선택 가이드라인 문서화 | [상세](history/2026-04-17_0925_model-delegation-10-skills.md) |
 | 2026-04-17 08:51 | lk-commit: HISTORY Haiku 위임 + 세션 정리 옵션 추가 | [상세](history/2026-04-17_0851_lk-commit-haiku-session-cleanup.md) |
 | 2026-04-10 11:30 | 플러그인 유형별 재편 — 5개 → 8개 (워크플로우/Git/에이전트 분리, leeloo-doc/leeloo-its 리네임) | [상세](history/2026-04-10_1130_plugin-restructure-8.md) |
 | 2026-04-10 11:00 | Context Checkpoint 구현 + MCP 헬스체크 제거 + lk-iu-pdf-extract → lk-doc-pdf-extract 리네임 | [상세](history/2026-04-10_1100_context-checkpoint-and-cleanup.md) |

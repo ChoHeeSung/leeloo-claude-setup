@@ -66,14 +66,38 @@ AskUserQuestion으로 순차 질문:
 
 ---
 
-### Phase 3: SKILL.md 생성
+### Phase 3: SKILL.md 본문 생성 (Sonnet Task)
 
-Read로 기존 SKILL.md 하나를 참조하여 구조를 파악한 후, 다음 구조로 생성:
+Read로 기존 SKILL.md 하나를 참조하여 구조 예시를 확보한 후, SKILL.md 본문 작성은 Sonnet 서브 에이전트에 위임한다.
 
+**Agent tool 호출:**
+- `subagent_type`: `task`
+- `task_model`: `sonnet`
+- `prompt`:
+
+```
+아래 정보를 기반으로 Claude Code 스킬 SKILL.md를 작성하라.
+
+## 입력
+### 스킬 이름
+{skill_name}
+
+### Phase 1 프로젝트 분석 결과
+{phase1_summary}
+
+### Phase 2 스킬 정의 (--quick 모드면 일부 비어있음)
+- 목적: {purpose}
+- 트리거 조건: {trigger}
+- 출력 형식: {output_form}
+
+### 구조 참조 예시 (기존 SKILL.md 한 개)
+{example_skill_md}
+
+## 출력 형식 (정확히 이 구조의 마크다운만)
 ```markdown
 ---
 name: {skill-name}
-description: "{한 줄 설명}"
+description: "{한 줄 설명 — 120자 이내, / 로 시작하는 사용법 포함}"
 user_invocable: true
 argument-hint: "{인자 힌트}"
 ---
@@ -90,22 +114,33 @@ argument-hint: "{인자 힌트}"
 
 ## 활성화 조건
 
-- {트리거 조건 1}
-- {트리거 조건 2}
+- {트리거 조건들}
 
 ## Procedure
 
-### Phase 1: {단계명}
-{상세 절차}
-
-### Phase 2: {단계명}
-{상세 절차}
+### Phase 1: ...
+### Phase 2: ...
 
 ## Anti-Patterns
 
-- {하지 말아야 할 것 1}
-- {하지 말아야 할 것 2}
+- ...
 ```
+
+## 규칙
+- frontmatter description은 한 줄, / 사용법 포함.
+- Procedure의 각 Phase는 AskUserQuestion/Read/Write/Bash 같은 Claude Code 도구 이름으로 구체적 단계 명시.
+- 참조 예시의 스타일(한국어, 체크리스트, 마크다운 코드블록 사용)을 따를 것.
+- 없는 도구/MCP/외부 서비스를 hallucination 하지 말 것.
+- 입력에 주어진 목적/트리거/출력과 모순되는 내용 금지.
+```
+
+**결과 검증 (메인 세션):**
+- [ ] frontmatter 4개 필드(name, description, user_invocable, argument-hint) 존재
+- [ ] name이 skill-name 인자와 일치
+- [ ] Procedure 섹션에 실제 도구 호출 단계가 있음
+- [ ] hallucination 도구/MCP 사용 없음
+
+**품질 미달 시 폴백:** 메인 세션(Opus)에서 직접 작성.
 
 ---
 
