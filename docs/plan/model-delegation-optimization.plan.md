@@ -76,12 +76,15 @@
 4. `leeloo-n8n/skills/lk-n8n-node/SKILL.md` — 노드 조회 테이블 포맷팅 (search, info 서브커맨드)
 5. `leeloo-bitbucket/skills/lk-bb-pr/SKILL.md` — PR 목록/상세 조회 (list, get 서브커맨드)
 
-**Sonnet 위임 대상 (5개):**
+**Sonnet 위임 대상 (3개, 실행 중 2개 철회):**
 1. `leeloo-workflow/skills/lk-code-review/SKILL.md` — Claude 단독 모드 리뷰
-2. `leeloo-workflow/skills/lk-todo/SKILL.md` — `create` 서브커맨드(Plan → TODO 분해)
-3. `leeloo-doc/skills/lk-doc-compare/SKILL.md` — 두 공문서 비교 해석
-4. `leeloo-workflow/skills/lk-plan/SKILL.md` — Phase 3 대안 탐색 + Phase 4 YAGNI 리뷰
-5. `leeloo-kit/skills/lk-skill-create/SKILL.md` — Phase 3 SKILL.md 본문 생성
+2. `leeloo-doc/skills/lk-doc-compare/SKILL.md` — 두 공문서 비교 해석
+3. `leeloo-kit/skills/lk-skill-create/SKILL.md` — Phase 3 SKILL.md 본문 생성
+
+**Sonnet 위임 철회 (사후 재평가):**
+- `lk-plan` Phase 3·4 — Phase 2·5(Opus)와 맥락 단절 리스크 + Plan 품질이 프로젝트 방향 결정
+- `lk-todo create` Step 4 — Plan 전체 재전송량 > 짧은 JSON 출력 생성 비용, 이득 미미
+- 원칙: `leeloo-kit/CLAUDE.md` § 위임하지 않는 경우
 
 **공통 작업:**
 - 각 SKILL.md에 `Task tool + task_model` 위임 Step 추가

@@ -37,20 +37,18 @@
 | 27 | ✅ | §Step5 lk-doc-parse Haiku 위임 — kordoc 결과 포맷팅 SubAgent 전환 | 04-17 09:18 | 04-17 09:19 | 1분 |
 | 28 | ✅ | §Step6 lk-n8n-node Haiku 위임 — search/info 서브커맨드만 SubAgent 위임 | 04-17 09:19 | 04-17 09:20 | 1분 |
 | 29 | ✅ | §Step7 lk-bb-pr Haiku 위임 — list/get 서브커맨드만 SubAgent 위임 | 04-17 09:20 | 04-17 09:21 | 1분 |
-| 30 | ⬜ | §Step8 Haiku 5개 완료 커밋 + HISTORY.md 기록 | - | - | - |
+| 30 | ✅ | §Step8 Haiku 5개 완료 커밋 + HISTORY.md 기록 | 04-17 09:26 | 04-17 09:26 | 1분 |
 | 31 | ✅ | §Step9 lk-code-review Sonnet 위임 — Claude 단독 모드 리뷰 분석 SubAgent | 04-17 09:21 | 04-17 09:22 | 1분 |
-| 32 | ✅ | §Step10 lk-todo create Sonnet 위임 — Plan→태스크 분해 SubAgent | 04-17 09:22 | 04-17 09:23 | 1분 |
+| 32 | ↩ | §Step10 lk-todo create Sonnet 위임 (철회) — 사후 재평가: Plan 재전송량 > 짧은 JSON 출력. 위임 이득 미미 | 04-17 09:22 | 04-17 09:35 | - |
 | 33 | ✅ | §Step11 lk-doc-compare Sonnet 위임 — 공문서 diff 해석 SubAgent | 04-17 09:23 | 04-17 09:24 | 1분 |
-| 34 | ✅ | §Step12 lk-plan Phase 3·4 Sonnet 위임 — 대안 탐색 + YAGNI 리뷰 SubAgent | 04-17 09:24 | 04-17 09:25 | 1분 |
+| 34 | ↩ | §Step12 lk-plan Phase 3·4 Sonnet 위임 (철회) — 사후 재평가: Phase 2·5(Opus)와 맥락 단절 리스크 + Plan 품질이 프로젝트 방향 결정 | 04-17 09:24 | 04-17 09:35 | - |
 | 35 | ✅ | §Step13 lk-skill-create Phase 3 Sonnet 위임 — SKILL.md 본문 생성 SubAgent | 04-17 09:25 | 04-17 09:26 | 1분 |
-| 36 | ⬜ | §Step14 Sonnet 5개 완료 커밋 + HISTORY.md 기록 | - | - | - |
+| 36 | ✅ | §Step14 Sonnet 5개 완료 커밋 + HISTORY.md 기록 | 04-17 09:26 | 04-17 09:26 | 1분 |
 | 37 | ⬜ | §Step15 최종 검증 — 10개 Skill 샘플 10건 이상 체크리스트 통과, 가이드라인 문서화 확인 | - | - | - |
 
 ## 진행 상황
 
-완료: 33/37 (89%)
-남은 항목:
-- #26 파일럿 실사용 검증 (사용자) — `lk-its-ddl` / `lk-its-code` 2~3일 사용 후 폴백 발동률 확인
-- #30 Haiku 5개 완료 커밋 — `/lk-commit`으로 진행
-- #36 Sonnet 5개 완료 커밋 — `/lk-commit`으로 진행 (Haiku 커밋과 통합 가능)
-- #37 최종 검증 (사용자) — 10개 Skill 실사용 샘플 10건 이상
+완료: 35/37 (95%)
+남은 항목 (사용자 실사용 검증 필요):
+- #26 파일럿 실사용 검증 — `lk-its-ddl` / `lk-its-code` 2~3일 사용 후 폴백 발동률 확인
+- #37 최종 검증 — 10개 Skill 실사용 샘플 10건 이상
