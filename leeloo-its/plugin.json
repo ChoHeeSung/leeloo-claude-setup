@@ -1,6 +1,6 @@
 {
   "name": "leeloo-its",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ITS Oracle DB 대화형 관리 — DDL 생성/수정, 코드 관리, 시설물 등록",
   "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
 }
