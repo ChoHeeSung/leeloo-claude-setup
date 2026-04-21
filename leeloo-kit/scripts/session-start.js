@@ -24,6 +24,44 @@ function getPluginVersion() {
 }
 
 /**
+ * 활성 페르소나 요약 로드 (.claude/settings.local.json → .claude/output-styles/<name>.md)
+ */
+function loadActivePersona() {
+  try {
+    const cwd = process.cwd();
+    const settingsPath = path.join(cwd, '.claude', 'settings.local.json');
+    if (!fs.existsSync(settingsPath)) return null;
+
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    const name = settings.outputStyle;
+    if (!name || typeof name !== 'string') return null;
+
+    const personaPath = path.join(cwd, '.claude', 'output-styles', `${name}.md`);
+    if (!fs.existsSync(personaPath)) {
+      return { name, orphan: true };
+    }
+
+    const content = fs.readFileSync(personaPath, 'utf8');
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    let description = '';
+    if (fmMatch) {
+      const descLine = fmMatch[1].split('\n').find((l) => /^description\s*:/i.test(l));
+      if (descLine) {
+        description = descLine.replace(/^description\s*:\s*/i, '').trim();
+        if (description.startsWith('"') && description.endsWith('"')) {
+          description = description.slice(1, -1);
+        }
+      }
+    }
+    if (description.length > 120) description = description.slice(0, 120) + '...';
+
+    return { name, description, orphan: false };
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
  * 이전 세션 요약 로드 (.leeloo/sessions/ 최신 파일)
  */
 function loadPreviousSessionSummary() {
@@ -87,7 +125,22 @@ async function main() {
     messages.push('[안내] gemini-cli 미설치. 교차검증(/lk-cross-validate)에 필요: npm install -g @google/gemini-cli');
   }
 
-  // 4. 이전 세션 요약 로드
+  // 4. 활성 페르소나 요약
+  try {
+    const persona = loadActivePersona();
+    if (persona) {
+      if (persona.orphan) {
+        messages.push(`페르소나: ${persona.name} (파일 없음 — /lk-persona list 확인)`);
+      } else {
+        const tail = persona.description ? ` — ${persona.description}` : '';
+        messages.push(`페르소나: ${persona.name}${tail}`);
+      }
+    }
+  } catch (e) {
+    // 무시
+  }
+
+  // 5. 이전 세션 요약 로드
   try {
     const prevSummary = loadPreviousSessionSummary();
     if (prevSummary) {
@@ -97,7 +150,7 @@ async function main() {
     // 무시
   }
 
-  // 5. Failure Memory 상태 표시
+  // 6. Failure Memory 상태 표시
   try {
     const stats = getFailureMemoryStats();
     if (stats) {
@@ -110,7 +163,7 @@ async function main() {
     // 무시
   }
 
-  // 6. 린터/타입체커 미설치 감지 (다언어 확장)
+  // 7. 린터/타입체커 미설치 감지 (다언어 확장)
   try {
     const cwd = process.cwd();
     const lintDoneFlag = path.join(cwd, '.leeloo', 'lint-setup-done');
@@ -207,7 +260,7 @@ async function main() {
     // 무시
   }
 
-  // 7. TODO*.md 파일들 진행률 표시
+  // 8. TODO*.md 파일들 진행률 표시
   try {
     const cwd = process.cwd();
     const todoFiles = fs.readdirSync(cwd).filter(

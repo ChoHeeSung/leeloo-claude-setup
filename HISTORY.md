@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-22 08:56 | 세션 시작 시 활성 페르소나 표시 — loadActivePersona() 신설 (leeloo-kit v3.4.0) | [상세](history/2026-04-22_0856_session-start-persona-display.md) |
 | 2026-04-21 18:25 | lk-persona 스킬 추가 — 세션 페르소나 대화형 관리 (leeloo-kit v3.3.0) | [상세](history/2026-04-21_1825_lk-persona-skill.md) |
 | 2026-04-17 12:18 | 플러그인 버전 동기화 + leeloo-kit 배너 하드코딩 제거 — plugin.json 단일 소스화 | [상세](history/2026-04-17_1218_version-sync-hardcode-removal.md) |
 | 2026-04-17 09:25 | 10개 Skill에 Haiku/Sonnet 위임 패턴 적용 + 모델 선택 가이드라인 문서화 | [상세](history/2026-04-17_0925_model-delegation-10-skills.md) |

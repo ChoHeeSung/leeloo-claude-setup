@@ -59,7 +59,7 @@ leeloo-claude-setup/
 
 ## Plugins
 
-### leeloo-kit (v3.3.0) — 환경/도구
+### leeloo-kit (v3.4.0) — 환경/도구
 하네스 엔지니어링 코어. Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint.
 - Skills: lk-setup, lk-skill-create, lk-persona
 - 상세: `leeloo-kit/CLAUDE.md` 참조
