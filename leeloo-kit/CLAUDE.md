@@ -25,7 +25,7 @@
   - `session-end.js` — 세션 요약 영속화 + Failure Memory Loop
   - `lib/` — io.js, config.js, paths.js, context.js, failure-log.js, edit-accumulator.js
 - `leeloo.config.json` — 하네스 설정 (failure memory, back-pressure, cross-validation)
-- `skills/` — 2 skills: lk-setup (환경 강화), lk-skill-create (스킬 자동 생성)
+- `skills/` — 3 skills: lk-setup (환경 강화), lk-skill-create (스킬 자동 생성), lk-persona (세션 페르소나 관리)
 - `agents/` — code-analyzer
 - `output-styles/` — lk-dual-verify, lk-mentor, lk-ops
 
