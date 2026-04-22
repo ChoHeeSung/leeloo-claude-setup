@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-23 08:56 | kordoc 2.5.2 재검증 + 테두리 미표시 원인 진단 — bold/ordered list 통과, 테두리는 header.xml refList 이슈로 좁혀 upstream #4 리포트 | [상세](history/2026-04-23_0856_kordoc-2.5.2-verify.md) |
 | 2026-04-22 14:44 | 스파게티 코드 작성 금지 원칙 추가 — 글로벌/프로젝트 CLAUDE.md 8개 체크리스트 | [상세](history/2026-04-22_1444_anti-spaghetti-coding-principles.md) |
 | 2026-04-22 12:50 | Markdown → HWPX 역변환 스킬 추가 — kordoc 2.5.1 + lk-doc-md2hwpx (leeloo-doc v1.2.0) | [상세](history/2026-04-22_1250_kordoc-2.5.1-md2hwpx.md) |
 | 2026-04-22 08:56 | 세션 시작 시 활성 페르소나 표시 — loadActivePersona() 신설 (leeloo-kit v3.4.0) | [상세](history/2026-04-22_0856_session-start-persona-display.md) |
