@@ -79,9 +79,9 @@ Sub Agent 생성 + Agent Team 구성·운영.
 - Skills: lk-agent, lk-team
 - 상세: `leeloo-agent/CLAUDE.md` 참조
 
-### leeloo-doc (v1.1.1) — 문서/도면
-설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식.
-- Skills: lk-doc-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form
+### leeloo-doc (v1.2.0) — 문서/도면
+설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식, Markdown → HWPX 역변환.
+- Skills: lk-doc-pdf-extract, lk-doc-parse, lk-doc-compare, lk-doc-form, lk-doc-md2hwpx
 - 상세: `leeloo-doc/CLAUDE.md` 참조
 
 ### leeloo-bitbucket (v1.0.1) — 외부 연동

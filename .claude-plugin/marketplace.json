@@ -40,8 +40,8 @@
     },
     {
       "name": "leeloo-doc",
-      "description": "문서/도면 처리 — 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식",
-      "version": "1.1.1",
+      "description": "문서/도면 처리 — 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식, Markdown→HWPX",
+      "version": "1.2.0",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-doc",
       "category": "document"

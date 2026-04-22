@@ -4,18 +4,20 @@
 
 ## Architecture
 
-- `plugin.json` — Plugin manifest (name: "leeloo-doc", version: "1.1.1").
-- `package.json` — Node.js 의존성 (kordoc). `npm install` 필요.
+- `plugin.json` — Plugin manifest (name: "leeloo-doc", version: "1.2.0").
+- `package.json` — Node.js 의존성 (kordoc ^2.5.1). `npm install` 필요.
 - `scripts/` — 유틸리티 스크립트:
   - `check-env.sh` — 의존성 일괄 점검 + `--fix` 자동 설치.
   - `kordoc-compare.mjs` — kordoc compare() API 래퍼 (문서 비교).
   - `kordoc-form.mjs` — kordoc extractFormFields() API 래퍼 (양식 인식).
   - `kordoc-table.mjs` — kordoc parse() → 테이블 추출 래퍼.
-- `skills/` — 4 skills (lk-doc- prefix):
+  - `kordoc-md2hwpx.mjs` — kordoc markdownToHwpx() API 래퍼 (Markdown → HWPX 변환).
+- `skills/` — 5 skills (lk-doc- prefix):
   - `lk-doc-pdf-extract/` — PDF 도면에서 시설물 정보 추출 → Excel 생성.
   - `lk-doc-parse/` — 한국 공문서(HWP/HWPX/PDF) → 마크다운 변환.
   - `lk-doc-compare/` — 두 공문서 비교 (크로스 포맷 HWP↔HWPX 지원).
   - `lk-doc-form/` — 공문서 양식 인식 (레이블-값 추출).
+  - `lk-doc-md2hwpx/` — Markdown → HWPX 역변환 (kordoc 2.5.x 기반).
 
 ## Key Design Decisions
 
