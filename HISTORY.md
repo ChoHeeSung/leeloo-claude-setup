@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-22 14:44 | 스파게티 코드 작성 금지 원칙 추가 — 글로벌/프로젝트 CLAUDE.md 8개 체크리스트 | [상세](history/2026-04-22_1444_anti-spaghetti-coding-principles.md) |
 | 2026-04-22 12:50 | Markdown → HWPX 역변환 스킬 추가 — kordoc 2.5.1 + lk-doc-md2hwpx (leeloo-doc v1.2.0) | [상세](history/2026-04-22_1250_kordoc-2.5.1-md2hwpx.md) |
 | 2026-04-22 08:56 | 세션 시작 시 활성 페르소나 표시 — loadActivePersona() 신설 (leeloo-kit v3.4.0) | [상세](history/2026-04-22_0856_session-start-persona-display.md) |
 | 2026-04-21 18:25 | lk-persona 스킬 추가 — 세션 페르소나 대화형 관리 (leeloo-kit v3.3.0) | [상세](history/2026-04-21_1825_lk-persona-skill.md) |
