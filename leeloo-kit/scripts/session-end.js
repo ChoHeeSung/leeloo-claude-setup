@@ -181,8 +181,9 @@ function processFailureMemory(config) {
 // ── 메인 ──
 
 async function main() {
+  let event = {};
   try {
-    await readStdin();
+    event = await readStdin();
   } catch (e) {
     respond({});
     return;
@@ -190,6 +191,17 @@ async function main() {
 
   const config = loadConfig();
   const messages = [];
+
+  // Token budget: 세션 종료 이벤트 기록 (silent-fail)
+  try {
+    const budget = require('./token-budget');
+    budget.appendEvent({
+      kind: 'end',
+      session: (event && event.session_id) || 'unknown',
+      duration_ms: (event && event.duration_ms) || 0,
+    });
+    budget.archiveOldFiles();
+  } catch (e) { /* silent */ }
 
   // 1. 세션 요약 영속화 (Context Checkpoint 포함)
   try {

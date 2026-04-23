@@ -14,6 +14,9 @@ FG_RIGHT_TEXT="\033[38;2;255;255;255m"
 FG_STATS="\033[38;2;46;125;50m"
 BG_STATS="\033[48;2;46;125;50m"
 FG_STATS_TEXT="\033[38;2;255;255;255m"
+FG_BUDGET="\033[38;2;120;90;170m"
+BG_BUDGET="\033[48;2;120;90;170m"
+FG_BUDGET_TEXT="\033[38;2;255;255;255m"
 
 # --- Engine ---
 CAP_LEFT=$(printf '\xee\x82\xb6')
@@ -28,6 +31,7 @@ ICON_DOLLAR=$(printf '\xee\xb7\xa8')
 ICON_KEY=$(printf '\xf3\xb0\x8c\xb7')
 ICON_CHART=$(printf '\xef\x82\x80')
 ICON_BOLT=$(printf '\xef\x83\xa7')
+ICON_COIN=$(printf '\xef\x80\x95')
 
 BOLD="\033[1m"
 RESET="\033[0m"
@@ -130,5 +134,18 @@ printf " "
 printf "${FG_STATS}${CAP_LEFT}${RESET}"
 printf "${BG_STATS}${BOLD}${FG_STATS_TEXT} ${ICON_CHART} %d%% ${ICON_BOLT} %ss ${RESET}" "$cache_pct" "$api_sec"
 printf "${FG_STATS}${CAP_RIGHT}${RESET}"
+
+# Token budget: 오늘 자동 로드 평균
+budget_file="$project_dir/.leeloo/token-budget/$(TZ='Asia/Seoul' date +%Y-%m-%d).jsonl"
+if [ -f "$budget_file" ] && command -v jq >/dev/null 2>&1; then
+    load_avg=$(jq -s '[.[] | select(.kind=="load") | .tokens_est // 0] | if length > 0 then (add / length | floor) else 0 end' "$budget_file" 2>/dev/null)
+    if [ -n "$load_avg" ] && [ "$load_avg" -gt 0 ] 2>/dev/null; then
+        budget_display=$(awk "BEGIN {printf \"%.1fK\", $load_avg/1000}")
+        printf " "
+        printf "${FG_BUDGET}${CAP_LEFT}${RESET}"
+        printf "${BG_BUDGET}${BOLD}${FG_BUDGET_TEXT} ${ICON_COIN} %s ${RESET}" "$budget_display"
+        printf "${FG_BUDGET}${CAP_RIGHT}${RESET}"
+    fi
+fi
 
 printf "\n"

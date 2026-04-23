@@ -40,6 +40,16 @@ async function main() {
     } catch (e) {
       // 무시
     }
+
+    // Token budget: skill 실행 이벤트 기록 (silent-fail)
+    try {
+      const budget = require('./token-budget');
+      budget.appendEvent({
+        kind: 'skill',
+        session: (event && event.session_id) || 'unknown',
+        name: skillName,
+      });
+    } catch (e) { /* silent */ }
   }
 
   // 스킬별 다음 단계 제안 (최소한만)

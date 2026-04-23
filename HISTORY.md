@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-24 08:40 | 하네스 Tier 2 — token-budget.js + session hook 통합 + statusline 보라 블록 + lk-harness budget 서브커맨드 4개 뷰 (leeloo-kit 3.5.4) | [상세](history/2026-04-24_0840_harness-tier2-session-budget-observability.md) |
 | 2026-04-24 08:25 | lk-harness 스킬 분리 — 하네스 감사 책임을 lk-setup에서 이주(SRP 복원) + Tier 2·3 확장 자리 확보 (leeloo-kit 3.5.3) | [상세](history/2026-04-24_0825_lk-harness-skill-split.md) |
 | 2026-04-24 07:27 | 하네스 Tier 1 — context-lint.js + Stop hook 통합으로 SKILL description·CLAUDE.md 줄수·commands drift 자동 가드 (leeloo-kit 3.5.2) | [상세](history/2026-04-24_0727_harness-tier1-drift-context-guard.md) |
 | 2026-04-23 18:01 | 슬래시 커맨드 chip 복원 — 8개 플러그인에 commands/ wrapper 32개 추가, generate-commands.js 자동 생성 스크립트 + drift 감지 | [상세](history/2026-04-23_1801_slash-command-chip-restore.md) |

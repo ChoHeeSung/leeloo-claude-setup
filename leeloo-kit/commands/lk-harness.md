@@ -1,6 +1,6 @@
 ---
-description: "하네스 감사 — 컨텍스트 예산·SKILL drift·CLAUDE.md 크기 검사"
-argument-hint: "[context-lint] [--verbose]"
+description: "하네스 감사 — context-lint·budget(세션 토큰 추정) on-demand 리포트"
+argument-hint: "[context-lint|budget] [--verbose|--week|--top-skills|--load]"
 ---
 `lk-harness` 스킬을 실행합니다. 사용자 입력: $ARGUMENTS
 

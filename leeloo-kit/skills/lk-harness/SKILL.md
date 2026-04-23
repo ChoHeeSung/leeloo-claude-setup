@@ -1,8 +1,8 @@
 ---
 name: lk-harness
-description: "하네스 감사 — 컨텍스트 예산·SKILL drift·CLAUDE.md 크기 검사"
+description: "하네스 감사 — context-lint·budget(세션 토큰 추정) on-demand 리포트"
 user_invocable: true
-argument-hint: "[context-lint] [--verbose]"
+argument-hint: "[context-lint|budget] [--verbose|--week|--top-skills|--load]"
 ---
 
 # /lk-harness — 하네스 엔지니어링 감사
@@ -12,12 +12,16 @@ leeloo-kit 하네스의 건강성을 감사하고 위반 항목을 상세 리포
 ## 서브커맨드
 
 ```
-/lk-harness                       — context-lint와 동일 (기본)
-/lk-harness context-lint          — 컨텍스트 예산 감사 요약
-/lk-harness context-lint --verbose — 위반 항목 상세
+/lk-harness                         — context-lint와 동일 (기본)
+/lk-harness context-lint            — 컨텍스트 예산 감사 요약
+/lk-harness context-lint --verbose  — 위반 항목 상세
+/lk-harness budget                  — 오늘 + 7일 토큰 추정 요약
+/lk-harness budget --week           — 7일 일별 테이블
+/lk-harness budget --top-skills     — 14일 skill 사용 랭킹
+/lk-harness budget --load           — 현재 자동 로드 컨텍스트 현황
 ```
 
-> Tier 2·3에서 `budget`(세션 토큰 관측) / `failure-memory`(실패 기록 rotate) / `cache-audit`(prefix 변동성) 서브커맨드가 추가될 예정. 여기서만 누적한다(다른 스킬로 분산 금지 — SRP 유지).
+> Tier 3에서 `failure-memory`(실패 기록 rotate) / `cache-audit`(prefix 변동성) 서브커맨드가 추가될 예정. 여기서만 누적한다(다른 스킬로 분산 금지 — SRP 유지).
 
 ## Procedure
 
@@ -26,7 +30,9 @@ leeloo-kit 하네스의 건강성을 감사하고 위반 항목을 상세 리포
 사용자 입력에서 서브커맨드를 파싱합니다.
 
 - 인자 없음 또는 `context-lint` → **context-lint** 동작
-- `--verbose` 플래그 → 상세 모드
+- `budget` → **budget** 동작
+- 플래그 `--verbose` → context-lint 상세
+- 플래그 `--week` / `--top-skills` / `--load` → budget 뷰 선택
 
 ---
 
@@ -92,6 +98,51 @@ node leeloo-kit/scripts/generate-commands.js --sync
 ```
 
 SKILL.md `description`·`argument-hint` 변경 후 반드시 실행하세요.
+
+---
+
+### budget 동작
+
+세션당 자동 로드 추정치·skill 실행 빈도를 집계해 출력합니다. 원시 데이터는 `.leeloo/token-budget/<YYYY-MM-DD>.jsonl`에 hook(SessionStart/SessionEnd/skill-post)이 silent-fail로 축적합니다.
+
+**데이터 성격**
+
+| 항목 | 측정 방법 | 정확도 |
+|------|-----------|--------|
+| 자동 로드 chars | 루트 CLAUDE.md + 플러그인 CLAUDE.md + 모든 SKILL.md frontmatter 파일 크기 합 | ±5% |
+| tokens_est | `chars / 3.5` (영·한 혼합 평균) | ±15% |
+| skill 사용 빈도 | PostToolUse:Skill event 카운트 | 정확 |
+
+**추세** 관찰용입니다. 절대값은 Anthropic 측 실제 과금과 다를 수 있으며 비교는 항상 전주 대비 등 상대값으로 하세요.
+
+**실행**
+
+```bash
+# 오늘 + 7일 요약 (기본)
+node leeloo-kit/scripts/budget-report.js
+
+# 7일 일별 테이블
+node leeloo-kit/scripts/budget-report.js --week
+
+# 14일 skill 사용 랭킹
+node leeloo-kit/scripts/budget-report.js --top-skills
+
+# 현재 자동 로드 컨텍스트 현황
+node leeloo-kit/scripts/budget-report.js --load
+```
+
+**statusline 표시**
+
+`leeloo-kit/resources/statusline-leeloo.sh`가 오늘 자동 로드 평균(`X.XK` tok)을 보라 블록으로 표시합니다. 설치·갱신은 `/lk-setup statusline` 또는 `cp leeloo-kit/resources/statusline-leeloo.sh ~/.claude/`.
+
+**보관 정책**
+
+- `.leeloo/token-budget/<YYYY-MM-DD>.jsonl` — 30일 보관
+- 30일 경과 파일은 `.leeloo/token-budget/archive/<YYYY-MM>.jsonl`로 자동 병합 (SessionStart/SessionEnd hook이 수행)
+
+**tokens_per_char 튜닝**
+
+프로젝트 문자 분포에 따라 추정 계수를 조정하려면 `.leeloo/context-budget.json`에 `tokens_per_char` 필드를 추가하세요(기본 `0.2857` ≈ 1/3.5). 현재는 token-budget 모듈 기본값 사용.
 
 ---
 

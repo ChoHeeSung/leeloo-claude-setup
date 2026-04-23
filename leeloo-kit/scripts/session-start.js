@@ -97,13 +97,27 @@ function loadPreviousSessionSummary() {
 }
 
 async function main() {
+  let event = {};
   try {
-    await readStdin();
+    event = await readStdin();
   } catch (e) {
     // stdin 파싱 실패해도 계속 진행
   }
 
   const messages = [];
+
+  // Token budget: 자동 로드 크기 추정 기록 (silent-fail)
+  try {
+    const budget = require('./token-budget');
+    const auto = budget.measureAutoLoad();
+    budget.appendEvent({
+      kind: 'load',
+      session: (event && event.session_id) || 'unknown',
+      chars: auto.chars,
+      tokens_est: auto.tokens_est,
+    });
+    budget.archiveOldFiles();
+  } catch (e) { /* silent */ }
 
   // 1. .leeloo/ 디렉토리 생성
   try {
