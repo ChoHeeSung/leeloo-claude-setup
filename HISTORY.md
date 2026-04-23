@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-23 18:01 | 슬래시 커맨드 chip 복원 — 8개 플러그인에 commands/ wrapper 32개 추가, generate-commands.js 자동 생성 스크립트 + drift 감지 | [상세](history/2026-04-23_1801_slash-command-chip-restore.md) |
 | 2026-04-23 17:18 | 플러그인 버전 업 — leeloo-kit 3.5.0 + leeloo-git 1.1.0 + 6개 patch, marketplace.json 동기화, 모든 리모트 push | [상세](history/2026-04-23_1718_plugin-version-bump.md) |
 | 2026-04-23 16:19 | 세션 토큰 최적화 — SKILL.md·CLAUDE.md 압축, hook 출력 다이어트, lk-setup plugins 대화형 on/off 확장 (세션당 ~60% 절감) | [상세](history/2026-04-23_1619_session-token-optimization.md) |
 | 2026-04-23 08:56 | kordoc 2.5.2 재검증 + 테두리 미표시 원인 진단 — bold/ordered list 통과, 테두리는 header.xml refList 이슈로 좁혀 upstream #4 리포트 | [상세](history/2026-04-23_0856_kordoc-2.5.2-verify.md) |
