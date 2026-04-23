@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // skills/<name>/SKILL.md frontmatter -> commands/<name>.md slash-command wrapper 동기화.
+//   (기본)  : 레포의 commands/*.md 파일 생성/갱신.
 //   --check : drift 감지. 불일치 시 exit 1.
-//   --write : 기본. 파일 생성/갱신.
+//   --sync  : 기본 동작 + marketplaces / cache(최신 버전 디렉토리)에도 반영.
 // skill user_invocable의 argument-hint가 / 자동완성 chip으로 렌더링되지 않는
 // 하네스 동작을 보완하기 위한 wrapper. skill precedence로 실행은 skill이 가져간다.
 const fs = require('fs');
@@ -98,6 +99,64 @@ function runWrite(targets) {
   console.log(`\nsummary: ${created} created, ${updated} updated, ${unchanged} unchanged (total ${targets.length})`);
 }
 
+function semverCompare(a, b) {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+function latestCacheVersion(plugin) {
+  const HOME = process.env.HOME;
+  const cacheRoot = path.join(HOME, '.claude/plugins/cache/leeloo-claude-setup', plugin);
+  if (!fs.existsSync(cacheRoot)) return null;
+  const versions = fs
+    .readdirSync(cacheRoot, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+  if (versions.length === 0) return null;
+  return versions.sort(semverCompare).slice(-1)[0];
+}
+
+function syncOne(srcPath, plugin) {
+  const HOME = process.env.HOME;
+  const fileName = path.basename(srcPath);
+  const dsts = [];
+  const mkDst = path.join(HOME, '.claude/plugins/marketplaces/leeloo-claude-setup', plugin, 'commands', fileName);
+  ensureDir(mkDst);
+  fs.copyFileSync(srcPath, mkDst);
+  dsts.push({ role: 'marketplaces', path: mkDst });
+  const latest = latestCacheVersion(plugin);
+  if (latest) {
+    const cacheDst = path.join(HOME, '.claude/plugins/cache/leeloo-claude-setup', plugin, latest, 'commands', fileName);
+    ensureDir(cacheDst);
+    fs.copyFileSync(srcPath, cacheDst);
+    dsts.push({ role: `cache/${latest}`, path: cacheDst });
+  }
+  return dsts;
+}
+
+function runSync(targets) {
+  const cacheMissing = new Set();
+  let mkCount = 0;
+  let cacheCount = 0;
+  for (const t of targets) {
+    const dsts = syncOne(t.cmdPath, t.plugin);
+    for (const d of dsts) {
+      if (d.role === 'marketplaces') mkCount++;
+      else cacheCount++;
+    }
+    if (!latestCacheVersion(t.plugin)) cacheMissing.add(t.plugin);
+  }
+  console.log(`\nsync: marketplaces=${mkCount}, cache=${cacheCount}`);
+  if (cacheMissing.size) {
+    console.log(`  cache not present (skipped): ${Array.from(cacheMissing).join(', ')}`);
+  }
+}
+
 function runCheck(targets) {
   const drift = [];
   for (const t of targets) {
@@ -119,12 +178,16 @@ function runCheck(targets) {
 function main() {
   const args = process.argv.slice(2);
   const check = args.includes('--check');
+  const sync = args.includes('--sync');
   const targets = collectTargets();
   if (targets.length === 0) {
     console.error('no user_invocable skills found');
     process.exit(1);
   }
-  process.exit(check ? runCheck(targets) : (runWrite(targets), 0));
+  if (check) process.exit(runCheck(targets));
+  runWrite(targets);
+  if (sync) runSync(targets);
+  process.exit(0);
 }
 
 main();
