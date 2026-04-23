@@ -97,14 +97,15 @@ function renderSummarySection(typeEntries) {
 }
 
 function updateClaudeMd(cwd, section) {
-  const file = path.join(cwd, 'CLAUDE.md');
-  if (!fs.existsSync(file)) return false;
-  const text = fs.readFileSync(file, 'utf8');
+  const file = path.join(cwd, 'CLAUDE.local.md');
+  const exists = fs.existsSync(file);
+  const seed = `# ${path.basename(cwd)} (로컬 전용)\n\n> 이 파일은 gitignore 대상. 팀 공유용 정책은 루트 CLAUDE.md 참조.\n\n`;
+  const text = exists ? fs.readFileSync(file, 'utf8') : seed;
   const marker = /## Failure Memory[\s\S]*$/;
   const replaced = marker.test(text)
     ? text.replace(marker, section.trim() + '\n')
     : text.trimEnd() + '\n\n' + section.trim() + '\n';
-  if (replaced === text) return false;
+  if (exists && replaced === text) return false;
   fs.writeFileSync(file, replaced);
   return true;
 }

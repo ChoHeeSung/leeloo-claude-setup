@@ -150,8 +150,10 @@ function writeFailureMemory(failures) {
 // ── CLAUDE.md 요약 업데이트 ──
 
 /**
- * 프로젝트 CLAUDE.md의 ## Failure Memory 섹션에 요약만 기록
- * 글로벌 ~/.claude/CLAUDE.md는 절대 수정하지 않음
+ * 프로젝트 CLAUDE.local.md의 ## Failure Memory 섹션에 요약만 기록
+ * - 루트 CLAUDE.md는 prompt cache 안정 prefix로 보존(매 세션 재작성 방지)
+ * - CLAUDE.local.md는 Claude Code가 자동 로드하면서도 gitignore 가능
+ * - 글로벌 ~/.claude/CLAUDE.md는 절대 수정하지 않음
  */
 function updateClaudeMdSummary(failures) {
   if (!failures || failures.length === 0) return;
@@ -160,14 +162,14 @@ function updateClaudeMdSummary(failures) {
   const summaryCount = (config.harness && config.harness.failureMemory && config.harness.failureMemory.summaryCount) || 3;
   const targetSection = (config.harness && config.harness.failureMemory && config.harness.failureMemory.targetSection) || '## Failure Memory';
 
-  const claudeMdPath = path.join(process.cwd(), 'CLAUDE.md');
+  const claudeMdPath = path.join(process.cwd(), 'CLAUDE.local.md');
 
   let content = '';
   if (fs.existsSync(claudeMdPath)) {
     content = fs.readFileSync(claudeMdPath, 'utf8');
   } else {
-    // CLAUDE.md가 없으면 Failure Memory 섹션만 포함하여 자동 생성
-    content = `# ${path.basename(process.cwd())}\n\n${targetSection}\n`;
+    // CLAUDE.local.md가 없으면 Failure Memory 섹션만 포함하여 자동 생성
+    content = `# ${path.basename(process.cwd())} (로컬 전용)\n\n> 이 파일은 gitignore 대상. 팀 공유용 정책은 루트 CLAUDE.md 참조.\n\n${targetSection}\n`;
   }
 
   // 유형별 건수 집계

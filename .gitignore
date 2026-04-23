@@ -5,6 +5,9 @@ Thumbs.db
 # Claude Code local settings
 .claude/settings.local.json
 
+# 프로젝트 로컬 CLAUDE override (Failure Memory 요약 등 매 세션 변경분, Claude Code 자동 로드)
+CLAUDE.local.md
+
 # Marker file
 .leeloo-setup-done
 

@@ -34,7 +34,5 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. 각 플러그인의 skill이 `/` 자동완성에 나타나는지 확인
 
 ## Failure Memory
-file-io(3건) — 상세: .leeloo/failure-memory/ 참조
-- `Edit /Users/heesung/work/M_CHO/leeloo-claude-setup/leeloo-git/skills/lk-commit/SKILL.md` — {"filePath":"/Users/heesung/work/M_CHO/leeloo-claude-setup/leeloo-git/skills/lk-
-- `Edit /Users/heesung/work/M_CHO/leeloo-claude-setup/leeloo-kit/scripts/session-start.js` — {"filePath":"/Users/heesung/work/M_CHO/leeloo-claude-setup/leeloo-kit/scripts/se
-- `Edit /Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md` — {"filePath":"/Users/heesung/work/M_CHO/leeloo-claude-setup/HISTORY.md","oldStrin
+
+실패 기록 요약은 프로젝트 로컬 `CLAUDE.local.md`에 기록됩니다(gitignore, Claude Code 자동 로드). 상세는 `.leeloo/failure-memory/` 및 `/lk-harness failure-memory` 참조.
