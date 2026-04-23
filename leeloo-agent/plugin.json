@@ -1,6 +1,6 @@
 {
   "name": "leeloo-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "에이전트/팀 관리 — Sub Agent 생성, Agent Team 구성·운영",
   "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
 }

@@ -9,7 +9,7 @@
     {
       "name": "leeloo-kit",
       "description": "하네스 엔지니어링 코어 + 환경/도구 — Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint",
-      "version": "3.4.0",
+      "version": "3.5.0",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-kit",
       "category": "environment"
@@ -17,7 +17,7 @@
     {
       "name": "leeloo-workflow",
       "description": "개발 워크플로우 — Plan 작성, 코드 리뷰, Gemini 교차검증, TODO 관리",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-workflow",
       "category": "workflow"
@@ -25,7 +25,7 @@
     {
       "name": "leeloo-git",
       "description": "Git 작업 자동화 — 커밋 메시지 생성, 저장소 초기화",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-git",
       "category": "git"
@@ -33,7 +33,7 @@
     {
       "name": "leeloo-agent",
       "description": "에이전트/팀 관리 — Sub Agent 생성, Agent Team 구성·운영",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-agent",
       "category": "agent"
@@ -41,7 +41,7 @@
     {
       "name": "leeloo-doc",
       "description": "문서/도면 처리 — 설계 도면 PDF 추출, 한국 공문서(HWP/HWPX/PDF) 변환·비교·양식 인식, Markdown→HWPX",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-doc",
       "category": "document"
@@ -49,7 +49,7 @@
     {
       "name": "leeloo-bitbucket",
       "description": "Bitbucket Cloud 저장소 관리 — REST API 직접 호출 기반 (저장소, 브랜치, PR, 커밋)",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-bitbucket",
       "category": "external"
@@ -57,7 +57,7 @@
     {
       "name": "leeloo-n8n",
       "description": "n8n 워크플로우 자동화 — MCP 17개 도구를 사용자 친화적 skill로 래핑",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-n8n",
       "category": "external"
@@ -65,7 +65,7 @@
     {
       "name": "leeloo-its",
       "description": "ITS Oracle DB 대화형 관리 — DDL 생성/수정, 코드 관리, 시설물 등록",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-its",
       "category": "external"

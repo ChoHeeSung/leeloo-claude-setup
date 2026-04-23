@@ -1,6 +1,6 @@
 {
   "name": "leeloo-n8n",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "n8n 워크플로우 자동화 도구 — MCP 17개 도구를 사용자 친화적 skill로 래핑",
   "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
 }
