@@ -8,6 +8,16 @@ const { loadConfig } = require('./lib/config');
 const { loadEditedFiles, clearEditedFiles, classifyByLanguage } = require('./lib/edit-accumulator');
 const { appendFailure } = require('./lib/failure-log');
 
+function runContextLint() {
+  try {
+    const { runLint, summarize } = require('./context-lint');
+    const { violations } = runLint();
+    return summarize(violations);
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * stop-quality-check.js — 배치 품질체크 (Stop 이벤트)
  *
@@ -225,8 +235,14 @@ async function main() {
   // 편집 파일 목록 초기화
   clearEditedFiles();
 
+  const lintMsg = runContextLint();
+
   if (allErrors.length === 0) {
-    // 품질체크 통과: 침묵
+    if (lintMsg) {
+      stopApprove(`[leeloo-kit] ${lintMsg}`);
+      return;
+    }
+    // 품질체크·lint 모두 통과: 침묵
     respond({});
     return;
   }
@@ -251,9 +267,10 @@ async function main() {
     }
   }
 
+  const tail = lintMsg ? `\n\n${lintMsg}` : '';
   stopApprove(
     `[leeloo-kit] 배치 품질체크: ${allErrors.length}건 실패\n` +
-    `편집 파일 ${files.length}개 검사 완료.\n\n${report}`
+    `편집 파일 ${files.length}개 검사 완료.\n\n${report}${tail}`
   );
 }
 

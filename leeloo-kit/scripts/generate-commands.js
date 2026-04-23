@@ -175,6 +175,18 @@ function runCheck(targets) {
   return 1;
 }
 
+function checkDrift() {
+  const targets = collectTargets();
+  const drift = [];
+  for (const t of targets) {
+    const rendered = renderCommand(t.meta);
+    const exists = fs.existsSync(t.cmdPath);
+    const current = exists ? fs.readFileSync(t.cmdPath, 'utf8') : null;
+    if (current !== rendered) drift.push({ path: t.cmdPath, reason: exists ? 'out-of-sync' : 'missing' });
+  }
+  return { total: targets.length, drift };
+}
+
 function main() {
   const args = process.argv.slice(2);
   const check = args.includes('--check');
@@ -190,4 +202,6 @@ function main() {
   process.exit(0);
 }
 
-main();
+module.exports = { checkDrift, collectTargets, parseFrontmatter };
+
+if (require.main === module) main();

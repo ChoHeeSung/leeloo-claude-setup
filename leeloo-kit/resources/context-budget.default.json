@@ -1,0 +1,9 @@
+{
+  "skill_description_max": 100,
+  "skill_argument_hint_max": 120,
+  "claude_md_plugin_max_lines": 70,
+  "claude_md_root_max_lines": 60,
+  "hook_output_max_chars": 300,
+  "commands_drift_check": true,
+  "ignore_paths": []
+}
