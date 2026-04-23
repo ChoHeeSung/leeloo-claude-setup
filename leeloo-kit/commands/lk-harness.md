@@ -1,6 +1,6 @@
 ---
-description: "하네스 감사 — context-lint·budget(세션 토큰 추정) on-demand 리포트"
-argument-hint: "[context-lint|budget] [--verbose|--week|--top-skills|--load]"
+description: "하네스 감사 — context-lint·budget·failure-memory·cache-audit 리포트"
+argument-hint: "[context-lint|budget|failure-memory|cache-audit] [--verbose|--week|--load|--force|--file <p>]"
 ---
 `lk-harness` 스킬을 실행합니다. 사용자 입력: $ARGUMENTS
 

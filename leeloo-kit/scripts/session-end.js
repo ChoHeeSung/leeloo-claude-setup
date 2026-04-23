@@ -203,6 +203,12 @@ async function main() {
     budget.archiveOldFiles();
   } catch (e) { /* silent */ }
 
+  // Failure Memory rotate: 일 1회 gate로 실행 (silent-fail)
+  try {
+    const { rotate } = require('./failure-memory-rotate');
+    rotate();
+  } catch (e) { /* silent */ }
+
   // 1. 세션 요약 영속화 (Context Checkpoint 포함)
   try {
     const meta = collectSessionMetadata();

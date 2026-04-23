@@ -1,8 +1,8 @@
 ---
 name: lk-harness
-description: "하네스 감사 — context-lint·budget(세션 토큰 추정) on-demand 리포트"
+description: "하네스 감사 — context-lint·budget·failure-memory·cache-audit 리포트"
 user_invocable: true
-argument-hint: "[context-lint|budget] [--verbose|--week|--top-skills|--load]"
+argument-hint: "[context-lint|budget|failure-memory|cache-audit] [--verbose|--week|--load|--force|--file <p>]"
 ---
 
 # /lk-harness — 하네스 엔지니어링 감사
@@ -19,9 +19,14 @@ leeloo-kit 하네스의 건강성을 감사하고 위반 항목을 상세 리포
 /lk-harness budget --week           — 7일 일별 테이블
 /lk-harness budget --top-skills     — 14일 skill 사용 랭킹
 /lk-harness budget --load           — 현재 자동 로드 컨텍스트 현황
+/lk-harness failure-memory          — 유형별 기록 수·상위 패턴 요약
+/lk-harness failure-memory --force  — 일 1회 gate 무시하고 즉시 rotate
+/lk-harness cache-audit             — CLAUDE.md prefix 변동성 요약
+/lk-harness cache-audit --verbose   — 파일별 블록 구조
+/lk-harness cache-audit --file <p>  — 단일 파일 상세
 ```
 
-> Tier 3에서 `failure-memory`(실패 기록 rotate) / `cache-audit`(prefix 변동성) 서브커맨드가 추가될 예정. 여기서만 누적한다(다른 스킬로 분산 금지 — SRP 유지).
+> 모든 감사 서브커맨드는 **이 스킬 안에만** 존재합니다. 다른 스킬로 분산 금지 (SRP).
 
 ## Procedure
 
@@ -31,8 +36,12 @@ leeloo-kit 하네스의 건강성을 감사하고 위반 항목을 상세 리포
 
 - 인자 없음 또는 `context-lint` → **context-lint** 동작
 - `budget` → **budget** 동작
-- 플래그 `--verbose` → context-lint 상세
+- `failure-memory` → **failure-memory** 동작 (rotate + 요약)
+- `cache-audit` → **cache-audit** 동작
+- 플래그 `--verbose` → context-lint / cache-audit 상세
 - 플래그 `--week` / `--top-skills` / `--load` → budget 뷰 선택
+- 플래그 `--force` → failure-memory 일 1회 gate 무시
+- 플래그 `--file <path>` → cache-audit 단일 파일
 
 ---
 
@@ -143,6 +152,98 @@ node leeloo-kit/scripts/budget-report.js --load
 **tokens_per_char 튜닝**
 
 프로젝트 문자 분포에 따라 추정 계수를 조정하려면 `.leeloo/context-budget.json`에 `tokens_per_char` 필드를 추가하세요(기본 `0.2857` ≈ 1/3.5). 현재는 token-budget 모듈 기본값 사용.
+
+---
+
+### failure-memory 동작
+
+`.leeloo/failure-memory/<type>.md` 기록을 **노후화·클러스터링**합니다.
+
+**동작 순서**
+
+1. 유형별 기록(`<type>.md`)을 날짜순 정렬
+2. `KEEP_RECENT=50` 초과분을 `.leeloo/failure-memory/archive/<type>-<YYYY-MM>.md`로 이동
+3. 남은 기록의 에러 본문을 정규화(절대경로·hash·timestamp 마스킹) 후 빈도 클러스터링
+4. 프로젝트 루트 `CLAUDE.md`의 `## Failure Memory` 섹션을 **유형별 상위 3 패턴**으로 교체
+
+**실행**
+
+```bash
+# 일 1회 gate로 자동 실행됨(SessionEnd). 수동 재실행:
+node leeloo-kit/scripts/failure-memory-rotate.js --force
+```
+
+**정규화 규칙**
+
+| 원본 | 치환 |
+|---|---|
+| 절대경로(`/Users/...`, `/home/...`) | `{path}` |
+| 파일경로(`foo/bar.js`) | `{path}` |
+| 16진 hash(8자 이상) | `{hash}` |
+| 타임스탬프(ISO) | `{ts}` |
+| `line \d+` | `line {n}` |
+
+정규화된 앞 80자를 클러스터 키로 사용합니다.
+
+**gate 동작**
+
+- `.leeloo/.last-rotate` 파일에 마지막 실행일(KST) 기록
+- 같은 날 재실행 시 `skipped: gated-today`로 조용히 반환
+- `--force`로 gate 우회 가능
+
+**archive 복원**
+
+```bash
+cat .leeloo/failure-memory/archive/<type>-<YYYY-MM>.md >> .leeloo/failure-memory/<type>.md
+```
+
+---
+
+### cache-audit 동작
+
+CLAUDE.md의 **prefix 안정성**을 감사합니다. prompt cache는 안정된 prefix를 전제로 적중하므로, 상단 50%에 자주 바뀌는 블록이 있으면 cache miss를 유발합니다.
+
+**측정식**
+
+```
+volatility = 최근 30일 파일 commit 수 / 파일 줄 수
+```
+
+| 점수 | 해석 |
+|---|---|
+| ≥ 0.5 | 🔴 매우 불안정 — 재배치 우선 검토 |
+| ≥ 0.2 | 🟡 주의 — 상단 블록 확인 |
+| < 0.2 | ✓ 안정 |
+
+**대상 파일**
+
+- 루트 `CLAUDE.md`
+- 각 플러그인 `<plugin>/CLAUDE.md`
+
+**실행**
+
+```bash
+# 요약
+node leeloo-kit/scripts/cache-audit.js
+
+# 파일별 블록 구조
+node leeloo-kit/scripts/cache-audit.js --verbose
+
+# 단일 파일
+node leeloo-kit/scripts/cache-audit.js --file CLAUDE.md
+
+# 캐시 무시(24h TTL)
+node leeloo-kit/scripts/cache-audit.js --no-cache
+```
+
+**재배치 지침**
+
+`## Failure Memory` 같이 매 세션 바뀌는 블록은 **파일 하단**으로 이동합니다. 상단에는 안정된 개요·아키텍처·명령 테이블 등을 배치하세요. 재배치는 감사 도구가 자동으로 하지 않으며, 권고만 제공합니다.
+
+**캐시**
+
+- `.leeloo/cache-audit.cache.json` — 24시간 TTL
+- git log 비용을 줄이기 위한 것이며, `--no-cache`로 우회 가능
 
 ---
 
