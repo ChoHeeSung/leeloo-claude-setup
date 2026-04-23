@@ -36,7 +36,7 @@
 - `leeloo-kit/scripts/context-lint.js` 신규 — 임계 검사 + drift-check 래핑
 - Stop hook 확장: `stop-quality-check.js`에 lint 호출 추가 (새 hook event 추가 **안 함**)
 - `.leeloo/context-budget.json` 기본 설정 파일 생성
-- `lk-setup`에 `context-lint` 서브커맨드 추가 (on-demand 상세 리포트)
+- `lk-harness` 신규 스킬 생성 — `context-lint` 서브커맨드 (on-demand 상세 리포트). Tier 2·3 신규 감사 서브커맨드는 모두 이곳에 누적(SRP 유지)
 
 **Out**
 - 자동 수정(auto-fix)은 하지 않음. 경고만.
@@ -78,12 +78,12 @@ function runContextLint() {
 
 출력은 **1줄**만. 상세는 명령으로 재요청.
 
-### 3.3 `lk-setup context-lint` 서브커맨드
+### 3.3 `lk-harness context-lint` 서브커맨드
 
 on-demand 상세 리포트 — 세션 자동 로드와 분리.
 
 ```
-/lk-setup context-lint
+/lk-harness context-lint
   → 모든 위반 항목을 파일·라인·초과량으로 출력
   → --fix: 없음 (의도적)
   → --config: .leeloo/context-budget.json 편집 안내
@@ -108,7 +108,7 @@ on-demand 상세 리포트 — 세션 자동 로드와 분리.
 2. `leeloo-kit/scripts/context-lint.js` 작성 + 단위 테스트용 fixture
 3. `generate-commands.js` 재export 추가(`runCheck` 공개) — 기존 exit-기반을 함수 반환으로 리팩터
 4. `stop-quality-check.js` 통합 — 기존 출력 뒤에 lint 결과 병합
-5. `lk-setup` SKILL.md에 `context-lint` 서브커맨드 섹션 추가
+5. `lk-harness/SKILL.md` 신규(서브커맨드 `context-lint`), `lk-setup`에서는 하네스 책임 분리
 6. 현재 레포에 대해 실행 → 기존 위반 0건 확인 or 리포트 후 baseline 조정
 7. plugin leeloo-kit patch bump (3.5.1 → 3.5.2), marketplace.json, HISTORY.md
 
@@ -132,6 +132,6 @@ on-demand 상세 리포트 — 세션 자동 로드와 분리.
 
 - [ ] `context-lint.js` 실행 후 현 레포 위반 0건
 - [ ] Stop hook 통합 후 위반 발생 시 1줄 경고, 정상 시 무출력
-- [ ] `/lk-setup context-lint` 상세 리포트 동작
+- [ ] `/lk-harness context-lint` 상세 리포트 동작
 - [ ] drift·임계·silent-fail 테스트 4건 통과
 - [ ] HISTORY.md 기록 + leeloo-kit 3.5.2 배포

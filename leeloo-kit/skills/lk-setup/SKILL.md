@@ -2,7 +2,7 @@
 name: lk-setup
 description: "환경 강화 도구(설치·statusline·플러그인 토글)"
 user_invocable: true
-argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins|context-lint]"
+argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
 ---
 
 # /lk-setup — 선택적 환경 강화
@@ -28,7 +28,6 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 /lk-setup plugins install-docskills — document-skills + anthropic-agent-skills 마켓플레이스 등록
 /lk-setup plugins mcp-list        — MCP 서버 목록 + 상태
 /lk-setup plugins mcp-toggle      — MCP 서버 대화형 on/off
-/lk-setup context-lint            — 컨텍스트 예산 감사(SKILL description·CLAUDE.md·commands drift)
 ```
 
 ## Procedure
@@ -49,7 +48,6 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 - `plugins install-docskills` → **plugins install-docskills** 동작 (기존 `plugins` 동작)
 - `plugins mcp-list` → **plugins mcp-list** 동작
 - `plugins mcp-toggle` → **plugins mcp-toggle** 동작
-- `context-lint` → **context-lint** 동작
 
 ---
 
@@ -427,58 +425,6 @@ Claude Code 재시작 후 적용됩니다.
 4. 변경 결과 테이블 표시.
 
 **주의**: MCP 서버 전체를 제거하지 말 것. `disabled` 필드만 토글하여 재활성화가 쉽도록 유지.
-
----
-
-### context-lint 동작
-
-하네스 컨텍스트 예산을 감사하고 위반 항목을 상세 리포트로 표시합니다.
-
-**대상**
-- `*/skills/*/SKILL.md`의 `description` / `argument-hint` 길이
-- 루트 `CLAUDE.md` · 각 플러그인 `CLAUDE.md` 줄 수
-- `commands/*.md` ↔ `SKILL.md` drift (generate-commands 재사용)
-
-**실행**
-
-```bash
-node leeloo-kit/scripts/context-lint.js --verbose
-```
-
-출력 예:
-
-```
-context-lint: 2건
-  [skill-description] leeloo-doc/skills/lk-doc-parse/SKILL.md — 142 > 100
-  [commands-drift] leeloo-kit/commands/lk-persona.md (out-of-sync)
-```
-
-**임계 조정**
-
-기본 임계는 `leeloo-kit/resources/context-budget.default.json`에 있고, 프로젝트별 오버라이드는 `.leeloo/context-budget.json`에 동일 키로 작성합니다(얕은 merge).
-
-```json
-{
-  "skill_description_max": 100,
-  "skill_argument_hint_max": 120,
-  "claude_md_plugin_max_lines": 70,
-  "claude_md_root_max_lines": 60,
-  "hook_output_max_chars": 300,
-  "commands_drift_check": true
-}
-```
-
-**Stop hook 통합**
-
-세션 종료 시 동일 검사가 자동 실행되며, 위반 발생 시 1줄 요약만 출력합니다(상세는 본 커맨드로 재조회).
-
-**drift 자동 수정**
-
-commands drift는 다음 명령으로 즉시 재생성:
-
-```bash
-node leeloo-kit/scripts/generate-commands.js --sync
-```
 
 ---
 
