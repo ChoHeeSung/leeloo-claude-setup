@@ -1,6 +1,6 @@
 ---
 name: lk-bb-branch
-description: "Bitbucket 브랜치 관리 (목록/생성/삭제). /lk-bb-branch [list|create|delete] <repo_slug>"
+description: "Bitbucket 브랜치 관리(목록/생성/삭제)"
 user_invocable: true
 argument-hint: "[list|create|delete] <repo_slug> [branch_name]"
 ---

@@ -1,6 +1,6 @@
 ---
 name: lk-setup
-description: "선택적 환경 강화 도구. /lk-setup [status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
+description: "환경 강화 도구(설치·statusline·플러그인 토글)"
 user_invocable: true
 argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
 ---
@@ -13,15 +13,21 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 ## 서브커맨드
 
 ```
-/lk-setup            — 현재 환경 상태 표시 (기본 동작 = status)
-/lk-setup status     — 현재 환경 상태 표시
-/lk-setup install    — 미설치 항목 일괄 설치 (이미 설치된 항목은 건너뜀)
-/lk-setup reinstall  — 전체 재설치 (기존 설정 덮어쓰기)
-/lk-setup statusline — statusline-leeloo.sh를 ~/.claude/에 복사
-/lk-setup claude-md  — CLAUDE.md를 ~/.claude/CLAUDE.md에 설치
-/lk-setup gemini     — gemini-cli 설치 가이드 표시
-/lk-setup serena     — serena 플러그인 대시보드 자동 열기 비활성화
-/lk-setup plugins    — 권장 마켓플레이스 등록 + document-skills 플러그인 설치
+/lk-setup                         — 현재 환경 상태 표시 (기본 동작 = status)
+/lk-setup status                  — 현재 환경 상태 표시
+/lk-setup install                 — 미설치 항목 일괄 설치 (이미 설치된 항목은 건너뜀)
+/lk-setup reinstall               — 전체 재설치 (기존 설정 덮어쓰기)
+/lk-setup statusline              — statusline-leeloo.sh를 ~/.claude/에 복사
+/lk-setup claude-md               — CLAUDE.md를 ~/.claude/CLAUDE.md에 설치
+/lk-setup gemini                  — gemini-cli 설치 가이드 표시
+/lk-setup serena                  — serena 플러그인 대시보드 자동 열기 비활성화
+/lk-setup plugins                 — 설치된 플러그인 목록 + 상태 (기본 동작 = list)
+/lk-setup plugins list            — 설치된 플러그인 목록 + 상태
+/lk-setup plugins toggle          — 플러그인 대화형 on/off
+/lk-setup plugins audit           — 미사용 추정 플러그인 탐지 (레포 분석)
+/lk-setup plugins install-docskills — document-skills + anthropic-agent-skills 마켓플레이스 등록
+/lk-setup plugins mcp-list        — MCP 서버 목록 + 상태
+/lk-setup plugins mcp-toggle      — MCP 서버 대화형 on/off
 ```
 
 ## Procedure
@@ -36,7 +42,12 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 - `claude-md` → **claude-md** 동작
 - `gemini` → **gemini** 동작
 - `serena` → **serena** 동작
-- `plugins` → **plugins** 동작
+- `plugins` 단독 또는 `plugins list` → **plugins list** 동작
+- `plugins toggle` → **plugins toggle** 동작
+- `plugins audit` → **plugins audit** 동작
+- `plugins install-docskills` → **plugins install-docskills** 동작 (기존 `plugins` 동작)
+- `plugins mcp-list` → **plugins mcp-list** 동작
+- `plugins mcp-toggle` → **plugins mcp-toggle** 동작
 
 ---
 
@@ -227,7 +238,114 @@ serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
 
 ### plugins 동작
 
-anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러그인을 설치합니다.
+설치된 플러그인과 MCP 서버를 조회·토글·감사합니다. 서브 동작은 `plugins list`(기본) / `toggle` / `audit` / `install-docskills` / `mcp-list` / `mcp-toggle`.
+
+**공통 사전 작업**: Read 도구로 `~/.claude/settings.json`을 읽습니다. 파일이 없으면 "~/.claude/settings.json이 존재하지 않습니다. Claude Code를 최소 1회 실행해 주세요." 안내 후 중단.
+
+---
+
+#### plugins list (기본)
+
+1. `settings.json`의 `enabledPlugins` 객체를 파싱합니다. 키 형식: `"<plugin-name>@<marketplace>": true|false`.
+2. 각 항목을 파싱하여 `plugin-name`과 `marketplace`를 분리.
+3. 결과를 테이블로 표시:
+
+```
+현재 설치된 플러그인 (~/.claude/settings.json)
+
+| # | 플러그인 | 마켓플레이스 | 상태 |
+|---|---------|--------------|------|
+| 1 | leeloo-kit | leeloo-claude-setup | ✅ 활성 |
+| 2 | leeloo-workflow | leeloo-claude-setup | ✅ 활성 |
+| 3 | code-review | claude-plugins-official | ✅ 활성 |
+| 4 | typescript-lsp | claude-plugins-official | ✅ 활성 |
+| 5 | go-lsp | claude-plugins-official | ❌ 비활성 |
+| ... | ... | ... | ... |
+
+활성: N개 / 비활성: M개 / 총 N+M개
+
+관련 명령:
+- /lk-setup plugins toggle  — 대화형 on/off
+- /lk-setup plugins audit   — 미사용 추정 플러그인 탐지
+```
+
+---
+
+#### plugins toggle
+
+1. `settings.json`의 `enabledPlugins` 전체 목록을 Read로 읽습니다.
+2. AskUserQuestion 도구로 다음 형식의 질문을 구성합니다:
+   - `header`: "플러그인 토글" (12자 이내)
+   - `question`: "활성화할 플러그인을 선택하세요. 선택하지 않은 플러그인은 비활성화됩니다."
+   - `multiSelect`: `true`
+   - `options`: 각 플러그인마다 하나의 옵션. `label`은 `"플러그인명 [✅활성|❌비활성]"`, `description`은 `"<marketplace>"`.
+3. 사용자 응답(선택된 플러그인 집합) 수신.
+4. Edit 도구로 `settings.json`의 `enabledPlugins` 객체를 업데이트:
+   - 선택된 플러그인 → `true`
+   - 선택되지 않은 플러그인 → `false` (키는 유지, 값만 변경)
+5. 변경 결과 테이블 표시:
+
+```
+플러그인 토글 완료
+
+| 플러그인 | 이전 | 이후 |
+|---------|------|------|
+| claude-api | ✅ | ❌ |
+| go-lsp | ✅ | ❌ |
+| code-review | ✅ | ✅ |
+
+변경: 2개, 유지: N개
+
+Claude Code 재시작 후 적용됩니다.
+```
+
+**주의**:
+- AskUserQuestion의 `options` 상한이 있으므로, 20개 초과 시 페이지를 나눠서 두 번 호출하거나 "활성화된 것만 표시" 등 필터 옵션을 사용자에게 먼저 물어보세요.
+- 사용자가 응답을 취소하면 변경 없이 종료.
+
+---
+
+#### plugins audit
+
+현재 활성 플러그인 중 이 레포에서 **사용 가능성이 낮은** 플러그인을 탐지합니다. Bash로 레포를 분석한 결과를 근거로 제시하되, 자동으로 비활성화하지 않습니다 (사용자가 `toggle`로 직접 결정).
+
+1. `enabledPlugins`의 `true` 항목 목록을 추출.
+2. 각 플러그인에 대해 아래 규칙으로 "미사용 추정 여부"를 판단:
+
+| 플러그인 패턴 | 미사용 추정 조건 |
+|---|---|
+| `claude-api@*` 또는 `document-skills@*`의 `claude-api` | Bash `grep -r "@anthropic-ai/sdk" package.json 2>/dev/null` 결과 없음 + `grep -rE "^(import\|from) anthropic" --include="*.py" . 2>/dev/null | head -1` 결과 없음 |
+| `typescript-lsp@*` | `find . -name "*.ts" -o -name "*.tsx" 2>/dev/null | head -10 | wc -l` 결과 < 10 |
+| `pyright-lsp@*` | `find . -name "*.py" 2>/dev/null | head -10 | wc -l` 결과 < 10 |
+| `go-lsp@*` | `find . -name "*.go" 2>/dev/null | head -1` 결과 없음 |
+| `rust-lsp@*` | `test -f Cargo.toml || echo "missing"` = missing |
+| `java-lsp@*` | `test -f pom.xml || test -f build.gradle || test -f build.gradle.kts || echo "missing"` = missing |
+| `csharp-lsp@*` | `find . -name "*.cs" 2>/dev/null | head -1` 결과 없음 |
+| `swift-lsp@*` / `kotlin-lsp@*` / `elixir-lsp@*` / `c-lsp@*` / `php-lsp@*` / `lua-lsp@*` | 해당 언어 파일 없음 |
+| `claude-code-setup@*` / `claude-automation-recommender` | 항상 미사용 추정 (수동 구성 완료 가정) |
+| 기타 LSP | 언어별 대응 파일 없음 |
+
+3. 탐지된 항목을 테이블로 제시:
+
+```
+미사용 추정 플러그인 (현재 활성인 것 중)
+
+| 플러그인 | 근거 |
+|---------|------|
+| claude-api@document-skills | @anthropic-ai/sdk 의존성 없음 / `anthropic` import 없음 |
+| go-lsp@claude-plugins-official | *.go 파일 없음 |
+| rust-lsp@claude-plugins-official | Cargo.toml 없음 |
+
+→ 비활성화: /lk-setup plugins toggle (해당 항목 체크 해제)
+```
+
+미사용 추정 플러그인이 없으면: "현재 활성 플러그인 중 미사용 추정 항목 없음." 안내.
+
+---
+
+#### plugins install-docskills
+
+(기존 `plugins` 동작과 동일) anthropic-agent-skills 마켓플레이스 등록 + document-skills 플러그인 설치.
 
 1. **마켓플레이스 등록 확인**: Bash로 확인:
    ```bash
@@ -267,6 +385,46 @@ anthropic-agent-skills 마켓플레이스를 등록하고 document-skills 플러
 
    Claude Code를 재시작하거나 /reload-plugins 로 적용하세요.
    ```
+
+---
+
+#### plugins mcp-list
+
+1. Read 도구로 `~/.claude/settings.json` 읽기.
+2. `mcpServers` 객체 파싱. 각 서버의 `disabled` 필드(true/false/undefined) 기준으로 상태 판정 (`disabled != true` → 활성).
+3. 테이블로 표시:
+
+```
+현재 MCP 서버 (~/.claude/settings.json)
+
+| # | 서버 | 상태 | 설명 |
+|---|------|------|------|
+| 1 | Context7 | ✅ 활성 | 라이브러리 문서 조회 |
+| 2 | Google Drive | ❌ 비활성 | 드라이브 파일 접근 |
+| 3 | Slack | ❌ 비활성 | 슬랙 메시지 |
+| ... | ... | ... | ... |
+
+활성: N개 / 비활성: M개
+
+토글: /lk-setup plugins mcp-toggle
+```
+
+---
+
+#### plugins mcp-toggle
+
+`plugins toggle`과 동일한 패턴을 MCP 서버에 적용합니다.
+
+1. `settings.json`의 `mcpServers` 전체 목록을 Read로 읽습니다.
+2. AskUserQuestion 도구 (`multiSelect: true`)로 현재 상태를 라벨에 표시한 옵션을 제공:
+   - `label`: `"<server> [✅활성|❌비활성]"`
+   - `description`: 서버 설명 또는 URL
+3. 사용자 응답 수신 후 Edit 도구로 각 서버의 `disabled` 필드를 갱신:
+   - 선택됨 → `disabled: false` 또는 필드 제거
+   - 선택되지 않음 → `disabled: true`
+4. 변경 결과 테이블 표시.
+
+**주의**: MCP 서버 전체를 제거하지 말 것. `disabled` 필드만 토글하여 재활성화가 쉽도록 유지.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: lk-persona
-description: "프로젝트 로컬 세션 페르소나를 대화형으로 생성·전환·삭제. Output Style로 저장하여 다음 세션 자동 적용 + 현재 세션 즉시 컨텍스트 주입. /lk-persona [create|use|list|show|current|delete|clear] [name] [--preset <name>] [--detail]"
+description: "세션 페르소나 생성·전환·저장(Output Style)"
 user_invocable: true
 argument-hint: "[create|use|list|show|current|delete|clear] [name] [--preset <name>] [--detail]"
 ---

@@ -1,6 +1,6 @@
 ---
 name: lk-commit
-description: "레포 변경사항 → 회사 스타일 커밋 메시지 생성 + 커밋/푸시. /lk-commit [--push] [message]"
+description: "회사 스타일 커밋 메시지 생성 + 커밋/푸시"
 user_invocable: true
 argument-hint: "[--push] [commit message]"
 ---
@@ -294,37 +294,20 @@ Push 하려면:
   변경 파일: [N]개
 ```
 
-### 11. 세션 정리 여부 확인 (커밋 완료 후)
+### 11. 세션 정리 안내 (커밋 완료 후)
 
-커밋(또는 커밋+push) 완료 후 AskUserQuestion으로 세션 정리 옵션을 제시한다.
+커밋(또는 커밋+push) 완료 후 세션 정리 방법을 **안내 텍스트로만** 출력한다. `/clear`·`/compact`는 Claude가 직접 실행할 수 없고 사용자가 직접 입력해야 하므로, AskUserQuestion 같은 대화형 선택지를 쓰지 않는다(의사결정은 사용자 몫).
 
-**Question**: "커밋 완료. 세션을 정리할까요?"
-**Header**: "Session"
-**Options**:
-1. label: "계속" (Recommended) — 아무것도 하지 않음. 연관 작업을 이어갈 때
-2. label: "compact" — 관련 작업을 계속하되 대화 요약으로 컨텍스트 축약
-3. label: "clear" — 작업 단위 종료. 새 세션으로 시작 (글로벌 원칙 8 "작업 단위별 /clear" 기본 권장)
+**출력 형식** (그대로 한 블록으로 출력, 선택지 제시 금지):
 
-**선택별 동작:**
+```
+다음 작업 맥락에 따라 필요 시 직접 입력하세요:
+- 같은 맥락 이어서 작업: 아무것도 하지 않아도 됨
+- 연관 작업 계속하되 컨텍스트 축약: /compact
+- 작업 단위 종료 → 새 세션: /clear  (원칙 8 권장, TODO.md·HISTORY.md·Failure Memory·auto memory는 파일로 보존되어 자동 복원)
+```
 
-- **"계속"**: 아무 출력 없이 종료.
-- **"compact"**: 사용자에게 `/compact` 입력을 안내한다 (슬래시 명령은 사용자가 직접 입력해야 실행됨):
-  ```
-  컨텍스트를 정리하려면 다음을 입력하세요:
-    /compact
-  ```
-- **"clear"**: 사용자에게 `/clear` 입력을 안내한다:
-  ```
-  새 작업을 시작하려면 다음을 입력하세요:
-    /clear
-
-  (TODO.md, HISTORY.md, Failure Memory, auto memory는 파일로 보존되므로 clear 후에도 자동 복원됩니다)
-  ```
-
-**판단 가이드 (사용자가 고민하면 제공):**
-- 바로 이어서 같은 맥락의 작업 → `계속` 또는 `compact`
-- 커밋이 작업 단위의 완료 → `clear` (권장)
-- 컨텍스트가 무거워졌지만 연관 작업 예정 → `compact`
+추가 안내 금지: "어느 쪽을 고르시겠습니까?" 같은 대화형 유도 문구는 절대 쓰지 않는다.
 
 ## Notes
 

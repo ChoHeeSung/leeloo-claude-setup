@@ -1,6 +1,6 @@
 ---
 name: lk-code-review
-description: "코드 리뷰 — Claude 단독 또는 Gemini 이중(--dual). /lk-code-review [--dual] [path]"
+description: "코드 리뷰(Claude 단독 또는 Gemini 이중)"
 user_invocable: true
 argument-hint: "[--dual] [path]"
 ---

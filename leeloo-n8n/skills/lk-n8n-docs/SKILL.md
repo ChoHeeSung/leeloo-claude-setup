@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-docs
-description: "n8n MCP 도구 문서 및 사용법 조회. /lk-n8n-docs [topic]"
+description: "n8n MCP 도구 문서 조회"
 user_invocable: true
 argument-hint: "[topic]"
 ---

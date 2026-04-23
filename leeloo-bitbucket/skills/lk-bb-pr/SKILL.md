@@ -1,6 +1,6 @@
 ---
 name: lk-bb-pr
-description: "Bitbucket PR 관리 (목록/조회/생성/머지/댓글). /lk-bb-pr [list|get|create|merge|comment] <repo_slug>"
+description: "Bitbucket PR 관리(목록/조회/생성/머지/댓글)"
 user_invocable: true
 argument-hint: "[list|get|create|merge|comment] <repo_slug> [pr_id]"
 ---

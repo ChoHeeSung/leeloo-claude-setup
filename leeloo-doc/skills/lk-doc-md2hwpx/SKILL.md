@@ -1,6 +1,6 @@
 ---
 name: lk-doc-md2hwpx
-description: "Markdown을 한국 공문서 HWPX로 변환. /lk-doc-md2hwpx <input.md> [output.hwpx]"
+description: "Markdown → 한국 공문서 HWPX 변환"
 user_invocable: true
 argument-hint: "<input.md> [output.hwpx]"
 ---

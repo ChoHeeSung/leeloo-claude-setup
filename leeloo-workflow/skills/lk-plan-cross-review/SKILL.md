@@ -1,6 +1,6 @@
 ---
 name: lk-plan-cross-review
-description: "플랜 리뷰 — Gemini가 Plan/Design을 독립 검증. /lk-plan-cross-review [file-path]"
+description: "Plan/Design Gemini 교차검증"
 user_invocable: true
 argument-hint: "[file-path]"
 ---

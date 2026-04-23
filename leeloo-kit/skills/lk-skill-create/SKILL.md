@@ -1,6 +1,6 @@
 ---
 name: lk-skill-create
-description: "Git 히스토리 + 프로젝트 구조 분석으로 SKILL.md 자동 생성. 팀 패턴을 스킬로 변환."
+description: "Git 히스토리·구조 분석으로 SKILL.md 자동 생성"
 user_invocable: true
 argument-hint: "<skill-name> [--quick]"
 ---

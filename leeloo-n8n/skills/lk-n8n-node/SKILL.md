@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-node
-description: "n8n 노드 검색, 정보 조회, 설정 검증. /lk-n8n-node [search|info|check]"
+description: "n8n 노드 검색·조회·설정 검증"
 user_invocable: true
 argument-hint: "[search|info|check] <query|nodeType>"
 ---

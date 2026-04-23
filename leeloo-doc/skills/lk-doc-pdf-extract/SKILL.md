@@ -1,6 +1,6 @@
 ---
 name: lk-doc-pdf-extract
-description: "설계 도면 PDF에서 시설물·장비 정보를 자동 추출하여 Excel로 정리. /lk-doc-pdf-extract <pdf-path> [--output <dir>] [--pages <range>]"
+description: "설계 도면 PDF → 시설물·장비 Excel 추출"
 user_invocable: true
 argument-hint: "<pdf-path> [--output <dir>] [--pages <range>]"
 ---

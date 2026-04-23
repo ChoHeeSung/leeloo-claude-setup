@@ -1,6 +1,6 @@
 ---
 name: lk-bb-commit
-description: "Bitbucket 커밋 이력 및 diff 조회. /lk-bb-commit [list|diff] <repo_slug>"
+description: "Bitbucket 커밋 이력·diff 조회"
 user_invocable: true
 argument-hint: "[list|diff] <repo_slug> [branch|commit_hash]"
 ---

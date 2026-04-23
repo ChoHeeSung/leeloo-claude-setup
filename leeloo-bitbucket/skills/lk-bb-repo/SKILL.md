@@ -1,6 +1,6 @@
 ---
 name: lk-bb-repo
-description: "Bitbucket 저장소 관리 (목록/조회/생성/삭제). /lk-bb-repo [list|get|create|delete]"
+description: "Bitbucket 저장소 관리(목록/조회/생성/삭제)"
 user_invocable: true
 argument-hint: "[list|get|create|delete] [repo_slug]"
 ---

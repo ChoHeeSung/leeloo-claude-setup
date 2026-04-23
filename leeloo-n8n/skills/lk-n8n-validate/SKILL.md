@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-validate
-description: "n8n 워크플로우 검증 및 자동수정. /lk-n8n-validate [check|fix|lint]"
+description: "n8n 워크플로우 검증·자동수정"
 user_invocable: true
 argument-hint: "[check|fix|lint] <workflow-id>"
 ---

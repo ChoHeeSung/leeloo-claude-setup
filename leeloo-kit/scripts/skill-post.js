@@ -12,14 +12,10 @@ const { setActiveSkill } = require('./lib/context');
 function getNextStepMessage(skillName) {
   switch (skillName) {
     case 'lk-plan':
-      return [
-        '[leeloo-kit] lk-plan 완료. 사용자에게 다음 각 항목의 실행 여부를 반드시 확인하세요:',
-        '  1. /lk-plan-cross-review — Gemini 교차검증 실행할까요?',
-        '  2. /lk-todo create       — Plan을 TODO 리스트로 변환할까요?'
-      ].join('\n');
+      return 'lk-plan 완료 — 사용자에게 /lk-plan-cross-review, /lk-todo create 실행 여부 확인.';
 
     case 'lk-plan-cross-review':
-      return '[leeloo-kit] 교차검증 완료. 검증 결과를 확인하고 다음 단계를 선택하세요.';
+      return '교차검증 완료 — 결과 확인 후 다음 단계 선택.';
 
     default:
       return null;

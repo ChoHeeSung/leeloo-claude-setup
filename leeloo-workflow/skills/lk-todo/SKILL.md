@@ -1,6 +1,6 @@
 ---
 name: lk-todo
-description: "Plan을 태스크 단위 TODO 리스트로 변환하고 관리하는 스킬. /lk-todo [create|list|add|start|done|undo|clear]"
+description: "Plan → 태스크 단위 TODO 리스트 관리"
 user_invocable: true
 argument-hint: "[create|list|add|start|done|undo|clear] [path|item|number]"
 ---

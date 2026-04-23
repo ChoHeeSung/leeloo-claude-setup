@@ -1,6 +1,6 @@
 ---
 name: lk-bb-setup
-description: "Bitbucket 연결 확인 및 대화형 초기 설정. /lk-bb-setup [status|install]"
+description: "Bitbucket 연결 확인·초기 설정"
 user_invocable: true
 argument-hint: "[status|install]"
 ---

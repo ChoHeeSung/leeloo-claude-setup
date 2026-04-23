@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-run
-description: "n8n 워크플로우 실행 및 실행기록 관리. /lk-n8n-run [test|list|get|delete]"
+description: "n8n 워크플로우 실행·실행기록 관리"
 user_invocable: true
 argument-hint: "[test|list|get|delete] [args]"
 ---

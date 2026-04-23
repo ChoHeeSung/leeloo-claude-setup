@@ -1,6 +1,6 @@
 ---
 name: lk-team
-description: "Agent Team을 대화형으로 구성·관리하는 스킬. /lk-team [create|list|message|broadcast|shutdown] [--preset <name>]"
+description: "Agent Team 구성·운영(message·broadcast·shutdown)"
 user_invocable: true
 argument-hint: "[create|list|message|broadcast|shutdown] [--preset <name>]"
 ---

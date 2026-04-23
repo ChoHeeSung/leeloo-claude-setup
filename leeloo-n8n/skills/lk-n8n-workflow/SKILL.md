@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-workflow
-description: "n8n 워크플로우 CRUD 관리. /lk-n8n-workflow [create|get|list|update|delete]"
+description: "n8n 워크플로우 CRUD 관리"
 user_invocable: true
 argument-hint: "[create|get|list|update|delete] [args]"
 ---

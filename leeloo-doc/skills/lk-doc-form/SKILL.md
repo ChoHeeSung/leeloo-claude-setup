@@ -1,6 +1,6 @@
 ---
 name: lk-doc-form
-description: "공문서 양식 인식(레이블-값 추출). /lk-doc-form <file> [--json]"
+description: "공문서 양식 인식(레이블-값 추출)"
 user_invocable: true
 argument-hint: "<file> [--json]"
 ---

@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-version
-description: "n8n 워크플로우 버전 관리 — 히스토리, 롤백, 정리. /lk-n8n-version [list|get|rollback|prune]"
+description: "n8n 워크플로우 버전 관리(롤백·정리)"
 user_invocable: true
 argument-hint: "[list|get|rollback|prune] <workflow-id>"
 ---

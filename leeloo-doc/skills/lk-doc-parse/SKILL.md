@@ -1,6 +1,6 @@
 ---
 name: lk-doc-parse
-description: "한국 공문서(HWP/HWPX/PDF)를 마크다운으로 변환. /lk-doc-parse <file> [--pages <range>] [--json] [--metadata] [--table <N>]"
+description: "공문서(HWP/HWPX/PDF) → 마크다운 변환"
 user_invocable: true
 argument-hint: "<file> [--pages <range>] [--json] [--metadata] [--table <N>]"
 ---

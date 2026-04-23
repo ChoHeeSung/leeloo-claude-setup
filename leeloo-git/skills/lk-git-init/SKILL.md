@@ -1,6 +1,6 @@
 ---
 name: lk-git-init
-description: "대화형 Git 저장소 초기화 — remote 설정, .gitignore 생성, LFS 초기화까지 한번에. /lk-git-init [path]"
+description: "Git 저장소 초기화(remote·.gitignore·LFS)"
 user_invocable: true
 argument-hint: "[path]"
 ---

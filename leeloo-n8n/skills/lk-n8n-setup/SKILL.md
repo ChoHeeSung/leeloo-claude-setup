@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-setup
-description: "n8n MCP 서버 상태 확인 및 설치 가이드. /lk-n8n-setup [status|install]"
+description: "n8n MCP 서버 상태 확인·설치"
 user_invocable: true
 argument-hint: "[status|install]"
 ---

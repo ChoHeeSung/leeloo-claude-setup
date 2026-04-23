@@ -86,8 +86,8 @@ function loadPreviousSessionSummary() {
 
     if (startIdx !== -1 && endIdx !== -1) {
       const summary = content.slice(startIdx + startMarker.length, endIdx).trim();
-      // 최대 800자로 요약 (작업 맥락 포함 시 여유 확보)
-      return summary.length > 800 ? summary.slice(0, 800) + '...' : summary;
+      // 최대 300자로 요약 — 상세는 .leeloo/sessions/ 파일 참조
+      return summary.length > 300 ? summary.slice(0, 300) + '... (.leeloo/sessions/)' : summary;
     }
 
     return null;
@@ -116,13 +116,17 @@ async function main() {
   const nodeVersion = process.version;
   const majorVersion = parseInt(nodeVersion.replace('v', '').split('.')[0], 10);
   if (majorVersion < 18) {
-    messages.push(`[경고] Node.js ${nodeVersion} 감지됨. leeloo-kit은 v18+ 를 권장합니다.`);
+    messages.push(`Node.js ${nodeVersion} — v18+ 권장`);
   }
 
-  // 3. gemini-cli 존재 확인
-  const geminiAvailable = isCommandAvailable('gemini') || isCommandAvailable('gemini-cli');
-  if (!geminiAvailable) {
-    messages.push('[안내] gemini-cli 미설치. 교차검증(/lk-cross-validate)에 필요: npm install -g @google/gemini-cli');
+  // 3. gemini-cli 존재 확인 (한 번만 안내)
+  const envNoticeFlag = path.join(process.cwd(), '.leeloo', 'env-notice-done');
+  if (!fs.existsSync(envNoticeFlag)) {
+    const geminiAvailable = isCommandAvailable('gemini') || isCommandAvailable('gemini-cli');
+    if (!geminiAvailable) {
+      messages.push('gemini-cli 미설치 — 교차검증 필요 시: npm i -g @google/gemini-cli');
+    }
+    try { fs.writeFileSync(envNoticeFlag, new Date().toISOString(), 'utf8'); } catch (e) { /* ignore */ }
   }
 
   // 4. 활성 페르소나 요약
@@ -246,11 +250,8 @@ async function main() {
       }
 
       if (missing.length > 0) {
-        const toolList = missing.map(m => `  - ${m.type}: ${m.tool} (${m.cmd})`).join('\n');
-        messages.push(
-          `[하네스] 린터/타입체커 미설치 감지:\n${toolList}\n` +
-          `→ 사용자에게 설치 여부를 확인하세요. 설치 완료 또는 거부 시 .leeloo/lint-setup-done 파일을 생성하여 이 안내를 중지하세요.`
-        );
+        const toolList = missing.map(m => m.tool).join(', ');
+        messages.push(`린터 미설치: ${toolList} — /lk-setup status 참조 (무시: touch .leeloo/lint-setup-done)`);
       } else {
         ensureStateDir();
         fs.writeFileSync(lintDoneFlag, new Date().toISOString(), 'utf8');

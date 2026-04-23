@@ -1,6 +1,6 @@
 ---
 name: lk-plan
-description: "브레인스토밍 기반 Plan 작성 + Gemini 교차검증 연동. /lk-plan <feature> [--quick]"
+description: "브레인스토밍 Plan 작성 + Gemini 교차검증"
 user_invocable: true
 argument-hint: "<feature> [--quick]"
 ---

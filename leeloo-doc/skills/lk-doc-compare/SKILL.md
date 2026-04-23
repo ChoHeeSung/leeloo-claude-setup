@@ -1,6 +1,6 @@
 ---
 name: lk-doc-compare
-description: "두 공문서(HWP/HWPX/PDF)를 비교하여 차이점 분석. 크로스 포맷 지원. /lk-doc-compare <file1> <file2> [--json]"
+description: "공문서(HWP/HWPX/PDF) 비교 — 크로스 포맷 지원"
 user_invocable: true
 argument-hint: "<file1> <file2> [--json]"
 ---

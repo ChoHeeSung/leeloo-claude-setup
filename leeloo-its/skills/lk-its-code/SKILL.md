@@ -1,6 +1,6 @@
 ---
 name: lk-its-code
-description: "ITS 코드/패턴코드 관리. 대화형으로 코드 추가 → DB 직접 실행. /lk-its-code [add-group|add-item|add-pattern|add-holiday|list|search]"
+description: "ITS 코드/패턴코드 관리(추가·검색·공휴일)"
 user_invocable: true
 argument-hint: "[add-group|add-item|add-pattern|add-holiday|list|search] [그룹코드|검색어]"
 ---

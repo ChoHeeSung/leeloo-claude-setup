@@ -1,6 +1,6 @@
 ---
 name: lk-agent
-description: "Sub Agent를 대화형으로 생성·관리하는 스킬. /lk-agent [create|list|show|delete] [--preset <name>]"
+description: "Sub Agent 생성·조회·삭제"
 user_invocable: true
 argument-hint: "[create|list|show|delete] [--preset <name>]"
 ---

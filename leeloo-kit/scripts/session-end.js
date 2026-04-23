@@ -219,7 +219,7 @@ async function main() {
 
   // 출력
   if (messages.length > 0) {
-    sessionMessage(`[leeloo-kit] 세션 종료: ${messages.join('. ')}. 상세: .leeloo/failure-memory/ 참조`);
+    sessionMessage(`세션 종료 — ${messages.join('. ')} (.leeloo/failure-memory/)`);
   } else {
     respond({});
   }

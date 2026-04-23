@@ -1,6 +1,6 @@
 ---
 name: lk-its-equip
-description: "ITS 현장 시설물 등록/수정/조회. 대화형으로 장비 등록 → DB 직접 실행. /lk-its-equip [add|modify|list|show|status|move|delete]"
+description: "ITS 현장 시설물 등록·수정·조회·이동"
 user_invocable: true
 argument-hint: "[add|modify|list|show|status|move|delete] [장비유형|장비ID]"
 ---

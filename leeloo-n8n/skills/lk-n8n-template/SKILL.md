@@ -1,6 +1,6 @@
 ---
 name: lk-n8n-template
-description: "n8n 템플릿 검색, 조회, 배포. /lk-n8n-template [search|get|deploy]"
+description: "n8n 템플릿 검색·조회·배포"
 user_invocable: true
 argument-hint: "[search|get|deploy] <query|id>"
 ---

@@ -1,6 +1,6 @@
 ---
 name: lk-its-ddl
-description: "ITS DB 테이블 DDL 생성/수정. 대화형으로 테이블 설계 → DB 직접 실행. /lk-its-ddl [create|alter|show|check|dict]"
+description: "ITS Oracle DDL 생성·수정·점검"
 user_invocable: true
 argument-hint: "[create|alter|show|check|dict] [테이블명]"
 ---
