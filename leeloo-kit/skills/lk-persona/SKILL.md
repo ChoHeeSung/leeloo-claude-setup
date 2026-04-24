@@ -150,7 +150,7 @@ keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
 
 **작성 원칙**:
 - 프론트매터 `description`은 `/config` 메뉴와 키워드 매칭에 사용 → 정체성 요약 + 핵심 키워드(영/한 혼용 가능) 포함
-- 빠른 모드에서는 Claude가 공백을 합리적 기본값으로 채움 (과하게 길게 쓰지 말 것, 본문 60~120줄 내외)
+- 빠른 모드에서는 Claude가 공백을 합리적 기본값으로 채움. **본문 30~50줄 내외**로 압축 (cache prefix·가독성 우선). 키워드 나열은 본문이 아니라 frontmatter `description`에 넣을 것.
 
 #### Step 4. 초안 검토
 
@@ -177,28 +177,35 @@ keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
      ```
    - 파일 있으면 Read → Edit로 `outputStyle` 필드 설정/갱신 (기존 필드 있으면 교체, 없으면 추가)
 
-#### Step 6. 현재 세션 즉시 주입
+#### Step 6. 현재 세션 즉시 주입 (요약만 inject)
 
-저장 완료 후, 스킬 결과의 마지막에 다음 블록을 포함하여 Claude(메인 세션) 컨텍스트에 페르소나를 주입:
+저장 완료 후, **본문 전체가 아니라 핵심 요약만** Claude(메인 세션) 컨텍스트에 주입합니다.
+다음 세션 재시작 시 본문은 system prompt에 자동 로드되므로, 본문 전체를 user turn에도 inject하면 **두 곳 중복 적재**되어 토큰이 누적 낭비됩니다.
 
 ```
 [PERSONA ACTIVATED: <name>]
 
-지금부터 이 세션의 모든 응답을 아래 페르소나로 수행하세요. 이 지시는 사용자가
+지금부터 이 세션 응답을 아래 페르소나로 수행하세요. 이 지시는 사용자가
 `/lk-persona clear` 또는 `/lk-persona use <다른이름>`을 실행할 때까지 유지됩니다.
 
----
-<페르소나 본문 전체 (프론트매터 제외한 마크다운 부분)>
----
+핵심 지침 (현재 세션용 요약):
+- 정체성: <한 줄, frontmatter description 또는 본문 §정체성에서 추출>
+- 말투/톤: <한 줄, 본문 §말투/톤에서 추출>
+- 핵심 응답 원칙 (상위 3개):
+  1. <요약 한 줄>
+  2. <요약 한 줄>
+  3. <요약 한 줄>
+- 금지: <한 줄, 있을 경우>
 
-저장 경로: .claude/output-styles/<name>.md
+전체 본문: .claude/output-styles/<name>.md
 활성 기록: .claude/settings.local.json → outputStyle: "<name>"
-다음 세션부터는 이 페르소나가 Output Style로 자동 로드됩니다.
+다음 세션부터 시스템 프롬프트(Output Style)로 자동 로드됩니다.
 ```
 
-> 주의: 시스템 프롬프트 완전 치환은 세션 재시작 시점에만 가능하므로, 현재 세션에서는
-> 위 컨텍스트 주입 방식으로 동작합니다. 다음 세션부터 `settings.local.json`의
-> `outputStyle`이 정식 Output Style로 로드되어 시스템 프롬프트 레벨로 적용됩니다.
+> 주의: 시스템 프롬프트 완전 치환은 세션 재시작 시점에만 가능합니다. 현재 세션에는
+> 위 요약만 주입되며, 다음 세션부터 `settings.local.json`의 `outputStyle`이 정식
+> Output Style로 로드되어 시스템 프롬프트 레벨로 적용됩니다. 본문 전체를 user turn에
+> 풀어 넣지 않는 이유는 prompt cache prefix(system)와의 중복 적재를 피하기 위함입니다.
 
 ---
 
