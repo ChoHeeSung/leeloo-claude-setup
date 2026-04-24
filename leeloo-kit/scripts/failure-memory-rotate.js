@@ -14,10 +14,15 @@ const ARCHIVE_DIR = '.leeloo/failure-memory/archive';
 const GATE_FILE = '.leeloo/.last-rotate';
 const KEEP_RECENT = 50;
 const TOP_N_PATTERNS = 3;
+const CLUSTER_MIN_ENTRIES = 5;
 const ENTRY_RE = /^- \[(\d{4}-\d{2}-\d{2})\]\s+(.+)$/;
 
+function stripPayload(s) {
+  return s.replace(/\{"filePath":.*$/s, '{payload}');
+}
+
 function normalize(s) {
-  return s
+  return stripPayload(s)
     .replace(/\/(?:Users|home|opt|var|tmp|private)\/[\w\-./@ ]+/g, '{path}')
     .replace(/[\w\-.]+\/[\w\-./]+\.(js|ts|tsx|jsx|py|java|go|rs|md|json|yaml|yml|sh)/g, '{path}')
     .replace(/\b[a-f0-9]{8,}\b/g, '{hash}')
@@ -87,6 +92,12 @@ function renderSummarySection(typeEntries) {
   lines.push(`${totalCounts.join(' · ')} — 상세: .leeloo/failure-memory/ 참조`);
   for (const t of typeEntries) {
     if (t.entries.length === 0) continue;
+    if (t.entries.length < CLUSTER_MIN_ENTRIES) {
+      lines.push(`\n### ${t.type} 최근 기록`);
+      const recent = [...t.entries].sort((a, b) => b.date.localeCompare(a.date));
+      for (const e of recent) lines.push(`- [${e.date}] ${stripPayload(e.body)}`);
+      continue;
+    }
     const top = topPatterns(clusterEntries(t.entries), TOP_N_PATTERNS);
     lines.push(`\n### ${t.type} 상위 패턴`);
     for (const p of top) {
@@ -149,6 +160,6 @@ function main() {
   console.log(`rotate: ${result.types}개 유형, archived=${result.archived}, CLAUDE.md updated=${result.claudeMdUpdated}`);
 }
 
-module.exports = { rotate, parseEntries, clusterEntries, topPatterns, normalize };
+module.exports = { rotate, parseEntries, clusterEntries, topPatterns, normalize, stripPayload };
 
 if (require.main === module) main();

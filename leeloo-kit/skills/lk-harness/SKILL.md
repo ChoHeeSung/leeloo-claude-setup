@@ -163,8 +163,10 @@ node leeloo-kit/scripts/budget-report.js --load
 
 1. 유형별 기록(`<type>.md`)을 날짜순 정렬
 2. `KEEP_RECENT=50` 초과분을 `.leeloo/failure-memory/archive/<type>-<YYYY-MM>.md`로 이동
-3. 남은 기록의 에러 본문을 정규화(절대경로·hash·timestamp 마스킹) 후 빈도 클러스터링
-4. 프로젝트 루트 `CLAUDE.md`의 `## Failure Memory` 섹션을 **유형별 상위 3 패턴**으로 교체
+3. 남은 기록의 에러 본문을 정규화(절대경로·hash·timestamp·Edit JSON payload 마스킹) 후 빈도 클러스터링
+4. 프로젝트 로컬 `CLAUDE.local.md`의 `## Failure Memory` 섹션을 유형별 요약으로 교체
+   - 유형별 기록 **≥ 5건**: 상위 3 패턴 클러스터링으로 표기
+   - 유형별 기록 **< 5건**: 최근순 원문 그대로 덤프 (payload만 치환) — 통계적 신뢰가 낮은 단계에서 원문 유지
 
 **실행**
 
@@ -177,13 +179,14 @@ node leeloo-kit/scripts/failure-memory-rotate.js --force
 
 | 원본 | 치환 |
 |---|---|
+| Edit 툴 실패 JSON payload (`{"filePath":...` ~ 줄 끝) | `{payload}` |
 | 절대경로(`/Users/...`, `/home/...`) | `{path}` |
 | 파일경로(`foo/bar.js`) | `{path}` |
 | 16진 hash(8자 이상) | `{hash}` |
 | 타임스탬프(ISO) | `{ts}` |
 | `line \d+` | `line {n}` |
 
-정규화된 앞 80자를 클러스터 키로 사용합니다.
+정규화된 앞 80자를 클러스터 키로 사용합니다. JSON payload 치환은 `< 5건` 원문 덤프에도 동일 적용되어 요약 섹션의 잡음을 제거합니다.
 
 **gate 동작**
 
