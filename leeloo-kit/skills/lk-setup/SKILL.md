@@ -1,8 +1,8 @@
 ---
 name: lk-setup
-description: "환경 강화 도구(설치·statusline·플러그인 토글)"
+description: "환경 강화 도구(설치·statusline·플러그인 토글·기본 모델 설정)"
 user_invocable: true
-argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
+argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins|model]"
 ---
 
 # /lk-setup — 선택적 환경 강화
@@ -28,6 +28,7 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 /lk-setup plugins install-docskills — document-skills + anthropic-agent-skills 마켓플레이스 등록
 /lk-setup plugins mcp-list        — MCP 서버 목록 + 상태
 /lk-setup plugins mcp-toggle      — MCP 서버 대화형 on/off
+/lk-setup model                   — 기본 세션 모델 조회 및 변경
 ```
 
 ## Procedure
@@ -48,6 +49,7 @@ leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상
 - `plugins install-docskills` → **plugins install-docskills** 동작 (기존 `plugins` 동작)
 - `plugins mcp-list` → **plugins mcp-list** 동작
 - `plugins mcp-toggle` → **plugins mcp-toggle** 동작
+- `model` → **model** 동작
 
 ---
 
@@ -79,6 +81,9 @@ grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "RE
 
 # document-skills 플러그인 설치 여부
 grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "INSTALLED" || echo "NOT_INSTALLED"
+
+# 기본 모델 설정
+python3 -c "import json; d=json.load(open(os.path.expanduser('~/.claude/settings.json'))); print(d.get('model','NOT_SET'))" 2>/dev/null || grep -o '"model"[[:space:]]*:[[:space:]]*"[^"]*"' ~/.claude/settings.json 2>/dev/null | head -1 | sed 's/.*: *"\(.*\)"/\1/' || echo "NOT_SET"
 ```
 
 결과를 테이블로 표시합니다:
@@ -96,6 +101,7 @@ leeloo-kit 환경 상태
 | serena 대시보드 | ✅ 비활성화됨 / ⚠️ 자동 열기 | /lk-setup serena |
 | anthropic-agent-skills | ✅ 등록됨 / ❌ 미등록 | /lk-setup plugins |
 | document-skills | ✅ 설치됨 / ❌ 미설치 | /lk-setup plugins |
+| 기본 모델 | claude-sonnet-4-6[1m] (또는 NOT_SET) | /lk-setup model |
 
 설치되지 않은 항목은 해당 서브커맨드로 설치하세요.
 ```
@@ -425,6 +431,54 @@ Claude Code 재시작 후 적용됩니다.
 4. 변경 결과 테이블 표시.
 
 **주의**: MCP 서버 전체를 제거하지 말 것. `disabled` 필드만 토글하여 재활성화가 쉽도록 유지.
+
+---
+
+### model 동작
+
+Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/settings.json`의 `model` 필드를 직접 업데이트합니다.
+
+**지원 모델 목록:**
+
+| 모델 ID | 이름 | 특성 |
+|---------|------|------|
+| `claude-opus-4-7` | Opus 4.7 | 최고 성능 — Plan·복잡한 추론·오케스트레이션 |
+| `claude-sonnet-4-6` | Sonnet 4.6 | 균형 — 일반 작업 기본 권장 |
+| `claude-sonnet-4-6[1m]` | Sonnet 4.6 1M | 긴 컨텍스트 필요 시 (대형 코드베이스·긴 문서) |
+| `claude-haiku-4-5-20251001` | Haiku 4.5 | 빠름 — 단순 반복·포맷 변환 작업 |
+
+**절차:**
+
+1. **현재 설정 확인**: Read 도구로 `~/.claude/settings.json` 읽기. `model` 필드 값을 추출 (없으면 `"설정 없음 (Claude Code 기본값 사용)"` 표시).
+
+2. **모델 선택**: AskUserQuestion 도구로 단일 선택:
+   - `header`: "기본 모델 선택"
+   - `question`: "Claude Code 세션에서 사용할 기본 모델을 선택하세요.\n현재: {현재 model 값 또는 '설정 없음'}"
+   - `options`:
+     ```
+     [
+       { "label": "Opus 4.7  [최고 성능]", "value": "claude-opus-4-7", "description": "Plan·복잡한 추론·오케스트레이션" },
+       { "label": "Sonnet 4.6  [균형 ★기본 권장]", "value": "claude-sonnet-4-6", "description": "일반 작업 기본 권장" },
+       { "label": "Sonnet 4.6 1M  [긴 컨텍스트]", "value": "claude-sonnet-4-6[1m]", "description": "대형 코드베이스·긴 문서 작업" },
+       { "label": "Haiku 4.5  [빠름]", "value": "claude-haiku-4-5-20251001", "description": "단순 반복·포맷 변환 작업" }
+     ]
+     ```
+   - 사용자가 취소하면 변경 없이 종료.
+
+3. **settings.json 업데이트**: Edit 도구로 `~/.claude/settings.json`의 `model` 필드를 선택된 값으로 변경.
+   - `model` 필드가 이미 존재하면: 기존 값을 선택된 값으로 교체.
+   - `model` 필드가 없으면: 최상위 레벨에 추가 (예: `"env"` 키 앞).
+
+4. **결과 안내**:
+   ```
+   기본 모델 변경 완료
+
+   이전: {이전 값 또는 '설정 없음'}
+   이후: {선택된 모델 ID}
+
+   Claude Code를 재시작하면 적용됩니다.
+   현재 세션 모델을 즉시 바꾸려면 /model 명령을 사용하세요.
+   ```
 
 ---
 
