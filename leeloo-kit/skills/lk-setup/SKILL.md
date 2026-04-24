@@ -2,7 +2,7 @@
 name: lk-setup
 description: "환경 강화 도구(설치·statusline·플러그인 토글·기본 모델 설정)"
 user_invocable: true
-argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins|model]"
+argument-hint: "[status|install|model|plugins|statusline|claude-md|gemini|serena|reinstall]"
 ---
 
 # /lk-setup — 선택적 환경 강화
@@ -454,13 +454,29 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
 2. **모델 선택**: AskUserQuestion 도구로 단일 선택:
    - `header`: "기본 모델 선택"
    - `question`: "Claude Code 세션에서 사용할 기본 모델을 선택하세요.\n현재: {현재 model 값 또는 '설정 없음'}"
-   - `options`:
+   - `options` (각 옵션에 `preview` 포함):
      ```
      [
-       { "label": "Opus 4.7  [최고 성능]", "value": "claude-opus-4-7", "description": "Plan·복잡한 추론·오케스트레이션" },
-       { "label": "Sonnet 4.6  [균형 ★기본 권장]", "value": "claude-sonnet-4-6", "description": "일반 작업 기본 권장" },
-       { "label": "Sonnet 4.6 1M  [긴 컨텍스트]", "value": "claude-sonnet-4-6[1m]", "description": "대형 코드베이스·긴 문서 작업" },
-       { "label": "Haiku 4.5  [빠름]", "value": "claude-haiku-4-5-20251001", "description": "단순 반복·포맷 변환 작업" }
+       {
+         "label": "Opus 4.7  [최고 성능]",
+         "description": "Plan·복잡한 추론·오케스트레이션",
+         "preview": "모델: claude-opus-4-7\n컨텍스트: 200K tokens\n속도: 보통\n\n특성: 최고 성능 — 복잡한 추론·브레인스토밍\n       오케스트레이션·창의적 판단\n\n추천 작업:\n  /lk-plan, /lk-code-review --dual\n  복잡한 아키텍처 설계, 다단계 분석"
+       },
+       {
+         "label": "Sonnet 4.6  [균형 ★기본 권장]",
+         "description": "일반 작업 기본 권장",
+         "preview": "모델: claude-sonnet-4-6\n컨텍스트: 200K tokens\n속도: 빠름\n\n특성: 균형 — 성능과 속도의 최적 조합\n       일반 개발 작업 전반에 권장\n\n추천 작업:\n  코드 작성·리뷰·디버깅, 일반 Q&A\n  /lk-commit, /lk-todo"
+       },
+       {
+         "label": "Sonnet 4.6 1M  [긴 컨텍스트]",
+         "description": "대형 코드베이스·긴 문서 작업",
+         "preview": "모델: claude-sonnet-4-6[1m]\n컨텍스트: 1,000K tokens (1M)\n속도: 빠름\n\n특성: Sonnet 4.6 성능 + 초대형 컨텍스트\n       대규모 레포 전체 분석 가능\n\n추천 작업:\n  대규모 레포 분석, 긴 문서 처리\n  다수 파일 동시 비교·리팩터링"
+       },
+       {
+         "label": "Haiku 4.5  [빠름]",
+         "description": "단순 반복·포맷 변환 작업",
+         "preview": "모델: claude-haiku-4-5-20251001\n컨텍스트: 200K tokens\n속도: 매우 빠름\n\n특성: 경량 고속 — 단순 작업 최적화\n       응답 속도 최우선 시 선택\n\n추천 작업:\n  간단한 포맷 변환, 짧은 질의\n  SubAgent 위임 작업 (lk-commit 등)"
+       }
      ]
      ```
    - 사용자가 취소하면 변경 없이 종료.

@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-24 16:46 | refactor(leeloo-kit): lk-setup skill argument-hint 순서 개선 + model 선택 미리보기 추가 — argument 3번째로 이동 및 4개 모델 preview 정보 시각화 (v3.5.13) | [상세](history/2026-04-24_1646_lk-setup-skill-argument-order.md) |
 | 2026-04-24 16:40 | feat(leeloo-kit): lk-setup model 서브커맨드 추가 — settings.json 모델 조회 및 AskUserQuestion으로 4개 모델 단일 선택 지원 (v3.5.12) | [상세](history/2026-04-24_1640_lk-setup-model-subcommand.md) |
 | 2026-04-24 13:21 | refactor(leeloo-kit): lk-persona 상세 모드 keep-coding-instructions 경고 추가 — false 선택 시 꺼지는 SWE 가드 명시 + plugin.json↔marketplace.json sync 복구 (v3.5.11) | [상세](history/2026-04-24_1321_persona-keep-coding-warning.md) |
 | 2026-04-24 12:49 | refactor(leeloo-kit): lk-persona 본문 슬림화 + Step 6 요약 inject — prompt cache prefix 중복 적재 제거 (v3.5.10) | [상세](history/2026-04-24_1249_persona-cache-friendly.md) |
