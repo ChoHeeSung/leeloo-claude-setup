@@ -9,7 +9,7 @@
     {
       "name": "leeloo-kit",
       "description": "하네스 엔지니어링 코어 + 환경/도구 — Failure Memory Loop, 배치 품질체크, 세션 라이프사이클, Context Checkpoint",
-      "version": "3.5.11",
+      "version": "3.6.0",
       "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" },
       "source": "./leeloo-kit",
       "category": "environment"
