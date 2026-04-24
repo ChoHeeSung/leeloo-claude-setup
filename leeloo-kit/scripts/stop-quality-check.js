@@ -38,7 +38,7 @@ function detectJsCommands(projectRoot) {
     const deps = { ...pkg.dependencies, ...pkg.devDependencies };
 
     if (scripts.lint) {
-      commands.push({ cmd: 'npm', args: ['run', 'lint', '--', '--quiet'], label: 'lint', perFile: false });
+      commands.push({ cmd: 'npm', args: ['run', 'lint'], label: 'lint', perFile: false });
     } else if (deps.eslint) {
       commands.push({ cmd: 'npx', args: ['eslint', '--quiet', '--no-error-on-unmatched-pattern'], label: 'eslint', perFile: true });
     } else if (deps['@biomejs/biome']) {
@@ -111,7 +111,7 @@ function detectGoCommands(projectRoot) {
   if (fs.existsSync(path.join(projectRoot, 'go.mod'))) {
     commands.push({ cmd: 'go', args: ['vet', './...'], label: 'go vet', perFile: false });
     if (isAvailable('golangci-lint')) {
-      commands.push({ cmd: 'golangci-lint', args: ['run', '--fast'], label: 'golangci-lint', perFile: false });
+      commands.push({ cmd: 'golangci-lint', args: ['run', '--fast-only'], label: 'golangci-lint', perFile: false });
     }
   }
   return commands;
