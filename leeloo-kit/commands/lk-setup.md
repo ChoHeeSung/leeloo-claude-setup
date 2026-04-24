@@ -1,6 +1,6 @@
 ---
-description: "환경 강화 도구(설치·statusline·플러그인 토글)"
-argument-hint: "[status|install|reinstall|statusline|claude-md|gemini|serena|plugins]"
+description: "환경 강화 도구(설치·statusline·플러그인 토글·기본 모델 설정)"
+argument-hint: "[status|install|model|plugins|statusline|claude-md|gemini|serena|reinstall]"
 ---
 `lk-setup` 스킬을 실행합니다. 사용자 입력: $ARGUMENTS
 

@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-24 17:02 | docs: lk-setup 명령어 문서 갱신 — model 서브커맨드 추가 반영 | [상세](history/2026-04-24_1702_lk-setup-argument-hint-sync.md) |
 | 2026-04-24 16:54 | chore: leeloo-kit 버전 업데이트 3.5.11 → 3.6.0 — 마켓플레이스 및 플러그인 메니페스트 버전 동기화 | [상세](history/2026-04-24_1654_leeloo-kit-version-upgrade.md) |
 | 2026-04-24 16:46 | refactor(leeloo-kit): lk-setup skill argument-hint 순서 개선 + model 선택 미리보기 추가 — argument 3번째로 이동 및 4개 모델 preview 정보 시각화 (v3.5.13) | [상세](history/2026-04-24_1646_lk-setup-skill-argument-order.md) |
 | 2026-04-24 16:40 | feat(leeloo-kit): lk-setup model 서브커맨드 추가 — settings.json 모델 조회 및 AskUserQuestion으로 4개 모델 단일 선택 지원 (v3.5.12) | [상세](history/2026-04-24_1640_lk-setup-model-subcommand.md) |
