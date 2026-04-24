@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-24 13:21 | refactor(leeloo-kit): lk-persona 상세 모드 keep-coding-instructions 경고 추가 — false 선택 시 꺼지는 SWE 가드 명시 + plugin.json↔marketplace.json sync 복구 (v3.5.11) | [상세](history/2026-04-24_1321_persona-keep-coding-warning.md) |
 | 2026-04-24 12:49 | refactor(leeloo-kit): lk-persona 본문 슬림화 + Step 6 요약 inject — prompt cache prefix 중복 적재 제거 (v3.5.10) | [상세](history/2026-04-24_1249_persona-cache-friendly.md) |
 | 2026-04-24 10:18 | refactor(leeloo-kit): lint 플래그 호환성 + Go linter 업데이트 (v3.5.9) | [상세](history/2026-04-24_1018_lint-flag-compat.md) |
 | 2026-04-24 09:06 | resources/CLAUDE.md 동기화 — 스파게티 원칙 역 sync + 스킬 목록 섹션 제거(자동 로드와 중복) + Failure Memory 절차 CLAUDE.local.md 기준 갱신 (leeloo-kit 3.5.7) | [상세](history/2026-04-24_0906_resources-claude-md-sync.md) |
