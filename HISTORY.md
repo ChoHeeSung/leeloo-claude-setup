@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-04-24 09:06 | resources/CLAUDE.md 동기화 — 스파게티 원칙 역 sync + 스킬 목록 섹션 제거(자동 로드와 중복) + Failure Memory 절차 CLAUDE.local.md 기준 갱신 (leeloo-kit 3.5.7) | [상세](history/2026-04-24_0906_resources-claude-md-sync.md) |
 | 2026-04-24 08:53 | Failure Memory를 CLAUDE.local.md로 분리 — 루트 CLAUDE.md prompt cache prefix 안정화 (cache-audit volatility 1.05 🔴 해소, leeloo-kit 3.5.6) | [상세](history/2026-04-24_0853_failure-memory-local-split.md) |
 | 2026-04-24 09:00 | 하네스 Tier 3 — failure-memory-rotate(KEEP_RECENT=50·패턴 클러스터링·CLAUDE.md 상위 3 요약) + cache-audit(볼라틸리티 감사) + lk-harness 2개 서브커맨드 (leeloo-kit 3.5.5) | [상세](history/2026-04-24_0900_harness-tier3-memory-rotation-cache-audit.md) |
 | 2026-04-24 08:40 | 하네스 Tier 2 — token-budget.js + session hook 통합 + statusline 보라 블록 + lk-harness budget 서브커맨드 4개 뷰 (leeloo-kit 3.5.4) | [상세](history/2026-04-24_0840_harness-tier2-session-budget-observability.md) |
