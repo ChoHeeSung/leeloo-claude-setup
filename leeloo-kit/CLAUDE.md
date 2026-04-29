@@ -14,7 +14,7 @@
 - `hooks/hooks.json` — 6 hook events (SessionStart, PreToolUse, PostToolUse×3, PreCompact, Stop, SessionEnd)
 - `scripts/` — Hook runtime (Node.js v18+ CommonJS). session-start / bash-pre / post-edit-accumulator / tool-failure-post / skill-post / stop-quality-check / pre-compact / session-end + `lib/` (io, config, paths, context, failure-log, edit-accumulator).
 - `leeloo.config.json` — 하네스 설정(failure memory, back-pressure, cross-validation)
-- `skills/` — lk-setup, lk-skill-create, lk-persona
+- `skills/` — lk-setup, lk-skill-create, lk-persona, lk-harness, lk-coding-guard
 - `agents/` — code-analyzer
 - `output-styles/` — lk-dual-verify, lk-mentor, lk-ops
 

@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | 플러그인 | 버전 | 유형 | 스킬 수 | 상세 |
 |---|---|---|---|---|
-| leeloo-kit | 3.4.0 | 환경/도구(하네스 엔지니어링 코어) | 3 | `leeloo-kit/CLAUDE.md` |
+| leeloo-kit | 3.7.0 | 환경/도구(하네스 엔지니어링 코어) | 5 | `leeloo-kit/CLAUDE.md` |
 | leeloo-workflow | 1.0.1 | 워크플로우(Plan/리뷰/TODO) | 4 | `leeloo-workflow/CLAUDE.md` |
 | leeloo-git | 1.0.1 | Git 자동화 | 2 | `leeloo-git/CLAUDE.md` |
 | leeloo-agent | 1.0.1 | Sub Agent/Team 관리 | 2 | `leeloo-agent/CLAUDE.md` |

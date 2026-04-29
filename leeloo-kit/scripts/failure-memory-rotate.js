@@ -2,7 +2,7 @@
 'use strict';
 // failure-memory-rotate.js — .leeloo/failure-memory/*.md 노후화·클러스터링
 //   rotate(): 유형당 KEEP_RECENT 초과분을 archive/<type>-<YYYY-MM>.md로 이동
-//             에러 패턴 정규화 후 클러스터링 → CLAUDE.md 요약 섹션 갱신
+//             에러 패턴 정규화 후 클러스터링 → CLAUDE.local.md 요약 섹션 갱신
 //   일 1회 gate: .leeloo/.last-rotate (YYYY-MM-DD, KST)
 
 const fs = require('fs');
@@ -107,7 +107,7 @@ function renderSummarySection(typeEntries) {
   return lines.join('\n');
 }
 
-function updateClaudeMd(cwd, section) {
+function updateClaudeLocalMd(cwd, section) {
   const file = path.join(cwd, 'CLAUDE.local.md');
   const exists = fs.existsSync(file);
   const seed = `# ${path.basename(cwd)} (로컬 전용)\n\n> 이 파일은 gitignore 대상. 팀 공유용 정책은 루트 CLAUDE.md 참조.\n\n`;
@@ -146,8 +146,8 @@ function rotate(cwd, opts) {
     typeEntries.push({ type: f.type, entries });
   }
   const section = renderSummarySection(typeEntries);
-  const updated = updateClaudeMd(base, section);
-  return { skipped: false, archived: archivedTotal, types: typeEntries.length, claudeMdUpdated: updated };
+  const updated = updateClaudeLocalMd(base, section);
+  return { skipped: false, archived: archivedTotal, types: typeEntries.length, claudeLocalMdUpdated: updated };
 }
 
 function main() {
@@ -157,7 +157,7 @@ function main() {
     console.log(`rotate: skipped (${result.reason}). --force로 재실행 가능`);
     return;
   }
-  console.log(`rotate: ${result.types}개 유형, archived=${result.archived}, CLAUDE.md updated=${result.claudeMdUpdated}`);
+  console.log(`rotate: ${result.types}개 유형, archived=${result.archived}, CLAUDE.local.md updated=${result.claudeLocalMdUpdated}`);
 }
 
 module.exports = { rotate, parseEntries, clusterEntries, topPatterns, normalize, stripPayload };
