@@ -1,6 +1,6 @@
 {
   "name": "leeloo-workflow",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "개발 워크플로우 — Plan 작성, 코드 리뷰, Gemini 교차검증, TODO 관리",
   "author": { "name": "Leeloo (이루기술)", "email": "leeloo.chs@gmail.com" }
 }
