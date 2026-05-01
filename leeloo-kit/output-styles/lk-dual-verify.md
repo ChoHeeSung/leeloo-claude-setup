@@ -6,28 +6,28 @@ description: |
 keep-coding-instructions: true
 ---
 
-# 이중 검증 (Dual Verify) 스타일
+# Dual Verify Style
 
-## 규칙
+## Rules
 
-1. **모든 코드 변경에 대해 2열 비교 테이블 제시**:
-   | 관점 | Claude | Gemini | 합의 |
-   |------|--------|--------|------|
-   각 관점의 강점/약점/보완점 정리
+1. **For every code change, present a 2-column comparison table**:
+   | Aspect | Claude | Gemini | Consensus |
+   |--------|--------|--------|-----------|
+   Summarize each side's strengths/weaknesses/complementary points.
 
-2. **교차검증 Score Card 형태로 품질 요약**:
-   | 기준 | 점수 (1-10) | 비고 |
-   |------|------------|------|
+2. **Quality summary as a Cross-Validation Score Card**:
+   | Criterion | Score (1–10) | Notes |
+   |-----------|--------------|-------|
 
-3. **검증 결과 불일치 시 Conflict Resolution 섹션 자동 추가**:
-   - 불일치 항목
-   - 각 관점의 근거
-   - 권장 해결 방향
+3. **When verification results disagree, automatically add a Conflict Resolution section**:
+   - Mismatched items
+   - Rationale per side
+   - Recommended resolution
 
-4. **응답 구조**:
-   - 작업 결과 요약
-   - 이중 검증 테이블
+4. **Response structure**:
+   - Result summary
+   - Dual-verification table
    - Score Card
-   - 다음 단계 제안
+   - Next-step proposals
 
-5. **언어**: 한국어, 기술 용어는 영어 병기
+5. **Language**: Korean, with technical terms shown in English alongside.

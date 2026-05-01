@@ -1,103 +1,107 @@
 ---
 name: lk-code-review
-description: "코드 리뷰(Claude 단독 또는 Gemini 이중)"
+description: |
+  코드 리뷰 — Claude 단독 또는 `--dual` 옵션으로 Gemini 이중 검증.
+  코드 리뷰, 리뷰, 코드 검토, 이중 리뷰, 제미나이 리뷰, code review, dual review, gemini review, peer review
 user_invocable: true
 argument-hint: "[--dual] [path]"
 ---
 
-# /lk-code-review — 코드 리뷰
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Claude가 코드를 리뷰합니다. `--dual` 옵션으로 Gemini 이중 리뷰를 활성화할 수 있습니다.
-문서(Plan/Design) 검증은 `/lk-plan-cross-review`를 사용하세요.
+# /lk-code-review — Code Review
 
-## 사용법
+Claude reviews code. The `--dual` option enables a Gemini double review.
+For document (Plan/Design) verification, use `/lk-plan-cross-review`.
+
+## Usage
 
 ```
-/lk-code-review                — Claude 단독 코드 리뷰 (git diff 기반)
-/lk-code-review <path>         — 지정 파일 코드 리뷰
-/lk-code-review --dual         — Gemini+Claude 이중 코드 리뷰
-/lk-code-review --dual <path>  — 지정 파일 이중 코드 리뷰
+/lk-code-review                — Claude-only code review (git diff based)
+/lk-code-review <path>         — review the specified file
+/lk-code-review --dual         — Gemini + Claude double review
+/lk-code-review --dual <path>  — double review of the specified file
 ```
 
-## 출력
+## Output
 
-**Claude 단독 모드:**
-- 코드 품질, 보안, 성능 분석
-- Score Card + 권장 조치
+**Claude-only mode:**
+- Code quality, security, performance analysis
+- Score Card + recommended actions
 
-**이중 모드 (--dual):**
-- Claude 관점 요약
-- Gemini 관점 요약
-- 통합 Score Card (코드 품질, 보안, 성능)
-- 합의 항목 / 불일치 항목
+**Dual mode (--dual):**
+- Claude perspective summary
+- Gemini perspective summary
+- Combined Score Card (code quality, security, performance)
+- Agreed items / disagreed items
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 다음을 파싱합니다:
-- `--dual` → Gemini 이중 리뷰 활성화
-- 나머지 텍스트 → 파일 경로 (없으면 git diff 기반)
+Parse from user input:
+- `--dual` → enable Gemini double review
+- Remaining text → file path (if absent, fall back to git diff)
 
 ---
 
-### gemini-cli 확인 (`--dual` 모드일 때만)
+### gemini-cli Check (only when `--dual`)
 
-`--dual` 플래그가 있을 때만 Bash로 `command -v gemini` 실행하여 설치 여부 확인.
+Only when `--dual` is set, run `command -v gemini` via Bash to verify installation.
 
-설치되지 않았으면:
+If missing:
 ```
 gemini-cli가 설치되어 있지 않습니다.
 설치 방법: npm install -g @google/gemini-cli
 이중 리뷰는 gemini-cli가 필요합니다.
 ```
-중단. (단독 모드로 전환하려면 `--dual` 없이 `/lk-code-review` 실행)
+Abort. (To switch to single mode, run `/lk-code-review` without `--dual`.)
 
 ---
 
-### code 모드
+### Code Mode
 
-#### Step 1: 리뷰 대상 확보
+#### Step 1: Acquire Review Target
 
-- **파일 경로가 지정된 경우**: Read 도구로 해당 파일 읽기.
-- **파일 경로가 없는 경우**: Bash로 `git diff HEAD` 실행하여 변경사항 수집.
-  - 변경사항이 없으면 `git diff --staged` 시도.
-  - 그래도 없으면: "리뷰할 코드 변경사항이 없습니다." 안내 후 중단.
+- **If a file path is given**: Read the file via the Read tool.
+- **If no file path**: run `git diff HEAD` via Bash to collect changes.
+  - If empty, try `git diff --staged`.
+  - Still empty: "리뷰할 코드 변경사항이 없습니다." then abort.
 
-#### Step 2: Claude 리뷰 (Sonnet Task — 단독 모드 기본)
+#### Step 2: Claude Review (Sonnet Task — single mode default)
 
-단독 모드에서는 Sonnet 서브 에이전트에게 리뷰 분석을 위임한다. 이중 모드(`--dual`)일 때도 Claude 관점 분석은 동일하게 Sonnet에 위임한다.
+In single mode, delegate review analysis to a Sonnet sub-agent. In dual mode (`--dual`), the Claude perspective analysis is also delegated to Sonnet.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `sonnet`
 - `prompt`:
 
 ```
-당신은 시니어 코드 리뷰어입니다. 다음 코드를 리뷰하세요.
+당신은 시니어 코드 리뷰어입니다. 다음 코드를 리뷰하세요. **한국어로 응답하세요.**
 
-## 리뷰 기준
+## Review criteria
 
-### 코드 품질
-- 로직 정확성, 엣지 케이스
-- 네이밍, 구조, 가독성
+### Code quality
+- Logical correctness, edge cases
+- Naming, structure, readability
 
-### 보안 (OWASP Top 10 기준)
-- 인젝션 취약점
-- 인증/인가 문제
-- 민감 데이터 노출
+### Security (OWASP Top 10)
+- Injection vulnerabilities
+- AuthN / AuthZ issues
+- Sensitive data exposure
 
-### 성능
-- 불필요한 반복, 메모리 누수
-- 비효율적인 알고리즘
+### Performance
+- Unnecessary loops, memory leaks
+- Inefficient algorithms
 
-## 리뷰 대상 코드
+## Code under review
 {code_or_diff}
 
-## 프로젝트 컨텍스트 (있으면)
+## Project context (if any)
 {claude_md_snippets}
 
-## 출력 형식
+## Output format (Korean — keep these headers verbatim)
 ### Score Card
 | 항목 | 점수 (1-10) | 근거 요약 |
 |------|-----------|----------|
@@ -114,32 +118,33 @@ gemini-cli가 설치되어 있지 않습니다.
 2.
 ```
 
-**결과 검증 (메인 세션):**
-- [ ] Score Card 4개 항목(품질/보안/성능/종합) 모두 포함
-- [ ] 발견 사항에 심각도 표기가 있음
-- [ ] 권장 조치가 발견 사항에 근거함 (새로운 hallucination 없음)
+**Result verification (main session):**
+- [ ] Score Card includes all 4 items (quality/security/performance/overall)
+- [ ] Findings carry severity tags
+- [ ] Recommended actions trace back to findings (no new hallucinations)
 
-**품질 미달 시 폴백:** 메인 세션(Opus)에서 직접 재리뷰.
+**Fallback on quality failure:** redo review in the main session (Opus).
 
-분석 결과를 내부 변수에 저장 (Step 4에서 출력).
+Save the analysis to an internal variable (output in Step 4).
 
-#### Step 3: Gemini 리뷰 (`--dual` 모드일 때만, 아니면 Step 4로 건너뜀)
+#### Step 3: Gemini Review (only on `--dual`; otherwise skip to Step 4)
 
-Bash로 gemini-cli 실행:
+Run gemini-cli via Bash:
 
-Bash 도구의 timeout 파라미터를 120000ms로 설정하여 실행하세요 (macOS에는 `timeout` 명령이 없음):
+Set the Bash tool's `timeout` parameter to 120000ms (macOS lacks a `timeout` command):
 
 ```bash
 gemini -p "$(cat <<'PROMPT_EOF'
-당신은 시니어 코드 리뷰어입니다. 다음 코드 변경사항을 리뷰하세요.
+당신은 시니어 코드 리뷰어입니다. 다음 코드 변경사항을 리뷰하세요. **한국어로 응답하세요.**
 
-리뷰 기준:
-1. 코드 품질 (정확성, 가독성, 구조)
-2. 보안 취약점 (OWASP Top 10 기준)
-3. 성능 문제
-4. 개선 제안
+Review criteria:
+1. Code quality (correctness, readability, structure)
+2. Security vulnerabilities (OWASP Top 10)
+3. Performance issues
+4. Improvement suggestions
 
-출력 형식:
+Output format (Korean — keep these headers verbatim):
+
 ## 발견 사항
 - [심각도] 항목명: 설명
 
@@ -156,16 +161,16 @@ gemini -p "$(cat <<'PROMPT_EOF'
 
 ---
 
-# 리뷰 대상 코드
+# Code under review
 
-{코드 내용}
+{code content}
 PROMPT_EOF
 )" -o text
 ```
 
-#### Step 4: 결과 출력
+#### Step 4: Output
 
-**단독 모드 (기본):**
+**Single mode (default):**
 
 ```
 ## 코드 리뷰 결과
@@ -183,22 +188,22 @@ PROMPT_EOF
 - [심각도] 항목명: 설명
 
 ### 권장 조치
-1. {가장 중요한 수정 사항}
-2. {두 번째 중요한 수정 사항}
+1. {most important fix}
+2. {second most important fix}
 ```
 
-**이중 모드 (`--dual`):**
+**Dual mode (`--dual`):**
 
 ```
 ## 이중 코드 리뷰 결과
 
 ### Claude 관점
-{Claude 분석 결과}
+{Claude analysis}
 
 ---
 
 ### Gemini 관점
-{Gemini 응답 내용}
+{Gemini response content}
 
 ---
 
@@ -212,21 +217,21 @@ PROMPT_EOF
 | 종합 | X/10 | X/10 | X/10 |
 
 ### 합의 항목 (양쪽 모두 발견)
-- {항목 1}
+- {item 1}
 
 ### 불일치 항목 (한쪽만 발견)
 | 항목 | Claude | Gemini | Conflict Resolution |
 |------|--------|--------|---------------------|
-| ... | 발견 | 미발견 | {권장 조치} |
+| ... | 발견 | 미발견 | {recommended action} |
 
 ### 권장 조치 우선순위
-1. {가장 중요한 수정 사항}
-2. {두 번째 중요한 수정 사항}
+1. {most important fix}
+2. {second most important fix}
 ```
 
 ---
 
-### 참고
+### Notes
 
-- 문서(Plan/Design) 검증은 `/lk-plan-cross-review`를 사용하세요.
-- 코드 리뷰 후 수정이 필요하면 `/lk-commit`으로 커밋할 수 있습니다.
+- For document (Plan/Design) verification, use `/lk-plan-cross-review`.
+- After review, you can commit fixes via `/lk-commit`.

@@ -1,76 +1,80 @@
 ---
 name: lk-skill-create
-description: "Git 히스토리·구조 분석으로 SKILL.md 자동 생성"
+description: |
+  Git 히스토리·프로젝트 구조 분석으로 Claude Code SKILL.md를 자동 생성.
+  스킬 생성, 스킬 만들기, SKILL.md 생성, 스킬 자동화, skill create, skill generator, auto skill
 user_invocable: true
 argument-hint: "<skill-name> [--quick]"
 ---
 
-# /lk-skill-create — Skill 자동 생성기
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Git 히스토리와 프로젝트 구조를 분석하여 팀의 반복 패턴을 Claude Code 스킬(SKILL.md)로 자동 생성합니다.
+# /lk-skill-create — Skill Auto-Generator
 
-## 서브커맨드
+Analyzes git history and project structure to auto-generate a Claude Code skill (SKILL.md) capturing the team's recurring patterns.
+
+## Subcommands
 
 ```
-/lk-skill-create <skill-name>           — 전체 프로세스 (분석 + 질문 + 생성)
-/lk-skill-create <skill-name> --quick   — 질문 건너뛰고 자동 생성
+/lk-skill-create <skill-name>           — full process (analyze + ask + generate)
+/lk-skill-create <skill-name> --quick   — skip questions and auto-generate
 ```
 
-## 출력 파일
+## Output File
 
 - `skills/{skill-name}/SKILL.md`
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 다음을 파싱합니다:
-- `<skill-name>`: 생성할 스킬 이름 (필수, lowercase-hyphenated)
-- `--quick`: 빠른 모드 플래그 (선택)
+Parse from user input:
+- `<skill-name>`: skill name to create (required, lowercase-hyphenated)
+- `--quick`: quick mode flag (optional)
 
-skill-name 인자가 없으면:
+If `<skill-name>` is missing:
 ```
 사용법: /lk-skill-create <skill-name> [--quick]
 예: /lk-skill-create code-review-java
 예: /lk-skill-create deploy-checklist --quick
 ```
-출력 후 중단.
+Print and abort.
 
 ---
 
-### Phase 1: 프로젝트 분석
+### Phase 1: Project Analysis
 
-1. **Git 히스토리 분석**: `git log --oneline -50` 실행하여 최근 커밋 패턴 파악.
-2. **파일 구조 확인**: Glob으로 `**/*.{ts,js,py,java,go,rs,erl,ex}` 패턴 검색, 주요 언어/프레임워크 파악.
-3. **기존 스킬 확인**: Glob으로 `skills/*/SKILL.md` 검색, 중복 방지.
+1. **Git history analysis**: run `git log --oneline -50` to identify recent commit patterns.
+2. **File structure scan**: Glob `**/*.{ts,js,py,java,go,rs,erl,ex}` to identify primary languages/frameworks.
+3. **Existing skill check**: Glob `skills/*/SKILL.md` to prevent duplication.
 
-분석 결과 요약:
+Analysis summary:
 ```
 ## 프로젝트 분석 완료
 
-- 주요 언어: {감지된 언어}
-- 커밋 패턴: {주요 패턴 3개}
-- 기존 스킬: {목록}
-- 감지된 반복 작업: {패턴}
+- 주요 언어: {detected language}
+- 커밋 패턴: {top 3 patterns}
+- 기존 스킬: {list}
+- 감지된 반복 작업: {pattern}
 ```
 
 ---
 
-### Phase 2: 스킬 정의 (대화형, `--quick` 시 건너뜀)
+### Phase 2: Skill Definition (interactive, skip on `--quick`)
 
-AskUserQuestion으로 순차 질문:
+AskUserQuestion in sequence:
 
-1. **스킬 목적**: "이 스킬이 해결할 문제는 무엇인가요?"
-2. **트리거 조건**: "어떤 상황에서 이 스킬이 활성화되어야 하나요? (예: PR 생성 시, 특정 파일 수정 시)"
-3. **출력 형식**: "스킬의 출력은 어떤 형식이어야 하나요? (코드 수정 / 문서 생성 / 검증 리포트 / 대화형 가이드)"
+1. **Skill purpose**: "이 스킬이 해결할 문제는 무엇인가요?"
+2. **Trigger condition**: "어떤 상황에서 이 스킬이 활성화되어야 하나요? (예: PR 생성 시, 특정 파일 수정 시)"
+3. **Output form**: "스킬의 출력은 어떤 형식이어야 하나요? (코드 수정 / 문서 생성 / 검증 리포트 / 대화형 가이드)"
 
 ---
 
-### Phase 3: SKILL.md 본문 생성 (Sonnet Task)
+### Phase 3: SKILL.md Body Generation (Sonnet Task)
 
-Read로 기존 SKILL.md 하나를 참조하여 구조 예시를 확보한 후, SKILL.md 본문 작성은 Sonnet 서브 에이전트에 위임한다.
+Read one existing SKILL.md to obtain a structural example, then delegate body authoring to a Sonnet sub-agent.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `sonnet`
 - `prompt`:
@@ -134,22 +138,22 @@ argument-hint: "{인자 힌트}"
 - 입력에 주어진 목적/트리거/출력과 모순되는 내용 금지.
 ```
 
-**결과 검증 (메인 세션):**
-- [ ] frontmatter 4개 필드(name, description, user_invocable, argument-hint) 존재
-- [ ] name이 skill-name 인자와 일치
-- [ ] Procedure 섹션에 실제 도구 호출 단계가 있음
-- [ ] hallucination 도구/MCP 사용 없음
+**Result verification (main session):**
+- [ ] all 4 frontmatter fields (name, description, user_invocable, argument-hint) present
+- [ ] name matches the skill-name argument
+- [ ] Procedure section contains concrete tool-call steps
+- [ ] no hallucinated tools/MCPs
 
-**품질 미달 시 폴백:** 메인 세션(Opus)에서 직접 작성.
+**Fallback on quality failure:** author directly in the main session (Opus).
 
 ---
 
-### Phase 4: 저장 및 안내
+### Phase 4: Save and Notify
 
 1. `mkdir -p skills/{skill-name}/`
 2. Write → `skills/{skill-name}/SKILL.md`
 
-완료 안내:
+Completion message:
 ```
 스킬 생성 완료
 

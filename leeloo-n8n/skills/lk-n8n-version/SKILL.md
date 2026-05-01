@@ -1,72 +1,76 @@
 ---
 name: lk-n8n-version
-description: "n8n 워크플로우 버전 관리(롤백·정리)"
+description: |
+  n8n 워크플로우 버전 이력 조회·롤백·이전 버전 정리(prune).
+  버전 관리, 롤백, 버전 정리, 이전 버전, 워크플로우 히스토리, version, rollback, prune, workflow version
 user_invocable: true
 argument-hint: "[list|get|rollback|prune] <workflow-id>"
 ---
 
-# /lk-n8n-version — 워크플로우 버전 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-워크플로우의 버전 히스토리를 조회하고, 이전 버전으로 롤백하거나, 오래된 버전을 정리합니다.
+# /lk-n8n-version — Workflow Version Management
 
-## 서브커맨드
+Inspect a workflow's version history, roll back to a previous version, or prune old versions.
+
+## Subcommands
 
 ```
-/lk-n8n-version list <workflow-id>              — 버전 히스토리 조회
-/lk-n8n-version get <workflow-id> <version-id>  — 특정 버전 상세 조회
-/lk-n8n-version rollback <workflow-id>          — 이전 버전으로 롤백
-/lk-n8n-version prune <workflow-id>             — 오래된 버전 정리
+/lk-n8n-version list <workflow-id>              — Inspect version history
+/lk-n8n-version get <workflow-id> <version-id>  — Detail of a specific version
+/lk-n8n-version rollback <workflow-id>          — Roll back to a previous version
+/lk-n8n-version prune <workflow-id>             — Prune old versions
 ```
 
 ## Procedure
 
-### MCP 사전 체크
+### MCP pre-check
 
-1. `mcp__n8n-mcp__n8n_health_check` 호출.
-   - 실패 시: "n8n MCP 서버가 설정되지 않았습니다. `/n8n-setup install` 을 먼저 실행하세요." 안내 후 중단.
+1. Call `mcp__n8n-mcp__n8n_health_check`.
+   - On failure, instruct: "n8n MCP server is not configured. Run `/n8n-setup install` first." Then stop.
 
-### 인자 파싱
+### Argument parsing
 
-- 인자 없음 → 사용법 안내 후 중단
-- `list <workflow-id>` → **list** 동작
-- `get <workflow-id> <version-id>` → **get** 동작
-- `rollback <workflow-id>` → **rollback** 동작
-- `prune <workflow-id>` → **prune** 동작
+- No args → print usage and stop
+- `list <workflow-id>` → **list** action
+- `get <workflow-id> <version-id>` → **get** action
+- `rollback <workflow-id>` → **rollback** action
+- `prune <workflow-id>` → **prune** action
 
 ---
 
-### list 동작
+### list action
 
-1. `mcp__n8n-mcp__n8n_workflow_versions` 를 `mode: "list"`, `workflowId` 로 호출.
-2. 버전 목록을 테이블로 표시:
+1. Call `mcp__n8n-mcp__n8n_workflow_versions` with `mode: "list"`, `workflowId`.
+2. Display version list as a table:
    ```
-   워크플로우 버전 히스토리 (ID: {workflow-id})
+   Workflow version history (ID: {workflow-id})
 
-   | 버전 ID | 생성일 | 노드 수 |
-   |---------|--------|---------|
+   | Version ID | Created | Node count |
+   |------------|---------|------------|
    ```
 
 ---
 
-### get 동작
+### get action
 
-1. `mcp__n8n-mcp__n8n_workflow_versions` 를 `mode: "get"`, `workflowId`, `versionId` 로 호출.
-2. 해당 버전의 상세 정보 표시.
-
----
-
-### rollback 동작
-
-1. 먼저 `mode: "list"` 로 버전 목록 조회하여 표시.
-2. AskUserQuestion — "롤백할 버전을 선택하세요 (버전 ID 입력):"
-3. `mcp__n8n-mcp__n8n_workflow_versions` 를 `mode: "rollback"`, `workflowId`, `versionId` 로 호출.
-   - `validateBefore: true` 로 롤백 전 검증.
-4. 롤백 결과 표시 (백업 생성 여부 포함).
+1. Call `mcp__n8n-mcp__n8n_workflow_versions` with `mode: "get"`, `workflowId`, `versionId`.
+2. Display the details of that version.
 
 ---
 
-### prune 동작
+### rollback action
 
-1. AskUserQuestion — "최근 몇 개 버전을 유지하시겠습니까? (기본: 10)"
-2. `mcp__n8n-mcp__n8n_workflow_versions` 를 `mode: "prune"`, `workflowId`, `maxVersions` 로 호출.
-3. 정리 결과 표시 (삭제된 버전 수).
+1. First call with `mode: "list"` to fetch and display the version list.
+2. AskUserQuestion — "Choose a version to roll back to (enter the version ID):"
+3. Call `mcp__n8n-mcp__n8n_workflow_versions` with `mode: "rollback"`, `workflowId`, `versionId`.
+   - Use `validateBefore: true` to validate before rollback.
+4. Display the rollback result (including whether a backup was created).
+
+---
+
+### prune action
+
+1. AskUserQuestion — "How many recent versions should be retained? (default: 10)"
+2. Call `mcp__n8n-mcp__n8n_workflow_versions` with `mode: "prune"`, `workflowId`, `maxVersions`.
+3. Display the prune result (number of versions removed).

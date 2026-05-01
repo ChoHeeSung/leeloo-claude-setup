@@ -1,126 +1,130 @@
 ---
 name: lk-plan-cross-review
-description: "Plan/Design Gemini 교차검증"
+description: |
+  Claude가 작성한 Plan/Design 문서를 Gemini가 독립 검증 — Score Card 파싱·이전 점수 비교.
+  플랜 검토, Plan 검증, 설계 리뷰, 제미나이 교차검증, 문서 리뷰, plan review, design review, gemini cross review
 user_invocable: true
 argument-hint: "[file-path]"
 ---
 
-# /lk-plan-cross-review — Plan 리뷰 (Gemini 독립 문서 검증)
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Claude가 작성한 Plan/Design 문서를 Gemini가 독립적으로 검증합니다.
-Score Card를 파싱하여 메트릭을 저장하고, 반복 검증 시 이전 점수와 비교합니다.
-코드 리뷰는 `/lk-code-review`를 사용하세요.
+# /lk-plan-cross-review — Plan Review (independent document validation by Gemini)
 
-## Plan 저장 경로
+Gemini independently validates a Plan/Design document authored by Claude.
+The Score Card is parsed and metrics are stored; on repeat reviews, scores are compared against prior runs.
+For code reviews, use `/lk-code-review`.
 
-Plan 파일은 프로젝트 루트의 `.claude/plans/` 또는 `docs/plan/` 디렉토리에 저장됩니다.
-- 파일명 규칙: `{YYYY-MM-DD}-{요약-kebab-case}.md` 또는 `{feature}.plan.md`
+## Plan Storage
+
+Plan files are stored in the project root under `.claude/plans/` or `docs/plan/`.
+- File name convention: `{YYYY-MM-DD}-{summary-kebab-case}.md` or `{feature}.plan.md`
 
 ## Procedure
 
-### Step 1: 인자 파싱
+### Step 1: Argument Parsing
 
-사용자가 파일 경로를 인자로 제공했는지 확인하세요.
-- 인자가 있으면 해당 경로를 검증 파일로 사용합니다. → Step 3로 이동.
-- 인자가 없으면 Step 2로 진행합니다.
+Check whether the user provided a file path argument.
+- If yes, treat that path as the validation target. → go to Step 3.
+- If no, proceed to Step 2.
 
-### Step 2: 파일 선택 (인자 없을 때)
+### Step 2: File Selection (no argument)
 
-인자가 없는 경우, 현재 대화 컨텍스트에 plan 내용이 있는지 확인합니다.
+If no argument, check whether a plan exists in the current conversation context.
 
-**A. 현재 컨텍스트에 plan이 있는 경우** (plan mode 직후 호출 등):
-1. Bash로 `mkdir -p .claude/plans/` 실행
-2. plan 내용을 Write 도구로 `.claude/plans/{YYYY-MM-DD}-{plan-요약-kebab-case}.md`에 저장
-3. 저장된 파일을 검증 파일로 사용 → Step 3로 이동
+**A. Plan present in current context** (called right after plan mode):
+1. Run `mkdir -p .claude/plans/` via Bash
+2. Save the plan content to `.claude/plans/{YYYY-MM-DD}-{plan-summary-kebab-case}.md` via Write
+3. Use the saved file as the validation target → go to Step 3
 
-**B. 현재 컨텍스트에 plan이 없는 경우**:
-1. Glob 도구로 다음 경로를 순서대로 검색 (`.review.md`로 끝나는 파일 제외):
-   - `{프로젝트루트}/docs/plan/*.plan.md`
-   - `{프로젝트루트}/.claude/plans/*.md`
-2. 파일이 없으면:
+**B. No plan in current context**:
+1. Use Glob to search the following paths in order (excluding files ending in `.review.md`):
+   - `{project-root}/docs/plan/*.plan.md`
+   - `{project-root}/.claude/plans/*.md`
+2. If no files:
    ```
    검증할 파일을 찾을 수 없습니다.
    Plan을 먼저 작성하거나 파일 경로를 직접 지정하세요.
    Usage: /lk-plan-cross-review [file-path]
    ```
-   중단.
-3. 파일이 1개면 해당 파일을 사용
-4. 파일이 여러 개면 AskUserQuestion으로 어떤 파일을 검증할지 확인
+   Abort.
+3. If exactly one file, use it.
+4. If multiple files, AskUserQuestion to pick one.
 
-### Step 3: gemini-cli 존재 확인
+### Step 3: Verify gemini-cli
 
-Bash 도구로 `command -v gemini`를 실행하여 gemini-cli가 설치되어 있는지 확인하세요.
+Run `command -v gemini` via Bash to verify gemini-cli is installed.
 
-설치되어 있지 않으면:
+If missing:
 ```
 gemini-cli가 설치되어 있지 않습니다.
 설치 방법: npm install -g @google/gemini-cli 또는 https://github.com/google-gemini/gemini-cli 참고
 ```
-중단.
+Abort.
 
-### Step 4: 이전 검증 이력 확인
+### Step 4: Check Prior Validation History
 
-Read 도구로 `.leeloo/metrics.json` 읽기 (없으면 생략).
+Read `.leeloo/metrics.json` (skip if missing).
 
-해당 파일에 대한 이전 검증 결과가 있으면 iteration 카운터를 증가:
-- 이전 기록 없음: `iteration = 1`
-- 이전 기록 있음: `iteration = 이전 iteration + 1`
+If a prior result exists for the file, increment the iteration counter:
+- No prior record: `iteration = 1`
+- Prior record present: `iteration = previous iteration + 1`
 
-이전 점수가 있으면 사용자에게 표시:
+If a prior score exists, show it to the user:
 ```
 이전 검증 기록 발견 (iteration {N-1}):
-- 종합 점수: {이전점수}/10
-- 검증일: {이전날짜}
+- 종합 점수: {previous score}/10
+- 검증일: {previous date}
 ```
 
-### Step 5: Plan 내용 읽기
+### Step 5: Read Plan Content
 
-Read 도구로 선택된 파일 내용을 읽으세요.
+Read the selected file via the Read tool.
 
-### Step 6: Gemini 실행
+### Step 6: Run Gemini
 
-1. Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/gemini-review-prompt.md` 파일을 읽어 리뷰 프롬프트 템플릿을 가져오세요.
-2. 다음 Bash 명령으로 gemini-cli를 실행하세요:
+1. Read the review prompt template via the Read tool from `${CLAUDE_PLUGIN_ROOT}/resources/gemini-review-prompt.md`.
+2. Run gemini-cli with the following Bash command:
 
-Bash 도구의 timeout 파라미터를 120000ms로 설정하여 실행하세요 (macOS에는 `timeout` 명령이 없음):
+Set the Bash tool's `timeout` parameter to 120000ms (macOS lacks a `timeout` command):
 
 ```bash
 gemini -p "$(cat <<'PROMPT_EOF'
-{gemini-review-prompt.md 내용}
+{gemini-review-prompt.md content}
 
 ---
 
 # 검증 대상 문서
 
-{파일 내용}
+{file content}
 PROMPT_EOF
 )" -o text
 ```
 
-**에러 처리:**
-- timeout (종료코드 124) → "Gemini 응답 시간이 초과되었습니다 (120초). 네트워크 연결을 확인하세요."
-- 빈 응답 → "Gemini가 빈 응답을 반환했습니다. API 키 설정을 확인하세요. (`gemini auth login`)"
-- 기타 에러 → 에러 메시지를 그대로 표시
+**Error handling:**
+- timeout (exit code 124) → "Gemini 응답 시간이 초과되었습니다 (120초). 네트워크 연결을 확인하세요."
+- empty response → "Gemini가 빈 응답을 반환했습니다. API 키 설정을 확인하세요. (`gemini auth login`)"
+- other errors → display the error message verbatim
 
-### Step 7: Score Card 파싱 및 메트릭 저장
+### Step 7: Parse Score Card and Save Metrics
 
-Gemini 응답에서 Score Card를 파싱합니다.
+Parse the Score Card from the Gemini response.
 
-파싱 대상 패턴 (숫자 추출):
-- `완전성` 또는 `Completeness`: X/10
-- `실현가능성` 또는 `Feasibility`: X/10
-- `명확성` 또는 `Clarity`: X/10
-- `종합` 또는 `Overall`: X/10
+Patterns to parse (extract numeric values):
+- `완전성` or `Completeness`: X/10
+- `실현가능성` or `Feasibility`: X/10
+- `명확성` or `Clarity`: X/10
+- `종합` or `Overall`: X/10
 - `Verdict`: PASS / PASS WITH CONCERNS / NEEDS REVISION
 
-파싱된 메트릭을 `.leeloo/metrics.json`에 저장:
+Save parsed metrics to `.leeloo/metrics.json`:
 
 ```json
 {
-  "{파일경로}": [
+  "{file path}": [
     {
       "iteration": 1,
-      "date": "{날짜}",
+      "date": "{date}",
       "completeness": X,
       "feasibility": X,
       "clarity": X,
@@ -130,23 +134,23 @@ Gemini 응답에서 Score Card를 파싱합니다.
   ]
 }
 ```
-- 파일이 없으면 `mkdir -p .leeloo` 후 새로 생성.
-- 기존 파일에 해당 경로 항목이 있으면 배열에 추가.
+- If file missing, run `mkdir -p .leeloo` and create new.
+- If file exists and the path entry exists, append to the array.
 
-### Step 8: 결과 표시
+### Step 8: Display Results
 
-다음 형식으로 결과를 사용자에게 출력하세요:
+Output to the user in this format:
 
 ```
 ## Gemini 교차검증 결과
 
-- **검증 대상**: {파일 경로}
-- **검증 시각**: {현재 날짜/시간}
+- **검증 대상**: {file path}
+- **검증 시각**: {current date/time}
 - **Iteration**: {N}회차
 
 ---
 
-{gemini 응답 내용}
+{gemini response content}
 
 ---
 
@@ -154,51 +158,51 @@ Gemini 응답에서 Score Card를 파싱합니다.
 
 | 항목 | 이번 (iteration {N}) | 이전 (iteration {N-1}) | 변화 |
 |------|---------------------|----------------------|------|
-| 완전성 | {X}/10 | {이전값}/10 또는 - | ↑/↓/- |
-| 실현가능성 | {X}/10 | {이전값}/10 또는 - | ↑/↓/- |
-| 명확성 | {X}/10 | {이전값}/10 또는 - | ↑/↓/- |
-| 종합 | {X}/10 | {이전값}/10 또는 - | ↑/↓/- |
+| 완전성 | {X}/10 | {prev}/10 또는 - | ↑/↓/- |
+| 실현가능성 | {X}/10 | {prev}/10 또는 - | ↑/↓/- |
+| 명확성 | {X}/10 | {prev}/10 또는 - | ↑/↓/- |
+| 종합 | {X}/10 | {prev}/10 또는 - | ↑/↓/- |
 
 **Verdict: {PASS / PASS WITH CONCERNS / NEEDS REVISION}**
 ```
 
-### Step 9: 리뷰 파일 저장
+### Step 9: Save Review File
 
-gemini 응답을 파일과 같은 디렉토리에 저장하세요.
+Save the gemini response next to the original file.
 
-**리뷰 파일명 규칙**: `{파일명에서 .md 제거}.review.md`
-- 예: `docs/plan/user-auth.plan.md` → `docs/plan/user-auth.plan.review.md`
+**Review file naming**: `{file name without .md}.review.md`
+- Example: `docs/plan/user-auth.plan.md` → `docs/plan/user-auth.plan.review.md`
 
-Write 도구를 사용하여 다음 형식으로 저장:
+Save via the Write tool in this format:
 
 ```markdown
 # Gemini 교차검증 리뷰
 
-- **원본 파일**: {파일 경로}
-- **검증 시각**: {현재 날짜/시간}
+- **원본 파일**: {file path}
+- **검증 시각**: {current date/time}
 - **Iteration**: {N}
 
 ---
 
-{gemini 응답 내용}
+{gemini response content}
 ```
 
-저장 완료 후 리뷰 파일 경로를 사용자에게 알려주세요.
+After saving, tell the user the review file path.
 
-### Step 10: Verdict 기반 다음 단계 제안
+### Step 10: Suggest Next Steps Based on Verdict
 
-Verdict에 따라 AskUserQuestion으로 다음 단계를 제안합니다:
+Use AskUserQuestion to propose next steps based on the verdict:
 
 **PASS**:
 - AskUserQuestion — "검증 통과! 다음 단계로 진행할까요? (Design 작성/나중에)"
-- "Design 작성" 선택 시: 설계 문서 작성을 안내
+- On "Design 작성": guide design document authoring
 
 **PASS WITH CONCERNS**:
 ```
 검증 통과 (우려사항 있음)
 
 우려사항을 해결한 후 재검증을 권장합니다.
-수정 후 다시 /lk-plan-cross-review {파일경로} 를 실행하세요.
+수정 후 다시 /lk-plan-cross-review {file path} 를 실행하세요.
 ```
 
 **NEEDS REVISION**:
@@ -206,7 +210,7 @@ Verdict에 따라 AskUserQuestion으로 다음 단계를 제안합니다:
 수정 필요
 
 Plan을 수정하고 재검증하세요.
-수정 후 다시 /lk-plan-cross-review {파일경로} 를 실행하세요.
+수정 후 다시 /lk-plan-cross-review {file path} 를 실행하세요.
 
 이번이 {N}번째 검증입니다.
 ```

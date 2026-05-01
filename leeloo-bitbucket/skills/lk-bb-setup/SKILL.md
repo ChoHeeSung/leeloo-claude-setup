@@ -1,26 +1,30 @@
 ---
 name: lk-bb-setup
-description: "Bitbucket 연결 확인·초기 설정"
+description: |
+  Bitbucket Cloud API 연결 상태 확인 및 인터랙티브 초기 설정.
+  비트버킷 설정, 비트버킷 연결, API 토큰, 워크스페이스 설정, 인증, bitbucket setup, bitbucket install, api token, workspace
 user_invocable: true
 argument-hint: "[status|install]"
 ---
 
-# /lk-bb-setup — Bitbucket 연결 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Bitbucket Cloud API 연결 상태를 확인하고, 대화형으로 초기 설정을 진행합니다.
-설정은 `~/.claude/leeloo-bitbucket.local.md`에 YAML frontmatter로 저장됩니다.
+# /lk-bb-setup — Bitbucket Connection Management
 
-## 서브커맨드
+Verify the Bitbucket Cloud API connection and run interactive initial setup.
+Settings are saved as YAML frontmatter in `~/.claude/leeloo-bitbucket.local.md`.
+
+## Subcommands
 
 ```
-/lk-bb-setup           — 연결 상태 확인 (기본 동작 = status)
-/lk-bb-setup status    — 연결 상태 + 워크스페이스 정보 표시
-/lk-bb-setup install   — 대화형 초기 설정
+/lk-bb-setup           — Check connection status (default action = status)
+/lk-bb-setup status    — Show connection status + workspace info
+/lk-bb-setup install   — Interactive initial setup
 ```
 
-## 설정 파일
+## Config file
 
-경로: `~/.claude/leeloo-bitbucket.local.md`
+Path: `~/.claude/leeloo-bitbucket.local.md`
 
 ```yaml
 ---
@@ -30,132 +34,132 @@ bitbucket_workspace: "myworkspace"
 ---
 ```
 
-| 필드 | 용도 |
-|------|------|
-| `bitbucket_user_email` | 사용자 이메일 (Basic Auth) |
-| `bitbucket_api_token` | Atlassian API 토큰 |
-| `bitbucket_workspace` | 워크스페이스 slug |
+| Field | Purpose |
+|-------|---------|
+| `bitbucket_user_email` | User email (Basic Auth) |
+| `bitbucket_api_token` | Atlassian API token |
+| `bitbucket_workspace` | Workspace slug |
 
 ## Procedure
 
-### 인자 파싱
+### Argument parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `status` → **status** 동작
-- `install` → **install** 동작
+Parse the subcommand from user input:
+- No args or `status` → **status** action
+- `install` → **install** action
 
 ---
 
-### status 동작
+### status action
 
-1. **설정 파일 읽기**: Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
-   - 파일이 없으면:
+1. **Read config file**: use Read to load `~/.claude/leeloo-bitbucket.local.md`.
+   - If the file is missing:
      ```
-     Bitbucket 설정 파일이 없습니다.
-     /lk-bb-setup install 로 초기 설정을 진행하세요.
+     Bitbucket config file is missing.
+     Run /lk-bb-setup install for initial setup.
      ```
-     중단.
+     Stop.
 
-2. **YAML frontmatter 파싱**: `---` 블록에서 3개 필드를 추출합니다.
+2. **Parse YAML frontmatter**: extract three fields from the `---` block.
 
-3. **설정값 확인**:
+3. **Verify config values**:
    ```
-   Bitbucket 연결 상태
+   Bitbucket connection status
 
-   | 항목 | 상태 |
-   |------|------|
-   | 이메일 | ✅ {값} / ❌ 미설정 |
-   | API Token | ✅ 설정됨 / ❌ 미설정 |
-   | Workspace | ✅ {값} / ❌ 미설정 |
+   | Field | Status |
+   |-------|--------|
+   | Email | OK {value} / Not set |
+   | API Token | Set / Not set |
+   | Workspace | OK {value} / Not set |
    ```
-   - 하나라도 미설정이면 `/lk-bb-setup install` 안내 후 중단.
+   - If any are unset, instruct to run `/lk-bb-setup install` and stop.
 
-4. **API 연결 테스트**: 모두 설정되어 있으면 Bash로 실행:
+4. **API connection test**: when all are set, run via Bash:
    ```bash
-   curl -s -w "\nHTTP_STATUS:%{http_code}" -u "{이메일}:{토큰}" "https://api.bitbucket.org/2.0/repositories/{워크스페이스}?pagelen=1"
+   curl -s -w "\nHTTP_STATUS:%{http_code}" -u "{email}:{token}" "https://api.bitbucket.org/2.0/repositories/{workspace}?pagelen=1"
    ```
 
-5. **결과 표시**:
+5. **Display the result**:
    - HTTP 200:
      ```
-     | API 연결 | ✅ 정상 |
+     | API connection | OK |
 
-     /lk-bb-repo list 로 저장소 목록을 확인해보세요.
+     Try /lk-bb-repo list to view repositories.
      ```
-   - HTTP 401/403: "API 연결 실패 — 인증 오류. API 토큰을 확인하세요."
-   - HTTP 404: "API 연결 실패 — 워크스페이스를 찾을 수 없습니다."
-   - 기타: "API 연결 실패 — HTTP {코드}"
+   - HTTP 401/403: "API connection failed — auth error. Check the API token."
+   - HTTP 404: "API connection failed — workspace not found."
+   - Other: "API connection failed — HTTP {code}"
 
 ---
 
-### install 동작
+### install action
 
-대화형으로 Bitbucket 연결 정보를 수집하고 설정 파일에 저장합니다.
+Collect Bitbucket connection info interactively and save to the config file.
 
-#### Step 1: 이메일 입력
+#### Step 1: Email input
 
 AskUserQuestion:
-- Header: "이메일"
-- Question: "Bitbucket 계정 이메일을 입력하세요:"
-- Options: 직접 입력
+- Header: "Email"
+- Question: "Enter your Bitbucket account email:"
+- Options: free input
 
-#### Step 2: API Token 입력
+#### Step 2: API Token input
 
 AskUserQuestion:
 - Header: "API Token"
-- Question: "Bitbucket API Token을 입력하세요:"
-- Description: "발급: Bitbucket → Repository/Workspace Settings → Access tokens → Create"
-- Options: 직접 입력, "나중에 설정"
+- Question: "Enter your Bitbucket API Token:"
+- Description: "Issue: Bitbucket → Repository/Workspace Settings → Access tokens → Create"
+- Options: free input, "Set later"
 
-#### Step 3: Workspace 입력
+#### Step 3: Workspace input
 
 AskUserQuestion:
 - Header: "Workspace"
-- Question: "Bitbucket Workspace 이름(slug)을 입력하세요:"
-- Description: "URL에서 확인: https://bitbucket.org/{workspace}"
-- Options: 직접 입력
+- Question: "Enter the Bitbucket Workspace name (slug):"
+- Description: "Find it in the URL: https://bitbucket.org/{workspace}"
+- Options: free input
 
-- URL이 입력된 경우 (https://bitbucket.org/xxx), slug 부분만 추출하여 사용.
+- If a URL is entered (https://bitbucket.org/xxx), extract and use only the slug portion.
 
-#### Step 4: 설정 파일 저장
+#### Step 4: Save config file
 
-Write 도구로 `~/.claude/leeloo-bitbucket.local.md`에 저장:
+Write to `~/.claude/leeloo-bitbucket.local.md`:
 
 ```markdown
 ---
-bitbucket_user_email: "{입력된이메일}"
-bitbucket_api_token: "{입력된토큰}"
-bitbucket_workspace: "{입력된워크스페이스}"
+bitbucket_user_email: "{entered_email}"
+bitbucket_api_token: "{entered_token}"
+bitbucket_workspace: "{entered_workspace}"
 ---
 
-# Bitbucket 설정
+# Bitbucket Settings
 
-lk-bb-setup install로 생성된 설정 파일입니다.
-수동으로 편집하거나 /lk-bb-setup install로 재설정할 수 있습니다.
+Config file generated by lk-bb-setup install.
+You may edit it manually or rerun /lk-bb-setup install to reconfigure.
 ```
 
-- "나중에 설정" 선택 시 `bitbucket_api_token: ""` 으로 저장.
-- 파일이 이미 존재하면 AskUserQuestion — "기존 설정이 있습니다. 덮어쓸까요? (덮어쓰기/취소)"
+- If "Set later" is selected, save with `bitbucket_api_token: ""`.
+- If the file already exists, AskUserQuestion — "Existing config found. Overwrite? (Overwrite/Cancel)"
 
-#### Step 5: 연결 테스트
+#### Step 5: Connection test
 
-토큰이 설정된 경우, Bash로 실행:
+If a token was set, run via Bash:
 ```bash
-curl -s -w "\nHTTP_STATUS:%{http_code}" -u "{이메일}:{토큰}" "https://api.bitbucket.org/2.0/repositories/{워크스페이스}?pagelen=1"
+curl -s -w "\nHTTP_STATUS:%{http_code}" -u "{email}:{token}" "https://api.bitbucket.org/2.0/repositories/{workspace}?pagelen=1"
 ```
 
-#### Step 6: 결과 안내
+#### Step 6: Result summary
 
 ```
-Bitbucket 초기 설정 완료
+Bitbucket initial setup complete
 
-| 항목 | 값 |
-|------|-----|
-| 이메일 | {이메일} |
-| API Token | 설정됨 / 미설정 |
-| Workspace | {워크스페이스} |
-| 설정 파일 | ~/.claude/leeloo-bitbucket.local.md |
-| 연결 테스트 | ✅ 성공 / ❌ 실패 / ⏭️ 건너뜀 |
+| Field | Value |
+|-------|-------|
+| Email | {email} |
+| API Token | Set / Not set |
+| Workspace | {workspace} |
+| Config file | ~/.claude/leeloo-bitbucket.local.md |
+| Connection test | Success / Failure / Skipped |
 
-다음 단계: /lk-bb-repo list 로 저장소 목록을 확인하세요.
+Next: run /lk-bb-repo list to view repositories.
 ```

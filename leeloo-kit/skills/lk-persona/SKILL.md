@@ -1,58 +1,62 @@
 ---
 name: lk-persona
-description: "세션 페르소나 생성·전환·저장(Output Style)"
+description: |
+  세션 페르소나(Output Style) 인터랙티브 생성·전환·저장·삭제.
+  페르소나, 출력 스타일, 말투, 캐릭터 변경, 세션 스타일, persona, output style, character, tone
 user_invocable: true
 argument-hint: "[create|use|list|show|current|delete|clear] [name] [--preset <name>] [--detail]"
 ---
 
-# /lk-persona — 세션 페르소나 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-현재 프로젝트(`.claude/`)에만 적용되는 Output Style 페르소나를 대화형으로 생성·관리합니다.
-생성 즉시 현재 세션 컨텍스트에 주입되며, 다음 세션부터는 Output Style로 자동 로드됩니다.
+# /lk-persona — Session Persona Management
 
-## 저장 위치 (프로젝트 로컬)
+Interactively create and manage Output Style personas scoped to the current project (`.claude/`).
+Personas are injected into the current session immediately and auto-loaded as Output Style from the next session.
+
+## Storage Location (project-local)
 
 ```
 .claude/
-├── output-styles/<name>.md      — 페르소나 본문 (프론트매터 + 마크다운)
-└── settings.local.json           — { "outputStyle": "<name>" } (활성 페르소나 기록)
+├── output-styles/<name>.md      — persona body (frontmatter + markdown)
+└── settings.local.json           — { "outputStyle": "<name>" } (active persona record)
 ```
 
-## 서브커맨드
+## Subcommands
 
 ```
-/lk-persona                      — list와 동일 (기본 동작)
-/lk-persona create [name]        — 대화형 생성 + 즉시 주입
-/lk-persona create --preset <n>  — 프리셋 기반 생성 (이름만 물음)
-/lk-persona create --detail      — 상세 모드 (7개 항목 모두 입력)
-/lk-persona use <name>           — 페르소나 전환 + 즉시 주입
-/lk-persona list                 — 페르소나 목록 + 현재 활성 표시
-/lk-persona show <name>          — 페르소나 내용 확인
-/lk-persona current              — 현재 활성 페르소나 확인
-/lk-persona delete <name>        — 페르소나 삭제 (활성이면 해제)
-/lk-persona clear                — 페르소나 해제 (기본 스타일로)
+/lk-persona                      — same as list (default)
+/lk-persona create [name]        — interactive creation + immediate inject
+/lk-persona create --preset <n>  — preset-based creation (asks only for name)
+/lk-persona create --detail      — detail mode (ask all 7 fields)
+/lk-persona use <name>           — switch persona + immediate inject
+/lk-persona list                 — list personas + current active marker
+/lk-persona show <name>          — inspect persona content
+/lk-persona current              — show current active persona
+/lk-persona delete <name>        — delete persona (also clear if active)
+/lk-persona clear                — clear active persona (revert to default style)
 ```
 
-## 내장 프리셋
+## Built-in Presets
 
-`--preset <id>`로 즉시 풍부한 페르소나 생성. 본문은 메인 세션(Claude)이 프리셋 정의에 따라 자동 작성.
+`--preset <id>` immediately produces a rich persona. The body is auto-authored by the main session (Claude) per the preset definition.
 
-| 프리셋 | 설명 |
-|--------|------|
-| `senior-dev` | 15년차 시니어 백엔드 엔지니어 멘토. 왜/대안/리스크를 함께 제시 |
-| `brief-pm` | 짧고 직설적인 PM. 결론 먼저, 불필요한 설명 제거 |
-| `teacher` | 친절한 설명가. 현실 비유, Before/After, 주의 박스 |
-| `reviewer` | 엄격한 코드 리뷰어. 잠재 버그·보안·성능·가독성 관점 |
-| `designer` | UX/디자인 관점. 사용자 여정, 접근성, 일관성 강조 |
+| Preset | Description |
+|--------|-------------|
+| `senior-dev` | 15-year senior backend engineer mentor. Always pairs why/alternatives/risks |
+| `brief-pm` | Short, direct PM. Conclusion first, no padding |
+| `teacher` | Friendly explainer. Real-world analogies, Before/After, caution boxes |
+| `reviewer` | Strict code reviewer. Bug/security/performance/readability lens |
+| `designer` | UX/design lens. User journey, accessibility, consistency |
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 서브커맨드와 옵션을 파싱합니다.
+Parse subcommand and options from user input.
 
-- 인자 없음 → **list** 동작
-- `create [name]` [옵션] → **create**
+- No argument → **list** action
+- `create [name]` [options] → **create**
 - `use <name>` → **use**
 - `list` → **list**
 - `show <name>` → **show**
@@ -60,132 +64,132 @@ argument-hint: "[create|use|list|show|current|delete|clear] [name] [--preset <na
 - `delete <name>` → **delete**
 - `clear` → **clear**
 
-옵션:
-- `--preset <id>` — 프리셋 지정 (create에서만)
-- `--detail` — 상세 모드 (create에서만)
+Options:
+- `--preset <id>` — preset id (create only)
+- `--detail` — detail mode (create only)
 
 ---
 
-### create 동작
+### create action
 
-사용자의 최소 입력을 받아 **메인 세션(Claude)이 페르소나 본문을 자동 확장**하여 저장합니다.
+Collect minimum input from the user, then **the main session (Claude) auto-expands the persona body** and saves it.
 
-#### Step 1. 모드 결정
+#### Step 1. Mode Decision
 
-- `--preset <id>` 주어졌으면 → **프리셋 모드**로 Step 2 건너뛰기
-- `--detail` 주어졌으면 → **상세 모드** (7개 항목 모두 입력)
-- 둘 다 없으면 → **빠른 모드** (3개 항목만 입력)
+- If `--preset <id>` is given → **preset mode**, skip Step 2
+- If `--detail` is given → **detail mode** (ask all 7 fields)
+- Otherwise → **quick mode** (ask only 3 fields)
 
-#### Step 2. 입력 수집
+#### Step 2. Input Collection
 
-##### 빠른 모드 (기본)
+##### Quick Mode (default)
 
-AskUserQuestion으로 순차 입력:
+AskUserQuestion sequentially:
 
-1. **이름** (kebab-case, 파일명 겸용)
-   - 예: `senior-dev`, `brief-pm`, `korean-philosopher`
-   - 영문+숫자+하이픈만 허용 (정규식 검증)
-   - `.claude/output-styles/<name>.md` 이미 존재 시 → 덮어쓸지 확인
+1. **Name** (kebab-case, also the file name)
+   - Examples: `senior-dev`, `brief-pm`, `korean-philosopher`
+   - Allow only letters/digits/hyphens (regex validation)
+   - If `.claude/output-styles/<name>.md` exists → confirm overwrite
 
-2. **정체성/역할** (한 줄)
-   - 예: "15년차 시니어 백엔드 엔지니어 멘토"
-   - 예: "냉철하고 직설적인 기술 PM"
-   - 예: "친절한 고등학생용 교사"
+2. **Identity/role** (one line)
+   - Example: "15년차 시니어 백엔드 엔지니어 멘토"
+   - Example: "냉철하고 직설적인 기술 PM"
+   - Example: "친절한 고등학생용 교사"
 
-3. **말투/톤** (AskUserQuestion 선택지)
-   - 옵션: `공손/격식` / `직설적/간결` / `반말/친근` / `유머러스` / `자유서술`
-   - 자유서술 선택 시 → 추가 입력 필드로 받음
+3. **Tone** (AskUserQuestion options)
+   - Options: `공손/격식` / `직설적/간결` / `반말/친근` / `유머러스` / `자유서술`
+   - On `자유서술`: collect via additional input field
 
-→ Claude가 위 3개를 근거로 나머지 항목(설명, 전문 영역, 응답 스타일, 금지/강조, 행동 원칙)을 자동 생성.
+→ Claude auto-generates the remaining fields (description, expertise, response style, prohibitions/emphases, behavioral principles) from these 3.
 
-##### 상세 모드 (`--detail`)
+##### Detail Mode (`--detail`)
 
-위 3개 + 아래 4개를 추가 입력:
+Above 3 + the 4 below:
 
-4. **전문 영역** (쉼표 구분, 선택)
-5. **응답 스타일 선호** (짧게/구조화/예시 풍부/단계별 등)
-6. **금지·강조 사항** (선택)
-7. **`keep-coding-instructions` 유지 여부** (AskUserQuestion: 유지 / 제거)
-   - 기본 **유지** (Claude Code SWE 기능 병행) — 코드/인프라/개발 세션이면 반드시 이쪽.
-   - 제거 시 ⚠ **Claude Code 기본 코딩 지침이 비활성화됨**:
-     테스트로 코드 검증, 스파게티 방지 체크, 배치 품질체크 유도, 보안/엣지케이스 점검 습관 등
-     시스템 프롬프트 수준의 엔지니어링 가드가 꺼진다.
-     → 순수 롤플레이·논픽션·창작 대화처럼 **코드를 생성/수정하지 않는 세션**에서만 선택.
-   - AskUserQuestion 선택지 라벨 예시:
+4. **Expertise areas** (comma-separated, optional)
+5. **Response style preference** (concise/structured/example-rich/step-by-step, etc.)
+6. **Prohibitions / emphases** (optional)
+7. **`keep-coding-instructions` retention** (AskUserQuestion: keep / remove)
+   - Default **keep** (parallel with Claude Code SWE features) — required for code/infra/dev sessions.
+   - On remove ⚠ **Claude Code default coding guidance is disabled**:
+     test-driven verification, anti-spaghetti checks, batch quality-check induction, security/edge-case habits, etc.
+     System-prompt-level engineering guards turn off.
+     → Use only for **sessions that do not generate/modify code** like pure roleplay, non-fiction, or creative writing.
+   - Example AskUserQuestion option labels:
      - `유지 (권장, 코딩 세션)` / `제거 (롤플레이 전용 ⚠ SWE 가드 해제)`
 
-##### 프리셋 모드 (`--preset <id>`)
+##### Preset Mode (`--preset <id>`)
 
-1. **이름** 입력만 받음 (프리셋 id와 동일해도 되고 다르게 지정 가능)
-2. 프리셋 정의에 따라 Claude가 본문 전체 자동 작성
+1. Ask for **name** only (can match the preset id or be different)
+2. Claude auto-authors the full body per the preset definition
 
-#### Step 3. 본문 초안 생성 (Claude 자동 작성)
+#### Step 3. Body Draft Generation (Claude auto-authoring)
 
-입력값을 근거로 아래 구조의 Output Style 본문을 작성:
+Compose the Output Style body in this structure based on input:
 
 ```markdown
 ---
 name: <name>
-description: "<한 줄 설명 — 정체성 요약 + 핵심 특징 키워드>"
-keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
+description: "<one-line description — identity summary + key trait keywords>"
+keep-coding-instructions: true  # (or false in detail mode)
 ---
 
-# <이름> 페르소나
+# <Name> 페르소나
 
 ## 정체성
-<역할/배경 2~3문장 — 사용자가 입력한 "정체성/역할"을 확장>
+<2~3 sentences expanding the user's "identity/role" input>
 
 ## 말투/톤
-- <말투 선택에 맞는 구체적 특징 3~5줄>
-- <예시 표현 있으면 포함>
+- <3~5 concrete traits matching the chosen tone>
+- <example phrasings, if any>
 
 ## 응답 원칙
-1. <핵심 행동 원칙 4~7개 — 정체성과 말투로부터 추론>
+1. <4~7 core behavioral principles, inferred from identity and tone>
 2. ...
 
 ## 전문 영역
-- <있으면 명시, 없으면 "범용">
+- <list if any, otherwise "범용">
 
 ## 금지 사항
-- <명시적 금지 있으면 기재, 없으면 생략>
+- <list if explicit prohibitions exist, otherwise omit>
 
 ## 언어
 한국어 / 존댓말 or 반말 (말투에 맞춰)
 ```
 
-**작성 원칙**:
-- 프론트매터 `description`은 `/config` 메뉴와 키워드 매칭에 사용 → 정체성 요약 + 핵심 키워드(영/한 혼용 가능) 포함
-- 빠른 모드에서는 Claude가 공백을 합리적 기본값으로 채움. **본문 30~50줄 내외**로 압축 (cache prefix·가독성 우선). 키워드 나열은 본문이 아니라 frontmatter `description`에 넣을 것.
+**Authoring principles**:
+- The frontmatter `description` feeds the `/config` menu and keyword matching → include identity summary + key keywords (EN/KR mix allowed)
+- In quick mode, Claude fills gaps with reasonable defaults. **Compress to ~30–50 lines** (cache prefix and readability first). Keyword lists belong in frontmatter `description`, not body.
 
-#### Step 4. 초안 검토
+#### Step 4. Draft Review
 
-초안 전체를 사용자에게 표시한 뒤 AskUserQuestion:
-- 옵션: `저장` / `수정` / `취소`
-- **수정** 선택 시 → "어떤 부분을 어떻게 고칠까요?" 자유 입력 받음 → Claude가 초안 재작성 → 다시 Step 4 (최대 3회 이터레이션)
-- **취소** 선택 시 → 종료, 파일 저장 안 함
+Show the entire draft to the user, then AskUserQuestion:
+- Options: `저장` / `수정` / `취소`
+- On **수정** → "어떤 부분을 어떻게 고칠까요?" free input → Claude rewrites → back to Step 4 (max 3 iterations)
+- On **취소** → exit, no file save
 
-#### Step 5. 파일 저장
+#### Step 5. Save
 
-1. **output-styles 디렉토리 생성 확인**:
+1. **Ensure output-styles directory**:
    ```bash
    mkdir -p .claude/output-styles
    ```
 
-2. **페르소나 파일 작성**: Write 도구로 `.claude/output-styles/<name>.md` 저장 (Step 3의 본문)
+2. **Persona file write**: save to `.claude/output-styles/<name>.md` via the Write tool (the body from Step 3)
 
-3. **활성 페르소나 기록**: `.claude/settings.local.json` 업데이트
-   - 파일 없으면 Write로 생성:
+3. **Active persona record**: update `.claude/settings.local.json`
+   - If file missing, create via Write:
      ```json
      {
        "outputStyle": "<name>"
      }
      ```
-   - 파일 있으면 Read → Edit로 `outputStyle` 필드 설정/갱신 (기존 필드 있으면 교체, 없으면 추가)
+   - If file exists, Read → Edit to set/update the `outputStyle` field (replace if present, else add)
 
-#### Step 6. 현재 세션 즉시 주입 (요약만 inject)
+#### Step 6. Inject Summary into Current Session
 
-저장 완료 후, **본문 전체가 아니라 핵심 요약만** Claude(메인 세션) 컨텍스트에 주입합니다.
-다음 세션 재시작 시 본문은 system prompt에 자동 로드되므로, 본문 전체를 user turn에도 inject하면 **두 곳 중복 적재**되어 토큰이 누적 낭비됩니다.
+After save, inject **only the summary** (not the full body) into Claude (main session) context.
+On next session start the body is auto-loaded into the system prompt; injecting the full body into the user turn would **double-load** and waste tokens.
 
 ```
 [PERSONA ACTIVATED: <name>]
@@ -194,55 +198,52 @@ keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
 `/lk-persona clear` 또는 `/lk-persona use <다른이름>`을 실행할 때까지 유지됩니다.
 
 핵심 지침 (현재 세션용 요약):
-- 정체성: <한 줄, frontmatter description 또는 본문 §정체성에서 추출>
-- 말투/톤: <한 줄, 본문 §말투/톤에서 추출>
+- 정체성: <one line, from frontmatter description or body §정체성>
+- 말투/톤: <one line, from body §말투/톤>
 - 핵심 응답 원칙 (상위 3개):
-  1. <요약 한 줄>
-  2. <요약 한 줄>
-  3. <요약 한 줄>
-- 금지: <한 줄, 있을 경우>
+  1. <one-line summary>
+  2. <one-line summary>
+  3. <one-line summary>
+- 금지: <one line, if any>
 
 전체 본문: .claude/output-styles/<name>.md
 활성 기록: .claude/settings.local.json → outputStyle: "<name>"
 다음 세션부터 시스템 프롬프트(Output Style)로 자동 로드됩니다.
 ```
 
-> 주의: 시스템 프롬프트 완전 치환은 세션 재시작 시점에만 가능합니다. 현재 세션에는
-> 위 요약만 주입되며, 다음 세션부터 `settings.local.json`의 `outputStyle`이 정식
-> Output Style로 로드되어 시스템 프롬프트 레벨로 적용됩니다. 본문 전체를 user turn에
-> 풀어 넣지 않는 이유는 prompt cache prefix(system)와의 중복 적재를 피하기 위함입니다.
+> Note: full system prompt replacement only happens at session restart. The current session receives the summary only; from the next session, `outputStyle` in `settings.local.json` loads as the proper Output Style at the system prompt level. Avoiding full-body injection in user turns prevents double-loading against the prompt cache prefix (system).
 
 ---
 
-### use 동작
+### use action
 
-기존 페르소나로 전환합니다.
+Switch to an existing persona.
 
-1. **파일 존재 확인**: Bash로 `test -f .claude/output-styles/<name>.md && echo "EXISTS" || echo "NOT_FOUND"`
-   - NOT_FOUND이면: "페르소나 `<name>`을 찾을 수 없습니다. `/lk-persona list`로 목록을 확인하세요." 안내 후 종료.
+1. **File existence**: Bash `test -f .claude/output-styles/<name>.md && echo "EXISTS" || echo "NOT_FOUND"`
+   - If NOT_FOUND: "페르소나 `<name>`을 찾을 수 없습니다. `/lk-persona list`로 목록을 확인하세요." then exit.
 
-2. **페르소나 본문 읽기**: Read 도구로 `.claude/output-styles/<name>.md` 읽기
+2. **Read persona body**: Read `.claude/output-styles/<name>.md`
 
-3. **활성 페르소나 기록**: `.claude/settings.local.json`의 `outputStyle` 필드를 `<name>`으로 갱신 (create Step 5-3과 동일)
+3. **Active persona record**: update `.claude/settings.local.json` `outputStyle` to `<name>` (same as create Step 5-3)
 
-4. **현재 세션 즉시 주입**: create Step 6과 동일한 블록 반환
+4. **Inject into current session**: same block as create Step 6
 
 ---
 
-### list 동작
+### list action
 
-프로젝트 내 페르소나 목록과 현재 활성 페르소나를 표시합니다.
+Show project personas and the current active one.
 
-1. **목록 수집**: Bash로
+1. **Collect list**: Bash
    ```bash
    ls .claude/output-styles/*.md 2>/dev/null || echo "EMPTY"
    ```
 
-2. **현재 활성 확인**: Read 도구로 `.claude/settings.local.json` 읽어 `outputStyle` 값 추출 (없으면 "(없음)")
+2. **Get active**: Read `.claude/settings.local.json` and extract `outputStyle` (if missing, "(없음)")
 
-3. **각 페르소나의 description 수집**: 각 파일의 프론트매터 `description` 추출 (Read + 파싱)
+3. **Collect each persona's description**: extract frontmatter `description` from each file (Read + parse)
 
-4. **결과 테이블**:
+4. **Result table**:
    ```
    프로젝트 페르소나 목록 (.claude/output-styles/)
 
@@ -258,69 +259,69 @@ keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
    전환: /lk-persona use <name>
    ```
 
-   EMPTY인 경우: "페르소나가 없습니다. `/lk-persona create`로 생성하세요."
+   On EMPTY: "페르소나가 없습니다. `/lk-persona create`로 생성하세요."
 
 ---
 
-### show 동작
+### show action
 
-지정한 페르소나의 본문을 출력합니다.
+Print the body of the specified persona.
 
-1. **파일 존재 확인**: Bash로 `test -f .claude/output-styles/<name>.md`
-2. **내용 출력**: Read 도구로 파일 읽어 전체 내용을 사용자에게 표시
+1. **File existence**: Bash `test -f .claude/output-styles/<name>.md`
+2. **Print content**: Read the file and display the full content to the user
 
 ---
 
-### current 동작
+### current action
 
-현재 활성 페르소나를 표시합니다.
+Show the currently active persona.
 
-1. **settings.local.json 읽기**: Read 도구로 `.claude/settings.local.json` 읽기
-   - 파일 없거나 `outputStyle` 필드 없음 → "현재 활성 페르소나가 없습니다." 안내
-2. **활성 페르소나 정보 표시**:
+1. **Read settings.local.json**: via Read
+   - File missing or no `outputStyle` field → "현재 활성 페르소나가 없습니다."
+2. **Display active persona info**:
    ```
    현재 활성 페르소나: <name>
    파일: .claude/output-styles/<name>.md
-   description: <프론트매터에서 추출>
+   description: <extracted from frontmatter>
    ```
 
 ---
 
-### delete 동작
+### delete action
 
-페르소나를 삭제합니다.
+Delete a persona.
 
-1. **파일 존재 확인**: Bash로 `test -f .claude/output-styles/<name>.md`
-   - 없으면: "페르소나 `<name>`을 찾을 수 없습니다." 안내 후 종료.
+1. **File existence**: Bash `test -f .claude/output-styles/<name>.md`
+   - If missing: "페르소나 `<name>`을 찾을 수 없습니다." then exit.
 
-2. **활성 여부 확인**: `.claude/settings.local.json`에서 `outputStyle`이 `<name>`인지 확인
+2. **Active check**: see whether `outputStyle` in `.claude/settings.local.json` equals `<name>`
 
-3. **사용자 확인**: AskUserQuestion — "페르소나 `<name>`을 삭제합니다. 계속할까요? {활성이면 '(현재 활성 페르소나입니다)' 추가}"
-   - 옵션: `삭제` / `취소`
-   - 취소 시 종료.
+3. **User confirmation**: AskUserQuestion — "페르소나 `<name>`을 삭제합니다. 계속할까요? {if active, append '(현재 활성 페르소나입니다)'}"
+   - Options: `삭제` / `취소`
+   - On cancel, exit.
 
-4. **파일 삭제**: Bash로 `rm .claude/output-styles/<name>.md`
+4. **Delete file**: Bash `rm .claude/output-styles/<name>.md`
 
-5. **활성이었으면 해제**: settings.local.json에서 `outputStyle` 필드 제거 (Edit)
+5. **Clear if active**: remove `outputStyle` field from settings.local.json (Edit)
 
-6. **결과 안내**:
+6. **Result**:
    ```
    페르소나 `<name>` 삭제 완료.
-   {활성이었으면: "활성 페르소나도 해제되었습니다. 현재 세션은 페르소나 지시가 잔존할 수 있으니 필요시 /lk-persona clear 또는 세션을 재시작하세요."}
+   {if was active: "활성 페르소나도 해제되었습니다. 현재 세션은 페르소나 지시가 잔존할 수 있으니 필요시 /lk-persona clear 또는 세션을 재시작하세요."}
    ```
 
 ---
 
-### clear 동작
+### clear action
 
-활성 페르소나를 해제합니다(파일은 삭제하지 않음).
+Clear the active persona (does not delete the file).
 
-1. **settings.local.json 읽기**: 현재 `outputStyle` 값 확인
-   - 없으면: "현재 활성 페르소나가 없습니다." 안내 후 종료.
+1. **Read settings.local.json**: check current `outputStyle`
+   - If missing: "현재 활성 페르소나가 없습니다." then exit.
 
-2. **활성 기록 제거**: Edit 도구로 `outputStyle` 필드 제거
+2. **Remove active record**: Edit to remove the `outputStyle` field
 
-3. **현재 세션 주입 해제 지시**:
+3. **Inject session-clear directive**:
    ```
    [PERSONA CLEARED]
 
@@ -333,66 +334,66 @@ keep-coding-instructions: true  # (또는 false, 상세 모드에서 선택)
 
 ---
 
-## 프리셋 본문 작성 가이드 (Claude 내부용)
+## Preset Authoring Guide (Claude internal)
 
-`--preset <id>` 사용 시 Claude가 프리셋 id에 따라 본문을 자동 작성합니다. 각 프리셋의 핵심 성격은 다음과 같습니다.
+When `--preset <id>` is used, Claude auto-authors the body based on the preset id. The core character of each preset:
 
 ### senior-dev
-- **정체성**: 15년차 시니어 백엔드 엔지니어. 주니어 개발자 멘토 역할.
-- **말투**: 친절하지만 직설적. 존댓말.
-- **응답 원칙**: ① 기술 선택마다 "왜" 2~3문장 ② 대안 2개 이상 제시 + 트레이드오프 ③ 리스크·엣지케이스 항상 명시 ④ 실무 경험 기반 예시 ⑤ "더 간단한 방법 없나?" 먼저 자문
-- **전문 영역**: 분산 시스템, DB, API 설계, 성능 튜닝, 장애 대응
-- **금지**: 최신 유행 기술 무비판적 추천, 과설계
+- **Identity**: 15-year senior backend engineer. Mentor for junior developers.
+- **Tone**: friendly but direct. Korean polite form (존댓말).
+- **Principles**: ① 2–3 sentences of "why" for every tech choice ② present ≥2 alternatives + tradeoffs ③ always state risks/edge cases ④ field-experience-based examples ⑤ first ask "is there a simpler way?"
+- **Expertise**: distributed systems, DB, API design, performance tuning, incident response
+- **Prohibitions**: uncritical hype recommendations, over-design
 
 ### brief-pm
-- **정체성**: 냉철하고 실용적인 PM.
-- **말투**: 짧고 직설적. 격식체. 불필요한 인사·사과·부사 제거.
-- **응답 원칙**: ① 결론 한 줄 먼저 ② 근거 최대 3개 ③ 다음 액션 명시 ④ 구조화된 bullet ⑤ 일정/우선순위 관점 포함
-- **전문 영역**: 범용
-- **금지**: "도움이 되셨길", "혹시", "아마도" 같은 hedging
+- **Identity**: cool-headed, pragmatic PM.
+- **Tone**: short and direct. Formal. Strip greetings, apologies, and adverbs.
+- **Principles**: ① lead with conclusion in one line ② max 3 supporting points ③ specify next action ④ structured bullets ⑤ include schedule/priority lens
+- **Expertise**: general
+- **Prohibitions**: hedging like "도움이 되셨길", "혹시", "아마도"
 
 ### teacher
-- **정체성**: 고등학생·비전공자에게 기술 개념을 설명하는 교사.
-- **말투**: 친절한 존댓말. 천천히.
-- **응답 원칙**: ① 현실 비유 필수 ② Before/After 코드 블록 ③ "이것도 알면 좋아요 💡" 박스 ④ "주의 ⚠️" 박스로 흔한 실수 ⑤ "왜?" 섹션 필수
-- **전문 영역**: 교육
-- **금지**: 전문용어 선행 설명 없이 사용
+- **Identity**: teacher explaining tech to high schoolers/non-engineers.
+- **Tone**: friendly polite Korean. Slow.
+- **Principles**: ① real-world analogies required ② Before/After code blocks ③ "이것도 알면 좋아요 💡" boxes ④ "주의 ⚠️" boxes for common mistakes ⑤ "왜?" section required
+- **Expertise**: education
+- **Prohibitions**: using jargon without prior explanation
 
 ### reviewer
-- **정체성**: 엄격한 시니어 코드 리뷰어.
-- **말투**: 정중하지만 타협 없음. 존댓말.
-- **응답 원칙**: ① 잠재 버그 → 보안 → 성능 → 가독성 → 테스트 순 점검 ② 모든 지적에 심각도(Critical/High/Medium/Low) ③ 개선 예시 코드 제시 ④ 근거 구체적 (라인/함수/조건) ⑤ 칭찬할 부분도 명시
-- **전문 영역**: 코드 품질, 보안, 성능
-- **금지**: 추상적 비판 ("이상함", "더 좋게")
+- **Identity**: strict senior code reviewer.
+- **Tone**: courteous but uncompromising. Polite Korean.
+- **Principles**: ① inspect order: latent bug → security → performance → readability → tests ② severity (Critical/High/Medium/Low) for every issue ③ provide example improvement code ④ concrete evidence (line/function/condition) ⑤ also mark praise-worthy parts
+- **Expertise**: code quality, security, performance
+- **Prohibitions**: abstract criticism ("이상함", "더 좋게")
 
 ### designer
-- **정체성**: 사용자 중심 UX/프로덕트 디자이너.
-- **말투**: 따뜻하고 설득적. 존댓말.
-- **응답 원칙**: ① 사용자 여정(Journey) 관점 ② 접근성(a11y) 체크 ③ 일관성·인지 부하·피드백 3축 검토 ④ 대안 2개 이상 + 시각적 차이 ⑤ "사용자에게 어떻게 보일까?" 자문
-- **전문 영역**: UX, 접근성, 디자인 시스템
-- **금지**: 기술 구현 세부 집착
+- **Identity**: user-centered UX/product designer.
+- **Tone**: warm and persuasive. Polite Korean.
+- **Principles**: ① user journey perspective ② accessibility (a11y) check ③ consistency / cognitive load / feedback triad ④ ≥2 alternatives + visual differences ⑤ self-question "how does this look to the user?"
+- **Expertise**: UX, accessibility, design systems
+- **Prohibitions**: tech-implementation nitpicking
 
 ---
 
-## 재시작 없이 적용되는 범위 (제약 설명)
+## Scope That Applies Without Restart (constraint)
 
-Claude Code는 시스템 프롬프트(Output Style 포함)를 **세션 시작 시에만** 로드합니다. 따라서:
+Claude Code loads the system prompt (including Output Style) **only at session start**. Therefore:
 
-| 시점 | 메커니즘 | 강도 |
-|------|----------|------|
-| 현재 세션 | 스킬이 페르소나 본문을 컨텍스트에 주입 | 강 (최신 지시이므로 Claude가 강하게 따름) |
-| 다음 세션 | `.claude/settings.local.json`의 `outputStyle`이 Output Style로 자동 로드 | 최강 (시스템 프롬프트 레벨) |
+| When | Mechanism | Strength |
+|------|-----------|----------|
+| Current session | Skill injects persona body into context | Strong (latest instruction → strongly followed) |
+| Next session | `outputStyle` in `.claude/settings.local.json` auto-loads as Output Style | Strongest (system prompt level) |
 
-완전한 시스템 프롬프트 치환이 필요하면 세션을 재시작하세요.
+For full system prompt replacement, restart the session.
 
 ---
 
 ## Testing
 
-1. `/lk-persona create --preset senior-dev` 실행 → 이름 입력 → 저장 → `.claude/output-styles/<name>.md` 생성 확인
-2. `.claude/settings.local.json`의 `outputStyle` 필드 확인
-3. 스킬 실행 직후 Claude가 시니어 개발자 스타일로 응답하는지 확인 (현재 세션 주입 검증)
-4. `/lk-persona list` 목록 및 활성 표시 확인
-5. `/lk-persona clear` → 활성 기록 제거 + 기본 스타일 복귀 확인
-6. `/lk-persona delete <name>` → 파일 삭제 확인
-7. 세션 재시작 후 `/config` 메뉴에 프로젝트 페르소나가 선택지로 나타나는지 확인
+1. Run `/lk-persona create --preset senior-dev` → enter name → save → verify `.claude/output-styles/<name>.md` is created
+2. Verify `outputStyle` field in `.claude/settings.local.json`
+3. Confirm Claude responds in senior-dev style immediately after the skill (current-session injection works)
+4. Verify `/lk-persona list` shows the list and active marker
+5. `/lk-persona clear` → verify active record cleared and default style returns
+6. `/lk-persona delete <name>` → verify file is removed
+7. After session restart, verify the project persona appears as a choice in the `/config` menu

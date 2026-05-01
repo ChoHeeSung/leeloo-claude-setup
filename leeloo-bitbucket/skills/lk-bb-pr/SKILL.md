@@ -1,240 +1,244 @@
 ---
 name: lk-bb-pr
-description: "Bitbucket PR 관리(목록/조회/생성/머지/댓글)"
+description: |
+  Bitbucket Pull Request 관리 — 목록·조회·생성·머지·댓글.
+  PR, 풀리퀘스트, 풀리퀘, 머지, 코드리뷰, 풀리퀘 올려, pull request, merge, code review, bitbucket
 user_invocable: true
 argument-hint: "[list|get|create|merge|comment] <repo_slug> [pr_id]"
 ---
 
-# /lk-bb-pr — Pull Request 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Bitbucket 저장소의 Pull Request를 관리합니다.
+# /lk-bb-pr — Pull Request Management
 
-## 서브커맨드
+Manage pull requests in a Bitbucket repository.
+
+## Subcommands
 
 ```
-/lk-bb-pr list <repo_slug>                    — PR 목록 (OPEN 상태)
-/lk-bb-pr list <repo_slug> --all              — PR 목록 (전체 상태)
-/lk-bb-pr get <repo_slug> <pr_id>             — PR 상세 + 댓글
-/lk-bb-pr create <repo_slug>                  — PR 생성 (대화형)
-/lk-bb-pr merge <repo_slug> <pr_id>           — PR 머지
-/lk-bb-pr comment <repo_slug> <pr_id> <text>  — PR에 댓글 추가
+/lk-bb-pr list <repo_slug>                    — PR list (OPEN state)
+/lk-bb-pr list <repo_slug> --all              — PR list (all states)
+/lk-bb-pr get <repo_slug> <pr_id>             — PR detail + comments
+/lk-bb-pr create <repo_slug>                  — Create PR (interactive)
+/lk-bb-pr merge <repo_slug> <pr_id>           — Merge PR
+/lk-bb-pr comment <repo_slug> <pr_id> <text>  — Add a comment to a PR
 ```
 
 ## Procedure
 
-### 사전 체크
+### Pre-check
 
-Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
-- 파일이 없거나 토큰이 비어있으면: "Bitbucket 연결이 설정되지 않았습니다. `/lk-bb-setup install`로 초기 설정을 진행하세요." 안내 후 중단.
-- YAML frontmatter에서 `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace`를 파싱.
-- 이후 curl 호출 시 `-u "{이메일}:{토큰}"` 형식으로 사용.
-- `bb-fetch-all.sh` 호출 시 환경변수로 전달: `BITBUCKET_USER_EMAIL="{이메일}" BITBUCKET_API_TOKEN="{토큰}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
+Use the Read tool to load `~/.claude/leeloo-bitbucket.local.md`.
+- If the file is missing or the token is empty, instruct: "Bitbucket connection is not configured. Run `/lk-bb-setup install` for initial setup." Then stop.
+- Parse `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace` from the YAML frontmatter.
+- Use `-u "{email}:{token}"` for subsequent curl calls.
+- For `bb-fetch-all.sh` calls, pass via env vars: `BITBUCKET_USER_EMAIL="{email}" BITBUCKET_API_TOKEN="{token}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
 
-### 인자 파싱
+### Argument parsing
 
-- `list <repo_slug> [--all]` → **list** 동작
-- `get <repo_slug> <pr_id>` → **get** 동작
-- `create <repo_slug>` → **create** 동작
-- `merge <repo_slug> <pr_id>` → **merge** 동작
-- `comment <repo_slug> <pr_id> <text>` → **comment** 동작
+- `list <repo_slug> [--all]` → **list** action
+- `get <repo_slug> <pr_id>` → **get** action
+- `create <repo_slug>` → **create** action
+- `merge <repo_slug> <pr_id>` → **merge** action
+- `comment <repo_slug> <pr_id> <text>` → **comment** action
 
 ---
 
-### list 동작 (Haiku Task)
+### list action (Haiku Task)
 
-PR이 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다. JSON → 마크다운 테이블 포맷팅은 Haiku 서브 에이전트에 위임.
+PRs may be numerous, so use `bb-fetch-all.sh` for parallel pagination. Delegate JSON → markdown table formatting to a Haiku sub-agent.
 
-Bash로 실행:
+Run via Bash:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests" \
   --query "state=OPEN" \
   --jq-filter '{id: .id, title: .title, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, created: .created_on, updated: .updated_on}'
 ```
-- `--all` 플래그 시 `--query` 생략 (전체 상태).
+- With `--all` flag, omit `--query` (all states).
 
-**Agent tool 호출 (bb-fetch-all.sh 결과 포맷팅):**
+**Agent tool invocation (format bb-fetch-all.sh output):**
 - `subagent_type`: `task`
 - `task_model`: `haiku`
 - `prompt`:
 
 ```
-아래 Bitbucket PR 목록 JSON을 마크다운 테이블로 변환하라.
+Convert the Bitbucket PR list JSON below into a markdown table.
 
-## 입력
-### 저장소
+## Input
+### Repository
 {repo_slug}
 
-### JSON 배열
+### JSON array
 {json_result}
 
-## 출력 형식
+## Output format
 ```
-PR 목록: {repo_slug} — 총 {N}개
+PR list: {repo_slug} — total {N}
 
-| # | ID | 제목 | 작성자 | 소스 → 대상 | 상태 | 생성일 |
-|---|-----|------|--------|------------|------|-------|
+| # | ID | Title | Author | Source → Dest | State | Created |
+|---|-----|-------|--------|---------------|-------|---------|
 | 1 | 42 | Fix login | user | feat → main | OPEN | 2026-03-20 |
 ```
 
-## 규칙
-- JSON 배열의 모든 항목을 누락 없이 포함.
-- 생성일은 YYYY-MM-DD 형식으로 짧게.
-- 제목이 60자 초과 시 말줄임.
-- 입력에 없는 필드는 "-"로 표시.
+## Rules
+- Include every item in the JSON array; do not omit any.
+- Format the created date as YYYY-MM-DD.
+- Truncate titles longer than 60 chars with an ellipsis.
+- Mark fields not present in input as "-".
 ```
 
-**결과 검증 (메인 세션):**
-- [ ] 테이블 행 수 = JSON 배열 길이
-- [ ] ID/제목이 원본과 일치
-- [ ] 입력에 없는 PR hallucination 없음
+**Result verification (main session):**
+- [ ] Table row count = JSON array length
+- [ ] IDs/titles match the source
+- [ ] No hallucinated PRs not in the input
 
-**품질 미달 시 폴백:** 메인 세션이 직접 테이블 생성.
+**Fallback on quality failure:** main session generates the table directly.
 
 ---
 
-### get 동작
+### get action
 
-PR 상세와 댓글을 **병렬로** 가져옵니다:
+Fetch PR detail and comments **in parallel**:
 
 ```bash
-# PR 상세 (Bash 호출 1)
+# PR detail (Bash call 1)
 curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}" | jq '{id: .id, title: .title, description: .description, author: .author.display_name, source: .source.branch.name, dest: .destination.branch.name, state: .state, reviewers: [.reviewers[].display_name], created: .created_on, updated: .updated_on, close_source: .close_source_branch, merge_commit: .merge_commit}'
 ```
 ```bash
-# PR 댓글 (Bash 호출 2, 동시 실행) — 댓글이 100개 초과 시 bb-fetch-all.sh 사용
+# PR comments (Bash call 2, run concurrently) — use bb-fetch-all.sh when comments exceed 100
 "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/comments" \
   --jq-filter '{id: .id, user: .user.display_name, content: .content.raw, created: .created_on, inline: .inline}'
 ```
 
-**결과 포맷팅 (Haiku Task):**
+**Result formatting (Haiku Task):**
 
-PR 상세 JSON + 댓글 JSON을 통합 마크다운으로 변환하는 작업은 Haiku 서브 에이전트에 위임.
+Delegate the integration of PR detail JSON + comments JSON into a unified markdown to a Haiku sub-agent.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `haiku`
 - `prompt`:
 
 ```
-아래 Bitbucket PR 상세와 댓글 JSON을 통합 마크다운으로 표시하라.
+Render the Bitbucket PR detail and comments JSON below as a unified markdown view.
 
-## 입력
-### PR 상세
+## Input
+### PR detail
 {pr_detail_json}
 
-### 댓글 목록
+### Comments list
 {comments_json}
 
-## 출력 형식
+## Output format
 ```
 PR #{pr_id}: {title}
 
-| 항목 | 값 |
-|------|-----|
-| 작성자 | {author} |
-| 소스 → 대상 | {source} → {dest} |
-| 상태 | {state} |
-| 리뷰어 | {reviewers} |
-| 생성일 | {created} |
+| Field | Value |
+|-------|-------|
+| Author | {author} |
+| Source → Dest | {source} → {dest} |
+| State | {state} |
+| Reviewers | {reviewers} |
+| Created | {created} |
 
-### 설명
+### Description
 {description}
 
-### 댓글 ({N}개)
+### Comments ({N})
 - **{user}** ({date}): {content}
 ```
 
-## 규칙
-- 모든 댓글을 작성 시각 오름차순으로 표시.
-- 입력에 없는 정보는 "-" 또는 해당 섹션 생략.
-- 본문 내용은 요약/변경 금지.
+## Rules
+- Display every comment in ascending creation order.
+- Use "-" or omit the section for missing fields.
+- Do not summarize or alter the body content.
 ```
 
-**결과 검증 (메인 세션):**
-- [ ] PR 메타 필드 모두 포함
-- [ ] 댓글 수가 입력과 일치
-- [ ] 설명/댓글 본문이 원문과 일치
+**Result verification (main session):**
+- [ ] All PR meta fields are included
+- [ ] Comment count matches the input
+- [ ] Description/comment bodies match the source
 
 ---
 
-### create 동작
+### create action
 
 1. AskUserQuestion:
-   - Header: "소스 브랜치"
-   - Question: "PR의 소스 브랜치를 입력하세요:"
-   - Options: 직접 입력
+   - Header: "Source branch"
+   - Question: "Enter the PR source branch:"
+   - Options: free input
 
 2. AskUserQuestion:
-   - Header: "대상 브랜치"
-   - Question: "PR의 대상 브랜치를 입력하세요:"
-   - Options: "main (기본)", "develop", 직접 입력
+   - Header: "Destination branch"
+   - Question: "Enter the PR destination branch:"
+   - Options: "main (default)", "develop", free input
 
 3. AskUserQuestion:
-   - Header: "PR 제목"
-   - Question: "PR 제목을 입력하세요:"
-   - Options: 직접 입력
+   - Header: "PR title"
+   - Question: "Enter the PR title:"
+   - Options: free input
 
 4. AskUserQuestion:
-   - Header: "PR 설명"
-   - Question: "PR 설명을 입력하세요 (선택):"
-   - Options: "건너뛰기", 직접 입력
+   - Header: "PR description"
+   - Question: "Enter a PR description (optional):"
+   - Options: "Skip", free input
 
-5. Bash로 실행:
+5. Run via Bash:
    ```bash
    curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests" \
      -d '{
-       "title": "{제목}",
-       "description": "{설명}",
-       "source": {"branch": {"name": "{소스브랜치}"}},
-       "destination": {"branch": {"name": "{대상브랜치}"}},
+       "title": "{title}",
+       "description": "{description}",
+       "source": {"branch": {"name": "{source_branch}"}},
+       "destination": {"branch": {"name": "{dest_branch}"}},
        "close_source_branch": true
      }'
    ```
 
-6. 결과 표시:
+6. Display the result:
    ```
-   PR 생성 완료
+   PR created
 
-   | 항목 | 값 |
-   |------|-----|
+   | Field | Value |
+   |-------|-------|
    | PR ID | #{id} |
-   | 제목 | {title} |
-   | 소스 → 대상 | {source} → {dest} |
+   | Title | {title} |
+   | Source → Dest | {source} → {dest} |
    | URL | {html_url} |
    ```
 
 ---
 
-### merge 동작
+### merge action
 
 1. AskUserQuestion:
-   - Header: "PR 머지"
-   - Question: "PR #{pr_id}를 머지합니다. 머지 전략을 선택하세요:"
+   - Header: "Merge PR"
+   - Question: "Merge PR #{pr_id}. Choose merge strategy:"
    - Options:
-     - "merge commit (기본)"
+     - "merge commit (default)"
      - "squash"
 
-2. Bash로 실행:
+2. Run via Bash:
    ```bash
    curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/merge" \
      -d '{"type": "pullrequest", "merge_strategy": "{merge_commit|squash}", "close_source_branch": true}'
    ```
 
-3. 결과 표시:
-   - 성공: "PR #{pr_id} 머지 완료. 소스 브랜치 삭제됨."
-   - 실패: 에러 메시지 표시 (충돌, 리뷰 미승인 등)
+3. Display the result:
+   - Success: "PR #{pr_id} merged. Source branch deleted."
+   - Failure: display the error (conflict, missing approvals, etc.)
 
 ---
 
-### comment 동작
+### comment action
 
-1. Bash로 실행:
+1. Run via Bash:
    ```bash
    curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/pullrequests/{pr_id}/comments" \
      -d '{"content": {"raw": "{text}"}}'
    ```
 
-2. 결과 표시: "PR #{pr_id}에 댓글 추가 완료."
+2. Display the result: "Comment added to PR #{pr_id}."

@@ -1,22 +1,26 @@
 ---
 name: lk-its-code
-description: "ITS 코드/패턴코드 관리(추가·검색·공휴일)"
+description: |
+  ITS 코드/패턴코드 관리 — Oracle DB에 코드 그룹·항목·패턴·공휴일 추가/검색.
+  ITS 코드, 코드 추가, 패턴코드, 공휴일, 코드 검색, 오라클, its code, pattern code, holiday, oracle
 user_invocable: true
 argument-hint: "[add-group|add-item|add-pattern|add-holiday|list|search] [그룹코드|검색어]"
 ---
 
-# /lk-its-code — ITS 코드 및 패턴코드 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-대화형으로 코드를 추가하고 Oracle DB에 직접 실행합니다.
-인자 없이 `/lk-its-code`만 입력하면 대화형 메뉴가 시작됩니다.
+# /lk-its-code — ITS Code and Pattern Code Management
 
-## DB 접속 정보
+Interactively add codes and execute them directly against the Oracle DB.
+Running `/lk-its-code` with no arguments starts the interactive menu.
 
-Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/db-connection.md`를 읽어 접속 정보를 확인합니다.
+## DB Connection Info
+
+Read `${CLAUDE_PLUGIN_ROOT}/resources/db-connection.md` via the Read tool to obtain connection info.
 
 ## Procedure
 
-### 인자 없음 → 대화형 메뉴
+### No argument → Interactive menu
 
 AskUserQuestion:
 ```
@@ -31,7 +35,7 @@ AskUserQuestion:
 
 ---
 
-### add-group 동작 (대화형)
+### add-group action (interactive)
 
 **Step 1**: AskUserQuestion — "그룹 코드를 입력하세요 (영문 대문자_언더스코어, 예: WEATHER_ALERT)"
 
@@ -53,13 +57,13 @@ AskUserQuestion:
 
 **Step 4**: AskUserQuestion — "설명을 입력하세요 (선택, 엔터로 건너뛰기)"
 
-**Step 5**: DB 중복 확인:
+**Step 5**: DB duplicate check:
 ```python
 cursor.execute("SELECT GROUP_CD, GROUP_NM FROM ITS.COM_CODE_GROUP WHERE GROUP_CD=:cd", {'cd': group_cd})
 ```
-이미 있으면: "이미 존재하는 그룹입니다. 항목을 추가하시겠습니까?" → add-item으로 연계
+If exists: "이미 존재하는 그룹입니다. 항목을 추가하시겠습니까?" → chain into add-item
 
-**Step 6**: INSERT 프리뷰 + 확인:
+**Step 6**: INSERT preview + confirmation:
 ```
 코드 그룹 추가:
   GROUP_CD: WEATHER_ALERT
@@ -69,7 +73,7 @@ cursor.execute("SELECT GROUP_CD, GROUP_NM FROM ITS.COM_CODE_GROUP WHERE GROUP_CD
   DB에 추가할까요? (추가/취소)
 ```
 
-**Step 7**: DB 실행:
+**Step 7**: DB execute:
 ```python
 cursor.execute("""
   INSERT INTO ITS.COM_CODE_GROUP (GROUP_CD, DOMAIN_CD, GROUP_NM, SORT_ORDER, USE_YN)
@@ -78,26 +82,26 @@ cursor.execute("""
 conn.commit()
 ```
 
-**Step 8**: 결과 + 후속 안내:
+**Step 8**: Result + follow-up prompt:
 ```
 추가 완료: WEATHER_ALERT (기상경보 유형 코드)
 
 이어서 코드 항목을 추가하시겠습니까? (예/아니오)
 ```
-"예" → add-item으로 자동 연계 (GROUP_CD 자동 전달)
+"예" → auto-chain into add-item (auto-pass GROUP_CD)
 
 ---
 
-### add-item 동작 (대화형)
+### add-item action (interactive)
 
-**Step 1**: 그룹 선택
-인자로 GROUP_CD가 있으면 사용. 없으면:
+**Step 1**: Group selection
+If GROUP_CD is given as argument, use it. Otherwise:
 ```python
 cursor.execute("SELECT GROUP_CD, GROUP_NM, DOMAIN_CD FROM ITS.COM_CODE_GROUP ORDER BY DOMAIN_CD, GROUP_CD")
 ```
-목록 표시 후 AskUserQuestion: "그룹 코드를 입력하세요 (또는 번호 선택)"
+Display the list, then AskUserQuestion: "그룹 코드를 입력하세요 (또는 번호 선택)"
 
-**Step 2**: 기존 항목 표시:
+**Step 2**: Display existing items:
 ```python
 cursor.execute("SELECT ITEM_CD, ITEM_NM, SORT_ORDER FROM ITS.COM_CODE_ITEM WHERE GROUP_CD=:cd ORDER BY SORT_ORDER", {'cd': group_cd})
 ```
@@ -109,7 +113,7 @@ cursor.execute("SELECT ITEM_CD, ITEM_NM, SORT_ORDER FROM ITS.COM_CODE_ITEM WHERE
   4. GIMHAE_BRANCH — 김해 지선
 ```
 
-**Step 3**: 항목 입력 (대화형 반복)
+**Step 3**: Item input (interactive loop)
 AskUserQuestion:
 ```
 추가할 코드 항목을 입력하세요.
@@ -118,14 +122,14 @@ AskUserQuestion:
 또는 하나씩 입력 후 "완료"
 ```
 
-**Step 4: 매핑 파싱 + 프리뷰 테이블 생성 (Haiku Task)**
+**Step 4: Mapping parse + preview table generation (Haiku Task)**
 
-사용자 입력 파싱 + SORT_ORDER 자동 할당 + 프리뷰 테이블 생성은 Haiku 서브 에이전트에게 위임한다.
+Delegate input parsing + SORT_ORDER auto-assignment + preview table to a Haiku sub-agent.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `haiku`
-- `prompt`: 아래 템플릿에 데이터 삽입
+- `prompt`: insert data into the template below
 
 ```
 아래 코드 항목 입력을 파싱하고 INSERT 프리뷰 테이블을 생성하라.
@@ -163,20 +167,20 @@ ERRORS (있으면):
 위 테이블만 출력. 다른 설명 없이.
 ```
 
-**결과 검증 (메인 세션):**
-- [ ] 입력 항목 수 = 출력 항목 수 (ERROR 포함)
-- [ ] SORT_ORDER가 max+1부터 연속
-- [ ] ITEM_CD 네이밍 규칙 위반 시 ERROR 섹션에 명시됨
-- [ ] 입력에 없는 항목이 추가되지 않음
+**Result verification (main session):**
+- [ ] input item count = output item count (including ERROR)
+- [ ] SORT_ORDER is contiguous starting at max+1
+- [ ] ITEM_CD naming violations are listed in the ERROR section
+- [ ] No items beyond input were added
 
-**품질 미달 시 폴백:** 메인 세션에서 직접 파싱·포맷팅.
+**Fallback on quality failure:** parse and format directly in the main session.
 
-검증 통과한 테이블을 사용자에게 표시하고:
+Display the verified table to the user, then:
 ```
 DB에 추가할까요? (추가/수정/취소)
 ```
 
-**Step 5**: DB 실행 (복수 건 한번에):
+**Step 5**: DB execute (multiple rows at once):
 ```python
 for item in items:
     cursor.execute("""
@@ -186,7 +190,7 @@ for item in items:
 conn.commit()
 ```
 
-**Step 6**: 결과 + COMMENT 갱신 안내:
+**Step 6**: Result + COMMENT update prompt:
 ```
 3건 추가 완료: STORM, FOG, HAIL
 
@@ -196,11 +200,11 @@ conn.commit()
 
 COMMENT를 자동 갱신할까요? (예/아니오)
 ```
-"예" → DB에서 해당 _CD 컬럼을 찾아 COMMENT ON 자동 UPDATE
+"예" → find matching `_CD` columns in DB and auto-UPDATE COMMENT ON
 
 ---
 
-### add-pattern 동작 (대화형)
+### add-pattern action (interactive)
 
 **Step 1**: AskUserQuestion:
 ```
@@ -215,32 +219,32 @@ COMMENT를 자동 갱신할까요? (예/아니오)
 
 **Step 2**: AskUserQuestion — "패턴 코드 (영문, 예: ELECTION_DAY)"
 **Step 3**: AskUserQuestion — "한글 명칭 (예: 선거일)"
-**Step 4**: 명절인 경우 AskUserQuestion — "기준일 대비 오프셋 (-2~+2, 해당 없으면 엔터)"
+**Step 4**: For holidays, AskUserQuestion — "기준일 대비 오프셋 (-2~+2, 해당 없으면 엔터)"
 
-**Step 5**: DB 실행 + 결과:
+**Step 5**: DB execute + result:
 ```
 패턴 추가 완료: ELECTION_DAY (선거일) — PUBLIC_HOLIDAY 그룹
 
 공휴일 달력에도 추가하시겠습니까? (예/아니오)
 ```
-"예" → add-holiday로 자동 연계
+"예" → auto-chain into add-holiday
 
 ---
 
-### add-holiday 동작 (대화형)
+### add-holiday action (interactive)
 
 **Step 1**: AskUserQuestion — "공휴일 날짜를 입력하세요 (YYYY-MM-DD, 예: 2026-06-03)"
 
-**Step 2**: 패턴 코드 선택:
+**Step 2**: Pattern code selection:
 ```python
 cursor.execute("SELECT PATTERN_SUB_CD, PATTERN_NM, CATEGORY FROM ITS.COM_TRAFFIC_PATTERN ORDER BY CATEGORY, PATTERN_SUB_CD")
 ```
-목록 표시 후 AskUserQuestion: "패턴 코드를 선택하세요"
+Display the list, then AskUserQuestion: "패턴 코드를 선택하세요"
 
 **Step 3**: AskUserQuestion — "공휴일 명칭 (한글, 예: 지방선거일)"
 **Step 4**: AskUserQuestion — "대체공휴일인가요? (Y/N)"
 
-**Step 5**: DB 실행:
+**Step 5**: DB execute:
 ```python
 cursor.execute("""
   INSERT INTO ITS.COM_HOLIDAY_CALENDAR (YEAR, MONTH, DAY, PATTERN_SUB_CD, HOLIDAY_NM, SUBSTITUTE_YN)
@@ -249,16 +253,16 @@ cursor.execute("""
 conn.commit()
 ```
 
-**Step 6**: 결과:
+**Step 6**: Result:
 ```
 공휴일 추가 완료: 2026-06-03 (지방선거일) — ELECTION_DAY
 ```
 
-같은 날 추가 공휴일 입력 가능: "같은 날 다른 공휴일도 추가하시겠습니까? (예/아니오)"
+Allow adding another holiday on the same day: "같은 날 다른 공휴일도 추가하시겠습니까? (예/아니오)"
 
 ---
 
-### list 동작 (대화형)
+### list action (interactive)
 
 AskUserQuestion:
 ```
@@ -269,15 +273,15 @@ AskUserQuestion:
 - 공휴일 달력 (연도 입력)
 ```
 
-각 선택에 따라 DB에서 조회하여 테이블 형식으로 출력.
+For each choice, query the DB and output as a table.
 
 ---
 
-### search 동작 (대화형)
+### search action (interactive)
 
 AskUserQuestion: "검색어를 입력하세요 (한글 또는 영문)"
 
-DB에서 검색:
+DB search:
 ```python
 cursor.execute("""
   SELECT g.GROUP_CD, g.GROUP_NM, i.ITEM_CD, i.ITEM_NM
@@ -289,13 +293,13 @@ cursor.execute("""
 """, {'kw': keyword})
 ```
 
-결과 표시 + "다른 검색어?" 반복 가능.
+Display results + allow repeat ("다른 검색어?").
 
 ---
 
-## 코드값 네이밍 규칙 (자동 검증)
+## Code Value Naming Rules (auto-validated)
 
-코드값 입력 시 자동으로 검증:
-- 영문 대문자 + 언더스코어만 허용 (숫자 코드 금지)
-- 자기설명적: 의미를 바로 파악 가능해야 함
-- 위반 시: "'{value}'는 숫자 코드입니다. 영문 약어로 입력해주세요 (예: SMOOTH, CONGESTED)"
+Code values are auto-validated on input:
+- Allow only uppercase letters + underscores (no numeric codes)
+- Self-explanatory: meaning must be apparent
+- On violation: "'{value}'는 숫자 코드입니다. 영문 약어로 입력해주세요 (예: SMOOTH, CONGESTED)"

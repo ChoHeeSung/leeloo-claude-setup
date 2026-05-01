@@ -1,10 +1,10 @@
 # leeloo-agent
 
-에이전트/팀 관리 플러그인. Sub Agent 생성 + Agent Team 구성·운영.
+Agent/team management plugin. Sub-agent creation plus agent team composition and operation.
 
 ## Skills
 
 | Skill | Purpose |
 |-------|---------|
-| lk-agent | Sub Agent 대화형 생성/관리 (프리셋 7종) |
-| lk-team | Agent Team 구성/관리 (프리셋 5종) |
+| lk-agent | Interactive sub-agent creation/management (7 presets) |
+| lk-team | Agent team composition/management (5 presets) |

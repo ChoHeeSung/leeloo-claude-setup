@@ -2,6 +2,7 @@
 
 | 날짜 | 작업 | 상세 |
 |------|------|------|
+| 2026-05-01 09:44 | refactor: 내부 지침 영문 변환 — 토큰 ~85% 절감, description 트리거 보강 | [상세](history/2026-05-01_0944_internal-instruction-translation.md) |
 | 2026-04-29 09:59 | feat(leeloo-kit): lk-coding-guard skill 추가 — 코딩 행동 게이트 도입 (3.7.0) | [상세](history/2026-04-29_0959_lk-coding-guard-skill.md) |
 | 2026-04-24 17:02 | docs: lk-setup 명령어 문서 갱신 — model 서브커맨드 추가 반영 | [상세](history/2026-04-24_1702_lk-setup-argument-hint-sync.md) |
 | 2026-04-24 16:54 | chore: leeloo-kit 버전 업데이트 3.5.11 → 3.6.0 — 마켓플레이스 및 플러그인 메니페스트 버전 동기화 | [상세](history/2026-04-24_1654_leeloo-kit-version-upgrade.md) |

@@ -1,25 +1,25 @@
-# Context Checkpoint 규칙
+# Context Checkpoint Rules
 
-컨텍스트 압축(PreCompact) 시 작업 맥락이 소실되지 않도록, 핵심 결정과 발견을 디스크에 기록한다.
+To prevent loss of work context during context compaction (PreCompact), record key decisions and findings to disk.
 
-## 규칙
+## Rules
 
-- **기록 파일**: `.leeloo/context-summary.md`
-- **기록 시점**: 주요 결정, 방향 전환, 핵심 발견이 있을 때 (매 턴마다 X)
-- **형식**: 한 줄에 하나, `- [결정|발견|변경] 내용` (100자 이내)
-- **상한**: 최대 20줄. 초과 시 오래된 항목부터 삭제
-- **자동 처리**: PreCompact 시 postContext로 주입 → SessionEnd 시 세션 파일로 병합 후 초기화
+- **File**: `.leeloo/context-summary.md`
+- **When to record**: at major decisions, direction shifts, and key findings (NOT every turn)
+- **Format**: one entry per line, `- [decision|finding|change] content` (≤100 chars)
+- **Limit**: 20 lines maximum. Beyond that, drop the oldest entries first.
+- **Automation**: Injected as postContext on PreCompact → merged into a session file and reset on SessionEnd.
 
-## 기록 예시
+## Examples
 
 ```
-- [결정] ORM 대신 raw SQL 사용 — 성능 요구사항 우선
-- [발견] user 테이블에 deleted_at 인덱스 누락 — 소프트삭제 쿼리 느림
-- [변경] API 응답 형식 snake_case → camelCase — 프론트엔드 요청
+- [decision] Use raw SQL instead of ORM — performance is the priority
+- [finding] Missing deleted_at index on user table — soft-delete query is slow
+- [change] API response format snake_case → camelCase — frontend request
 ```
 
-## 기록하지 않는 것
+## Do not record
 
-- 코드에서 바로 알 수 있는 사실 (어떤 파일을 수정했는지 등)
-- 이미 커밋 메시지나 TODO에 기록된 내용
-- 단순한 진행 상황 (이건 TODO가 담당)
+- Facts already obvious from the code (e.g., which file you edited)
+- Anything already in the commit message or TODO
+- Plain progress updates (TODO already covers that)

@@ -1,78 +1,82 @@
 ---
 name: lk-n8n-validate
-description: "n8n 워크플로우 검증·자동수정"
+description: |
+  n8n 워크플로우 구조·연결·표현식 검증 및 자동 수정(autofix).
+  워크플로우 검증, 자동수정, 린트, 워크플로우 점검, n8n validate, autofix, lint workflow, validate workflow
 user_invocable: true
 argument-hint: "[check|fix|lint] <workflow-id>"
 ---
 
-# /lk-n8n-validate — 워크플로우 검증 및 자동수정
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-워크플로우의 구조, 연결, 표현식을 검증하고 자동으로 수정합니다.
+# /lk-n8n-validate — Workflow Validation and Auto-fix
 
-## 서브커맨드
+Validate workflow structure, connections, and expressions, and apply auto-fixes.
+
+## Subcommands
 
 ```
-/lk-n8n-validate check <id>    — 워크플로우 검증 (ID 기반)
-/lk-n8n-validate fix <id>      — 자동수정 미리보기 + 적용
-/lk-n8n-validate lint           — 워크플로우 JSON을 직접 입력하여 검증
+/lk-n8n-validate check <id>    — Validate workflow (by ID)
+/lk-n8n-validate fix <id>      — Auto-fix preview + apply
+/lk-n8n-validate lint           — Validate by directly entering workflow JSON
 ```
 
 ## Procedure
 
-### MCP 사전 체크
+### MCP pre-check
 
-1. `mcp__n8n-mcp__n8n_health_check` 호출.
-   - 실패 시: "n8n MCP 서버가 설정되지 않았습니다. `/n8n-setup install` 을 먼저 실행하세요." 안내 후 중단.
+1. Call `mcp__n8n-mcp__n8n_health_check`.
+   - On failure, instruct: "n8n MCP server is not configured. Run `/n8n-setup install` first." Then stop.
 
-### 인자 파싱
+### Argument parsing
 
-- 인자 없음 → 사용법 안내 후 중단
-- `check <id>` → **check** 동작
-- `fix <id>` → **fix** 동작
-- `lint` → **lint** 동작
-
----
-
-### check 동작
-
-1. `mcp__n8n-mcp__n8n_validate_workflow` 를 `id`, `options: { profile: "ai-friendly" }` 로 호출.
-2. 결과를 분류하여 표시:
-   ```
-   워크플로우 검증 결과 (ID: {id})
-
-   ❌ 오류 ({n}건)
-   - {오류 내용}
-
-   ⚠️ 경고 ({n}건)
-   - {경고 내용}
-
-   💡 제안 ({n}건)
-   - {제안 내용}
-   ```
-3. 오류가 있으면: "자동수정: `/lk-n8n-validate fix {id}`"
+- No args → print usage and stop
+- `check <id>` → **check** action
+- `fix <id>` → **fix** action
+- `lint` → **lint** action
 
 ---
 
-### fix 동작
+### check action
 
-1. `mcp__n8n-mcp__n8n_autofix_workflow` 를 `id`, `applyFixes: false` (미리보기) 로 호출.
-2. 수정 가능 항목을 표시:
+1. Call `mcp__n8n-mcp__n8n_validate_workflow` with `id`, `options: { profile: "ai-friendly" }`.
+2. Categorize and display the result:
    ```
-   자동수정 미리보기 (ID: {id})
+   Workflow validation result (ID: {id})
 
-   | # | 수정 타입 | 내용 | 신뢰도 |
-   |---|----------|------|--------|
+   Errors ({n})
+   - {error}
+
+   Warnings ({n})
+   - {warning}
+
+   Suggestions ({n})
+   - {suggestion}
    ```
-3. AskUserQuestion — "수정을 적용하시겠습니까? (적용/취소)"
-4. "적용" 선택 시 `applyFixes: true` 로 재호출.
-5. 적용 결과 표시.
-6. 안내: "재검증: `/lk-n8n-validate check {id}`"
+3. If errors exist: "Auto-fix: `/lk-n8n-validate fix {id}`"
 
 ---
 
-### lint 동작
+### fix action
 
-1. AskUserQuestion — "검증할 워크플로우 JSON을 입력하세요:"
-2. 입력된 JSON을 파싱합니다.
-3. `mcp__n8n-mcp__validate_workflow` 를 `workflow` 파라미터로 호출 (JSON 직접 검증).
-4. check 동작과 동일한 형식으로 결과 표시.
+1. Call `mcp__n8n-mcp__n8n_autofix_workflow` with `id`, `applyFixes: false` (preview).
+2. Display fixable items:
+   ```
+   Auto-fix preview (ID: {id})
+
+   | # | Fix type | Detail | Confidence |
+   |---|----------|--------|------------|
+   ```
+3. AskUserQuestion — "Apply the fixes? (Apply/Cancel)"
+4. On "Apply", recall with `applyFixes: true`.
+5. Display the application result.
+6. Footer: "Re-validate: `/lk-n8n-validate check {id}`"
+
+---
+
+### lint action
+
+1. AskUserQuestion — "Enter the workflow JSON to validate:"
+2. Parse the entered JSON.
+3. Call `mcp__n8n-mcp__validate_workflow` with the `workflow` parameter (direct JSON validation).
+4. Display the result in the same format as the check action.

@@ -2,17 +2,17 @@
 
 ## Overview
 
-`leeloo-n8n`은 n8n MCP 서버의 17개 도구를 8개 skill로 래핑한 Claude Code 플러그인입니다.
-`/n8n-*` 자동완성으로 모든 n8n 기능에 접근할 수 있습니다.
+`leeloo-n8n` is a Claude Code plugin that wraps the 17 tools of the n8n MCP server into 8 skills.
+All n8n features are accessible via `/n8n-*` autocomplete.
 
 ## Prerequisites
 
-- n8n MCP 서버가 설정되어 있어야 합니다. `/lk-n8n-setup install`로 설치 가이드를 확인하세요.
+- The n8n MCP server must be configured. Run `/lk-n8n-setup install` for the install guide.
 
 ## Skills (n8n- prefix)
 
-| 스킬 | 서브커맨드 | MCP 도구 |
-|------|-----------|----------|
+| Skill | Subcommands | MCP tools |
+|-------|-------------|-----------|
 | `lk-n8n-setup` | status, install | health_check |
 | `lk-n8n-workflow` | create, get, list, update, delete | create/get/list/update_full/update_partial/delete_workflow |
 | `lk-n8n-run` | test, list, get, delete | test_workflow, executions |
@@ -24,6 +24,6 @@
 
 ## Architecture
 
-- Pure skill plugin — hooks, agents, scripts 없음
-- 각 skill은 MCP 사전 체크 → 인자 파싱 → MCP 호출 → 결과 포맷팅 패턴
-- MCP 미설치 시 `/lk-n8n-setup install` 안내로 유도
+- Pure skill plugin — no hooks, agents, or scripts
+- Each skill follows the pattern: MCP precheck → parse args → MCP call → format result
+- When MCP is missing, users are guided to `/lk-n8n-setup install`

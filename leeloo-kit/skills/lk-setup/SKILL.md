@@ -1,92 +1,96 @@
 ---
 name: lk-setup
-description: "환경 강화 도구(설치·statusline·플러그인 토글·기본 모델 설정)"
+description: |
+  Leeloo-kit 환경 강화 도구 — 설치·statusline·플러그인 토글·기본 모델 설정·CLAUDE.md 동기화.
+  환경 설정, 셋업, 설치, 모델 설정, 플러그인 토글, statusline, setup, install, model, plugins, statusline
 user_invocable: true
 argument-hint: "[status|install|model|plugins|statusline|claude-md|gemini|serena|reinstall]"
 ---
 
-# /lk-setup — 선택적 환경 강화
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-leeloo-kit 환경의 개별 구성 요소를 선택적으로 설치하거나 상태를 확인합니다.
-셸 스크립트 없이 SKILL.md Procedure에서 직접 도구를 호출하여 처리합니다.
+# /lk-setup — Optional Environment Enhancement
 
-## 서브커맨드
+Selectively install or inspect individual leeloo-kit environment components.
+Handled directly by tool calls inside the SKILL.md Procedure — no shell scripts required.
+
+## Subcommands
 
 ```
-/lk-setup                         — 현재 환경 상태 표시 (기본 동작 = status)
-/lk-setup status                  — 현재 환경 상태 표시
-/lk-setup install                 — 미설치 항목 일괄 설치 (이미 설치된 항목은 건너뜀)
-/lk-setup reinstall               — 전체 재설치 (기존 설정 덮어쓰기)
-/lk-setup statusline              — statusline-leeloo.sh를 ~/.claude/에 복사
-/lk-setup claude-md               — CLAUDE.md를 ~/.claude/CLAUDE.md에 설치
-/lk-setup gemini                  — gemini-cli 설치 가이드 표시
-/lk-setup serena                  — serena 플러그인 대시보드 자동 열기 비활성화
-/lk-setup plugins                 — 설치된 플러그인 목록 + 상태 (기본 동작 = list)
-/lk-setup plugins list            — 설치된 플러그인 목록 + 상태
-/lk-setup plugins toggle          — 플러그인 대화형 on/off
-/lk-setup plugins audit           — 미사용 추정 플러그인 탐지 (레포 분석)
-/lk-setup plugins install-docskills — document-skills + anthropic-agent-skills 마켓플레이스 등록
-/lk-setup plugins mcp-list        — MCP 서버 목록 + 상태
-/lk-setup plugins mcp-toggle      — MCP 서버 대화형 on/off
-/lk-setup model                   — 기본 세션 모델 조회 및 변경
+/lk-setup                         — show current environment status (default = status)
+/lk-setup status                  — show current environment status
+/lk-setup install                 — install missing items in batch (skip already installed)
+/lk-setup reinstall               — full reinstall (overwrite existing config)
+/lk-setup statusline              — copy statusline-leeloo.sh to ~/.claude/
+/lk-setup claude-md               — install CLAUDE.md to ~/.claude/CLAUDE.md
+/lk-setup gemini                  — show gemini-cli install guide
+/lk-setup serena                  — disable serena plugin dashboard auto-open
+/lk-setup plugins                 — list installed plugins + status (default = list)
+/lk-setup plugins list            — list installed plugins + status
+/lk-setup plugins toggle          — interactive plugin on/off
+/lk-setup plugins audit           — detect likely-unused plugins (repo analysis)
+/lk-setup plugins install-docskills — register document-skills + anthropic-agent-skills marketplace
+/lk-setup plugins mcp-list        — list MCP servers + status
+/lk-setup plugins mcp-toggle      — interactive MCP server on/off
+/lk-setup model                   — view and change the default session model
 ```
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `status` → **status** 동작
-- `install` → **install** 동작
-- `reinstall` → **reinstall** 동작
-- `statusline` → **statusline** 동작
-- `claude-md` → **claude-md** 동작
-- `gemini` → **gemini** 동작
-- `serena` → **serena** 동작
-- `plugins` 단독 또는 `plugins list` → **plugins list** 동작
-- `plugins toggle` → **plugins toggle** 동작
-- `plugins audit` → **plugins audit** 동작
-- `plugins install-docskills` → **plugins install-docskills** 동작 (기존 `plugins` 동작)
-- `plugins mcp-list` → **plugins mcp-list** 동작
-- `plugins mcp-toggle` → **plugins mcp-toggle** 동작
-- `model` → **model** 동작
+Parse the subcommand from user input:
+- No argument or `status` → **status** action
+- `install` → **install** action
+- `reinstall` → **reinstall** action
+- `statusline` → **statusline** action
+- `claude-md` → **claude-md** action
+- `gemini` → **gemini** action
+- `serena` → **serena** action
+- `plugins` alone or `plugins list` → **plugins list** action
+- `plugins toggle` → **plugins toggle** action
+- `plugins audit` → **plugins audit** action
+- `plugins install-docskills` → **plugins install-docskills** action (former `plugins` action)
+- `plugins mcp-list` → **plugins mcp-list** action
+- `plugins mcp-toggle` → **plugins mcp-toggle** action
+- `model` → **model** action
 
 ---
 
-### status 동작
+### status action
 
-Bash로 다음 항목들을 확인합니다:
+Use Bash to check the following items:
 
 ```bash
-# Node.js 버전
+# Node.js version
 node --version 2>/dev/null || echo "NOT_INSTALLED"
 
-# gemini-cli 설치 여부
+# gemini-cli installation
 command -v gemini 2>/dev/null || echo "NOT_INSTALLED"
 
-# statusline 존재 여부
+# statusline existence
 test -f ~/.claude/statusline-leeloo.sh && echo "INSTALLED" || echo "NOT_INSTALLED"
 
-# CLAUDE.md 존재 여부
+# CLAUDE.md existence
 test -f ~/.claude/CLAUDE.md && echo "INSTALLED" || echo "NOT_INSTALLED"
 
-# jq 설치 여부
+# jq installation
 command -v jq 2>/dev/null || echo "NOT_INSTALLED"
 
-# serena 대시보드 자동 열기 설정 확인
+# serena dashboard auto-open setting
 grep -q 'web_dashboard_open_on_launch: false' ~/.serena/serena_config.yml 2>/dev/null && echo "CONFIGURED" || echo "NOT_CONFIGURED"
 
-# anthropic-agent-skills 마켓플레이스 등록 여부
+# anthropic-agent-skills marketplace registration
 grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "REGISTERED" || echo "NOT_REGISTERED"
 
-# document-skills 플러그인 설치 여부
+# document-skills plugin installation
 grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "INSTALLED" || echo "NOT_INSTALLED"
 
-# 기본 모델 설정
+# Default model setting
 python3 -c "import json; d=json.load(open(os.path.expanduser('~/.claude/settings.json'))); print(d.get('model','NOT_SET'))" 2>/dev/null || grep -o '"model"[[:space:]]*:[[:space:]]*"[^"]*"' ~/.claude/settings.json 2>/dev/null | head -1 | sed 's/.*: *"\(.*\)"/\1/' || echo "NOT_SET"
 ```
 
-결과를 테이블로 표시합니다:
+Display results as a table:
 
 ```
 leeloo-kit 환경 상태
@@ -108,36 +112,36 @@ leeloo-kit 환경 상태
 
 ---
 
-### statusline 동작
+### statusline action
 
-1. **소스 파일 확인**: Bash로 다음 명령 실행:
+1. **Verify source file**: run via Bash:
    ```bash
    test -f "${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh" && echo "EXISTS" || echo "NOT_FOUND"
    ```
-   - NOT_FOUND이면: "statusline-leeloo.sh 소스 파일을 찾을 수 없습니다." 안내 후 중단.
+   - If NOT_FOUND: "statusline-leeloo.sh 소스 파일을 찾을 수 없습니다." then abort.
 
-2. **소스 파일 읽기**: Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기.
+2. **Read source file**: Read `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh`.
 
-3. **대상 경로 확인**: Bash로 `test -f ~/.claude/statusline-leeloo.sh && echo "EXISTS" || echo "NOT_EXISTS"` 실행.
-   - 이미 존재하면 AskUserQuestion — "~/.claude/statusline-leeloo.sh가 이미 존재합니다. 덮어쓸까요? (덮어쓰기/취소)"
-   - "취소" 선택 시 중단.
+3. **Check destination path**: run `test -f ~/.claude/statusline-leeloo.sh && echo "EXISTS" || echo "NOT_EXISTS"`.
+   - If exists, AskUserQuestion — "~/.claude/statusline-leeloo.sh가 이미 존재합니다. 덮어쓸까요? (덮어쓰기/취소)"
+   - On "취소": abort.
 
-4. **파일 복사**: Write 도구로 `~/.claude/statusline-leeloo.sh`에 소스 파일 내용 저장.
+4. **Copy file**: Write the source content to `~/.claude/statusline-leeloo.sh`.
 
-5. **실행 권한 부여**: Bash로 `chmod +x ~/.claude/statusline-leeloo.sh` 실행.
+5. **Set executable**: run `chmod +x ~/.claude/statusline-leeloo.sh`.
 
-6. **settings.json에 statusLine 등록**: Read 도구로 `~/.claude/settings.json` 읽은 후:
-   - `statusLine` 필드가 이미 `statusline-leeloo.sh`를 포함하면: 건너뜀.
-   - `statusLine` 필드가 없거나 다른 값이면: Edit 도구로 `statusLine` 필드를 다음으로 설정:
+6. **Register statusLine in settings.json**: Read `~/.claude/settings.json`, then:
+   - If `statusLine` already references `statusline-leeloo.sh`: skip.
+   - If `statusLine` is missing or different: Edit to set:
      ```json
      "statusLine": {
        "type": "command",
        "command": "bash ~/.claude/statusline-leeloo.sh"
      }
      ```
-   - `statusLine` 필드가 아예 없으면: `"hooks": {}` 또는 다른 최상위 키 뒤에 추가.
+   - If `statusLine` is entirely absent: append it after `"hooks": {}` or another top-level key.
 
-7. **결과 안내**:
+7. **Result message**:
    ```
    statusline-leeloo.sh 설치 완료
 
@@ -149,18 +153,18 @@ leeloo-kit 환경 상태
 
 ---
 
-### claude-md 동작
+### claude-md action
 
-1. **대상 파일 확인**: Bash로 `test -f ~/.claude/CLAUDE.md && echo "EXISTS" || echo "NOT_EXISTS"` 실행.
+1. **Check destination file**: run `test -f ~/.claude/CLAUDE.md && echo "EXISTS" || echo "NOT_EXISTS"`.
 
-2. **이미 존재하는 경우**: AskUserQuestion — "~/.claude/CLAUDE.md가 이미 존재합니다. 어떻게 처리할까요? (덮어쓰기/취소)"
-   - "취소" 선택 시 중단.
+2. **If exists**: AskUserQuestion — "~/.claude/CLAUDE.md가 이미 존재합니다. 어떻게 처리할까요? (덮어쓰기/취소)"
+   - On "취소": abort.
 
-3. **소스 파일 읽기**: Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기.
+3. **Read source file**: Read `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md`.
 
-4. **파일 설치**: Write 도구로 `~/.claude/CLAUDE.md`에 소스 파일 내용 저장.
+4. **Install file**: Write the source content to `~/.claude/CLAUDE.md`.
 
-5. **결과 안내**:
+5. **Result message**:
    ```
    CLAUDE.md 설치 완료
 
@@ -172,14 +176,14 @@ leeloo-kit 환경 상태
 
 ---
 
-### gemini 동작
+### gemini action
 
-Node.js 설치 여부 먼저 확인:
+First check Node.js installation:
 ```bash
 node --version 2>/dev/null || echo "NOT_INSTALLED"
 ```
 
-다음 내용을 출력합니다:
+Then output:
 
 ```
 gemini-cli 설치 가이드
@@ -203,7 +207,7 @@ gemini auth login
 ## Node.js가 없는 경우
 ```
 
-Node.js가 설치되지 않은 경우 추가 안내:
+If Node.js is missing, append:
 ```
 Node.js가 설치되지 않았습니다. 먼저 Node.js를 설치하세요:
 
@@ -213,26 +217,26 @@ macOS: brew install node
 
 ---
 
-### serena 동작
+### serena action
 
-serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
+Disable the serena plugin's web dashboard auto-open.
 
-1. **설정 파일 확인**: Bash로 `test -f ~/.serena/serena_config.yml && echo "EXISTS" || echo "NOT_EXISTS"` 실행.
+1. **Check config file**: run `test -f ~/.serena/serena_config.yml && echo "EXISTS" || echo "NOT_EXISTS"`.
 
-2. **파일이 없는 경우**: Bash로 `mkdir -p ~/.serena` 후 Write 도구로 `~/.serena/serena_config.yml` 생성:
+2. **If file missing**: run `mkdir -p ~/.serena`, then Write `~/.serena/serena_config.yml`:
    ```yaml
    web_dashboard_open_on_launch: false
    ```
 
-3. **파일이 있는 경우**: Bash로 현재 설정 확인:
+3. **If file exists**: check via Bash:
    ```bash
    grep 'web_dashboard_open_on_launch' ~/.serena/serena_config.yml 2>/dev/null || echo "NOT_FOUND"
    ```
-   - `true`인 경우: Edit 도구로 `web_dashboard_open_on_launch: true` → `web_dashboard_open_on_launch: false` 변경.
-   - `NOT_FOUND`인 경우: Edit 도구로 파일 끝에 `web_dashboard_open_on_launch: false` 추가.
-   - 이미 `false`인 경우: "이미 비활성화되어 있습니다." 안내.
+   - If `true`: Edit to change `web_dashboard_open_on_launch: true` → `web_dashboard_open_on_launch: false`.
+   - If `NOT_FOUND`: Edit to append `web_dashboard_open_on_launch: false` to the end of the file.
+   - If already `false`: "이미 비활성화되어 있습니다."
 
-4. **결과 안내**:
+4. **Result message**:
    ```
    serena 대시보드 자동 열기 비활성화 완료
 
@@ -242,19 +246,19 @@ serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
 
 ---
 
-### plugins 동작
+### plugins action
 
-설치된 플러그인과 MCP 서버를 조회·토글·감사합니다. 서브 동작은 `plugins list`(기본) / `toggle` / `audit` / `install-docskills` / `mcp-list` / `mcp-toggle`.
+Inspect, toggle, and audit installed plugins and MCP servers. Sub-actions: `plugins list` (default) / `toggle` / `audit` / `install-docskills` / `mcp-list` / `mcp-toggle`.
 
-**공통 사전 작업**: Read 도구로 `~/.claude/settings.json`을 읽습니다. 파일이 없으면 "~/.claude/settings.json이 존재하지 않습니다. Claude Code를 최소 1회 실행해 주세요." 안내 후 중단.
+**Common preflight**: Read `~/.claude/settings.json`. If missing, "~/.claude/settings.json이 존재하지 않습니다. Claude Code를 최소 1회 실행해 주세요." and abort.
 
 ---
 
-#### plugins list (기본)
+#### plugins list (default)
 
-1. `settings.json`의 `enabledPlugins` 객체를 파싱합니다. 키 형식: `"<plugin-name>@<marketplace>": true|false`.
-2. 각 항목을 파싱하여 `plugin-name`과 `marketplace`를 분리.
-3. 결과를 테이블로 표시:
+1. Parse the `enabledPlugins` object in `settings.json`. Key format: `"<plugin-name>@<marketplace>": true|false`.
+2. Parse each entry into `plugin-name` and `marketplace`.
+3. Display as a table:
 
 ```
 현재 설치된 플러그인 (~/.claude/settings.json)
@@ -279,17 +283,17 @@ serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
 
 #### plugins toggle
 
-1. `settings.json`의 `enabledPlugins` 전체 목록을 Read로 읽습니다.
-2. AskUserQuestion 도구로 다음 형식의 질문을 구성합니다:
-   - `header`: "플러그인 토글" (12자 이내)
+1. Read the full `enabledPlugins` list from `settings.json`.
+2. Build an AskUserQuestion as follows:
+   - `header`: "플러그인 토글" (≤12 chars)
    - `question`: "활성화할 플러그인을 선택하세요. 선택하지 않은 플러그인은 비활성화됩니다."
    - `multiSelect`: `true`
-   - `options`: 각 플러그인마다 하나의 옵션. `label`은 `"플러그인명 [✅활성|❌비활성]"`, `description`은 `"<marketplace>"`.
-3. 사용자 응답(선택된 플러그인 집합) 수신.
-4. Edit 도구로 `settings.json`의 `enabledPlugins` 객체를 업데이트:
-   - 선택된 플러그인 → `true`
-   - 선택되지 않은 플러그인 → `false` (키는 유지, 값만 변경)
-5. 변경 결과 테이블 표시:
+   - `options`: one per plugin. `label` is `"<plugin name> [✅활성|❌비활성]"`, `description` is `"<marketplace>"`.
+3. Receive user response (set of selected plugins).
+4. Edit `enabledPlugins` in `settings.json`:
+   - Selected → `true`
+   - Unselected → `false` (keep keys, only flip values)
+5. Show result table:
 
 ```
 플러그인 토글 완료
@@ -305,33 +309,33 @@ serena 플러그인의 웹 대시보드 자동 열기를 비활성화합니다.
 Claude Code 재시작 후 적용됩니다.
 ```
 
-**주의**:
-- AskUserQuestion의 `options` 상한이 있으므로, 20개 초과 시 페이지를 나눠서 두 번 호출하거나 "활성화된 것만 표시" 등 필터 옵션을 사용자에게 먼저 물어보세요.
-- 사용자가 응답을 취소하면 변경 없이 종료.
+**Caveats**:
+- AskUserQuestion `options` has an upper limit; for >20 entries, paginate (call twice) or first ask the user for a filter such as "show active only".
+- If the user cancels the response, exit without changes.
 
 ---
 
 #### plugins audit
 
-현재 활성 플러그인 중 이 레포에서 **사용 가능성이 낮은** 플러그인을 탐지합니다. Bash로 레포를 분석한 결과를 근거로 제시하되, 자동으로 비활성화하지 않습니다 (사용자가 `toggle`로 직접 결정).
+Detect plugins that are likely **unused** in this repository among the currently active ones. Provide evidence from a Bash analysis but do NOT auto-disable (the user decides via `toggle`).
 
-1. `enabledPlugins`의 `true` 항목 목록을 추출.
-2. 각 플러그인에 대해 아래 규칙으로 "미사용 추정 여부"를 판단:
+1. Extract entries with `enabledPlugins` value `true`.
+2. For each plugin, classify "likely unused" by these rules:
 
-| 플러그인 패턴 | 미사용 추정 조건 |
+| Plugin pattern | Likely-unused condition |
 |---|---|
-| `claude-api@*` 또는 `document-skills@*`의 `claude-api` | Bash `grep -r "@anthropic-ai/sdk" package.json 2>/dev/null` 결과 없음 + `grep -rE "^(import\|from) anthropic" --include="*.py" . 2>/dev/null | head -1` 결과 없음 |
-| `typescript-lsp@*` | `find . -name "*.ts" -o -name "*.tsx" 2>/dev/null | head -10 | wc -l` 결과 < 10 |
-| `pyright-lsp@*` | `find . -name "*.py" 2>/dev/null | head -10 | wc -l` 결과 < 10 |
-| `go-lsp@*` | `find . -name "*.go" 2>/dev/null | head -1` 결과 없음 |
+| `claude-api@*` or `claude-api` under `document-skills@*` | Bash `grep -r "@anthropic-ai/sdk" package.json 2>/dev/null` empty AND `grep -rE "^(import\|from) anthropic" --include="*.py" . 2>/dev/null | head -1` empty |
+| `typescript-lsp@*` | `find . -name "*.ts" -o -name "*.tsx" 2>/dev/null | head -10 | wc -l` < 10 |
+| `pyright-lsp@*` | `find . -name "*.py" 2>/dev/null | head -10 | wc -l` < 10 |
+| `go-lsp@*` | `find . -name "*.go" 2>/dev/null | head -1` empty |
 | `rust-lsp@*` | `test -f Cargo.toml || echo "missing"` = missing |
 | `java-lsp@*` | `test -f pom.xml || test -f build.gradle || test -f build.gradle.kts || echo "missing"` = missing |
-| `csharp-lsp@*` | `find . -name "*.cs" 2>/dev/null | head -1` 결과 없음 |
-| `swift-lsp@*` / `kotlin-lsp@*` / `elixir-lsp@*` / `c-lsp@*` / `php-lsp@*` / `lua-lsp@*` | 해당 언어 파일 없음 |
-| `claude-code-setup@*` / `claude-automation-recommender` | 항상 미사용 추정 (수동 구성 완료 가정) |
-| 기타 LSP | 언어별 대응 파일 없음 |
+| `csharp-lsp@*` | `find . -name "*.cs" 2>/dev/null | head -1` empty |
+| `swift-lsp@*` / `kotlin-lsp@*` / `elixir-lsp@*` / `c-lsp@*` / `php-lsp@*` / `lua-lsp@*` | corresponding language files absent |
+| `claude-code-setup@*` / `claude-automation-recommender` | always likely unused (assume manual configuration completed) |
+| Other LSPs | corresponding language files absent |
 
-3. 탐지된 항목을 테이블로 제시:
+3. Present detected items in a table:
 
 ```
 미사용 추정 플러그인 (현재 활성인 것 중)
@@ -345,20 +349,20 @@ Claude Code 재시작 후 적용됩니다.
 → 비활성화: /lk-setup plugins toggle (해당 항목 체크 해제)
 ```
 
-미사용 추정 플러그인이 없으면: "현재 활성 플러그인 중 미사용 추정 항목 없음." 안내.
+If none are detected: "현재 활성 플러그인 중 미사용 추정 항목 없음."
 
 ---
 
 #### plugins install-docskills
 
-(기존 `plugins` 동작과 동일) anthropic-agent-skills 마켓플레이스 등록 + document-skills 플러그인 설치.
+(Same as the legacy `plugins` action.) Register the anthropic-agent-skills marketplace + install the document-skills plugin.
 
-1. **마켓플레이스 등록 확인**: Bash로 확인:
+1. **Marketplace registration check**: Bash:
    ```bash
    grep -q 'anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "REGISTERED" || echo "NOT_REGISTERED"
    ```
 
-2. **마켓플레이스 미등록 시**: Read 도구로 `~/.claude/settings.json` 읽은 후, Edit 도구로 `extraKnownMarketplaces` 객체에 다음 항목 추가:
+2. **If marketplace not registered**: Read `~/.claude/settings.json`, then Edit to add the following entry to `extraKnownMarketplaces`:
    ```json
    "anthropic-agent-skills": {
      "source": {
@@ -367,20 +371,20 @@ Claude Code 재시작 후 적용됩니다.
      }
    }
    ```
-   - 이미 등록됨이면: "anthropic-agent-skills 마켓플레이스가 이미 등록되어 있습니다." 안내.
+   - Already registered: "anthropic-agent-skills 마켓플레이스가 이미 등록되어 있습니다."
 
-3. **document-skills 플러그인 설치 확인**: Bash로 확인:
+3. **Document-skills plugin install check**: Bash:
    ```bash
    grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo "INSTALLED" || echo "NOT_INSTALLED"
    ```
 
-4. **document-skills 미설치 시**: Edit 도구로 `~/.claude/settings.json`의 `enabledPlugins` 객체에 다음 추가:
+4. **If document-skills missing**: Edit to add to `enabledPlugins` in `~/.claude/settings.json`:
    ```json
    "document-skills@anthropic-agent-skills": true
    ```
-   - 이미 설치됨이면: "document-skills 플러그인이 이미 설치되어 있습니다." 안내.
+   - Already installed: "document-skills 플러그인이 이미 설치되어 있습니다."
 
-5. **결과 안내**:
+5. **Result message**:
    ```
    플러그인 설정 완료
 
@@ -396,9 +400,9 @@ Claude Code 재시작 후 적용됩니다.
 
 #### plugins mcp-list
 
-1. Read 도구로 `~/.claude/settings.json` 읽기.
-2. `mcpServers` 객체 파싱. 각 서버의 `disabled` 필드(true/false/undefined) 기준으로 상태 판정 (`disabled != true` → 활성).
-3. 테이블로 표시:
+1. Read `~/.claude/settings.json`.
+2. Parse `mcpServers`. Determine status by `disabled` field (true/false/undefined): `disabled != true` → active.
+3. Display as table:
 
 ```
 현재 MCP 서버 (~/.claude/settings.json)
@@ -419,42 +423,42 @@ Claude Code 재시작 후 적용됩니다.
 
 #### plugins mcp-toggle
 
-`plugins toggle`과 동일한 패턴을 MCP 서버에 적용합니다.
+Apply the same pattern as `plugins toggle` to MCP servers.
 
-1. `settings.json`의 `mcpServers` 전체 목록을 Read로 읽습니다.
-2. AskUserQuestion 도구 (`multiSelect: true`)로 현재 상태를 라벨에 표시한 옵션을 제공:
+1. Read the full `mcpServers` list from `settings.json`.
+2. Use AskUserQuestion (`multiSelect: true`) with current state in label:
    - `label`: `"<server> [✅활성|❌비활성]"`
-   - `description`: 서버 설명 또는 URL
-3. 사용자 응답 수신 후 Edit 도구로 각 서버의 `disabled` 필드를 갱신:
-   - 선택됨 → `disabled: false` 또는 필드 제거
-   - 선택되지 않음 → `disabled: true`
-4. 변경 결과 테이블 표시.
+   - `description`: server description or URL
+3. After the user response, Edit each server's `disabled` field:
+   - Selected → `disabled: false` or remove field
+   - Unselected → `disabled: true`
+4. Show result table.
 
-**주의**: MCP 서버 전체를 제거하지 말 것. `disabled` 필드만 토글하여 재활성화가 쉽도록 유지.
+**Caution**: do not remove MCP servers entirely. Toggle only the `disabled` field so re-enabling stays easy.
 
 ---
 
-### model 동작
+### model action
 
-Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/settings.json`의 `model` 필드를 직접 업데이트합니다.
+View and change the Claude Code default session model. Updates the `model` field in `~/.claude/settings.json` directly.
 
-**지원 모델 목록:**
+**Supported models:**
 
-| 모델 ID | 이름 | 특성 |
-|---------|------|------|
-| `claude-opus-4-7` | Opus 4.7 | 최고 성능 — Plan·복잡한 추론·오케스트레이션 |
-| `claude-sonnet-4-6` | Sonnet 4.6 | 균형 — 일반 작업 기본 권장 |
-| `claude-sonnet-4-6[1m]` | Sonnet 4.6 1M | 긴 컨텍스트 필요 시 (대형 코드베이스·긴 문서) |
-| `claude-haiku-4-5-20251001` | Haiku 4.5 | 빠름 — 단순 반복·포맷 변환 작업 |
+| Model ID | Name | Trait |
+|----------|------|-------|
+| `claude-opus-4-7` | Opus 4.7 | Top performance — Plan, complex reasoning, orchestration |
+| `claude-sonnet-4-6` | Sonnet 4.6 | Balanced — default for general work |
+| `claude-sonnet-4-6[1m]` | Sonnet 4.6 1M | Long context (large codebase, long documents) |
+| `claude-haiku-4-5-20251001` | Haiku 4.5 | Fast — simple repetition, format conversion |
 
-**절차:**
+**Procedure:**
 
-1. **현재 설정 확인**: Read 도구로 `~/.claude/settings.json` 읽기. `model` 필드 값을 추출 (없으면 `"설정 없음 (Claude Code 기본값 사용)"` 표시).
+1. **Read current setting**: Read `~/.claude/settings.json`. Extract the `model` value (if missing, display `"설정 없음 (Claude Code 기본값 사용)"`).
 
-2. **모델 선택**: AskUserQuestion 도구로 단일 선택:
+2. **Model selection**: AskUserQuestion (single select):
    - `header`: "기본 모델 선택"
-   - `question`: "Claude Code 세션에서 사용할 기본 모델을 선택하세요.\n현재: {현재 model 값 또는 '설정 없음'}"
-   - `options` (각 옵션에 `preview` 포함):
+   - `question`: "Claude Code 세션에서 사용할 기본 모델을 선택하세요.\n현재: {current model value or '설정 없음'}"
+   - `options` (each option includes `preview`):
      ```
      [
        {
@@ -479,18 +483,18 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
        }
      ]
      ```
-   - 사용자가 취소하면 변경 없이 종료.
+   - If the user cancels, exit without changes.
 
-3. **settings.json 업데이트**: Edit 도구로 `~/.claude/settings.json`의 `model` 필드를 선택된 값으로 변경.
-   - `model` 필드가 이미 존재하면: 기존 값을 선택된 값으로 교체.
-   - `model` 필드가 없으면: 최상위 레벨에 추가 (예: `"env"` 키 앞).
+3. **Update settings.json**: Edit the `model` field in `~/.claude/settings.json` to the selected value.
+   - If `model` exists: replace.
+   - If `model` is absent: add at top level (e.g., before the `"env"` key).
 
-4. **결과 안내**:
+4. **Result message**:
    ```
    기본 모델 변경 완료
 
-   이전: {이전 값 또는 '설정 없음'}
-   이후: {선택된 모델 ID}
+   이전: {previous value or '설정 없음'}
+   이후: {selected model ID}
 
    Claude Code를 재시작하면 적용됩니다.
    현재 세션 모델을 즉시 바꾸려면 /model 명령을 사용하세요.
@@ -498,12 +502,12 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
 
 ---
 
-### install 동작
+### install action
 
-미설치 항목을 일괄 설치합니다. 이미 설치된 항목은 건너뜁니다.
-**사용자 확인 없이** 자동으로 진행합니다 (개별 서브커맨드와 달리 덮어쓰기 확인을 하지 않음).
+Install missing items in batch. Skip already-installed items.
+Proceeds **without user confirmation** (unlike per-item subcommands, no overwrite prompt).
 
-1. **상태 확인**: Bash로 모든 항목 상태를 한 번에 확인:
+1. **Status check**: query all items at once via Bash:
    ```bash
    echo "=== STATUS ==="
    echo "NODE=$(node --version 2>/dev/null || echo 'NOT_INSTALLED')"
@@ -515,12 +519,12 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
    echo "DOCSKILLS=$(grep -q 'document-skills@anthropic-agent-skills' ~/.claude/settings.json 2>/dev/null && echo 'INSTALLED' || echo 'NOT_INSTALLED')"
    ```
 
-2. **미설치 항목만 순차 설치** (각 항목에 대해):
+2. **Install missing items sequentially**:
 
-   **0단계. Node.js** — `NODE=NOT_INSTALLED`이면:
-      - OS 감지 후 자동 설치:
+   **Step 0. Node.js** — if `NODE=NOT_INSTALLED`:
+      - Detect OS, then auto-install:
         ```bash
-        # OS 감지
+        # OS detection
         if [[ "$(uname)" == "Darwin" ]]; then
           OS="macOS"
         elif [[ -f /etc/debian_version ]]; then
@@ -533,13 +537,13 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
         ```
       - AskUserQuestion — "Node.js가 설치되지 않았습니다. 자동 설치할까요?"
         - Options: "자동 설치 (Recommended)" / "수동 설치"
-      - "자동 설치" 선택 시 OS별 실행:
-        - **macOS**: `brew install node` (brew 없으면 안내)
+      - On "자동 설치", run per OS:
+        - **macOS**: `brew install node` (guide if brew missing)
         - **debian** (Ubuntu/Debian): `curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs`
         - **rhel** (RHEL/CentOS/Fedora): `curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash - && sudo dnf install -y nodejs`
-        - **unknown**: nvm 설치 안내 — `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && source ~/.bashrc && nvm install 22`
-      - 설치 후 `node --version`으로 확인
-      - "수동 설치" 선택 시: 설치 가이드 텍스트만 표시
+        - **unknown**: nvm install guide — `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && source ~/.bashrc && nvm install 22`
+      - Verify with `node --version`
+      - On "수동 설치", just print install guide:
         ```
         Node.js 수동 설치 방법:
         - macOS: brew install node
@@ -547,27 +551,27 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
         - 범용: https://nodejs.org/ 또는 nvm (https://github.com/nvm-sh/nvm)
         ```
 
-   a. **statusline** — `STATUSLINE=NOT_INSTALLED`이면:
-      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
-      - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장
-      - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
-      - settings.json에 statusLine 자동 등록 (statusline 동작 6단계와 동일)
+   a. **statusline** — if `STATUSLINE=NOT_INSTALLED`:
+      - Read `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh`
+      - Write to `~/.claude/statusline-leeloo.sh`
+      - Bash `chmod +x ~/.claude/statusline-leeloo.sh`
+      - Auto-register statusLine in settings.json (same as statusline action step 6)
 
-   b. **CLAUDE.md** — `CLAUDEMD=NOT_INSTALLED`이면:
-      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
-      - Write 도구로 `~/.claude/CLAUDE.md`에 저장
+   b. **CLAUDE.md** — if `CLAUDEMD=NOT_INSTALLED`:
+      - Read `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md`
+      - Write to `~/.claude/CLAUDE.md`
 
-   c. **serena** — `SERENA=NOT_CONFIGURED`이면:
-      - serena 동작과 동일한 절차 수행 (파일 생성 또는 수정)
+   c. **serena** — if `SERENA=NOT_CONFIGURED`:
+      - Run the same procedure as the serena action (create or modify file)
 
-   d. **plugins** — `MARKETPLACE=NOT_REGISTERED` 또는 `DOCSKILLS=NOT_INSTALLED`이면:
-      - plugins 동작과 동일한 절차 수행 (마켓플레이스 등록 + document-skills 설치)
+   d. **plugins** — if `MARKETPLACE=NOT_REGISTERED` or `DOCSKILLS=NOT_INSTALLED`:
+      - Run the same procedure as the plugins install-docskills action (marketplace registration + document-skills install)
 
-   e. **gemini** — `GEMINI=NOT_INSTALLED`이면:
-      - Node.js가 설치되어 있으면 자동 설치: `npm install -g @google/gemini-cli`
-      - Node.js가 없으면 설치 가이드만 표시
+   e. **gemini** — if `GEMINI=NOT_INSTALLED`:
+      - If Node.js is installed, auto-install: `npm install -g @google/gemini-cli`
+      - If not, only print install guide
 
-3. **결과 요약**: 설치 결과를 테이블로 표시:
+3. **Result summary**: display as table:
    ```
    leeloo-kit 일괄 설치 완료
 
@@ -586,36 +590,36 @@ Claude Code 기본 세션 모델을 조회하고 변경합니다. `~/.claude/set
 
 ---
 
-### reinstall 동작
+### reinstall action
 
-모든 항목을 강제로 재설치합니다. 기존 파일을 **확인 없이 덮어씁니다**.
+Force-reinstall all items. **Overwrite existing files without confirmation.**
 
-1. **사용자 확인**: AskUserQuestion — "모든 leeloo-kit 설정 파일을 덮어쓰고 재설치합니다. 진행할까요?"
+1. **User confirmation**: AskUserQuestion — "모든 leeloo-kit 설정 파일을 덮어쓰고 재설치합니다. 진행할까요?"
    - Options: "재설치" / "취소"
-   - "취소" 선택 시 중단.
+   - On "취소": abort.
 
-2. **전체 재설치** (각 항목에 대해 무조건 실행):
+2. **Full reinstall** (run unconditionally for each item):
 
    a. **statusline**:
-      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh` 읽기
-      - Write 도구로 `~/.claude/statusline-leeloo.sh`에 저장 (덮어쓰기)
-      - Bash로 `chmod +x ~/.claude/statusline-leeloo.sh`
-      - settings.json에 statusLine 자동 등록 (statusline 동작 6단계와 동일)
+      - Read `${CLAUDE_PLUGIN_ROOT}/resources/statusline-leeloo.sh`
+      - Write to `~/.claude/statusline-leeloo.sh` (overwrite)
+      - Bash `chmod +x ~/.claude/statusline-leeloo.sh`
+      - Auto-register statusLine in settings.json (same as statusline action step 6)
 
    b. **CLAUDE.md**:
-      - Read 도구로 `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md` 읽기
-      - Write 도구로 `~/.claude/CLAUDE.md`에 저장 (덮어쓰기)
+      - Read `${CLAUDE_PLUGIN_ROOT}/resources/CLAUDE.md`
+      - Write to `~/.claude/CLAUDE.md` (overwrite)
 
    c. **serena**:
-      - serena 동작과 동일한 절차 수행 (파일 생성 또는 값 강제 변경)
+      - Run the serena action procedure (create or force-update value)
 
    d. **plugins**:
-      - plugins 동작과 동일한 절차 수행 (마켓플레이스 등록 + document-skills 설치)
+      - Run the plugins install-docskills action procedure (marketplace registration + document-skills install)
 
    e. **gemini**:
-      - gemini-cli 미설치 시 설치 가이드 표시
+      - If gemini-cli missing, print install guide
 
-3. **결과 요약**: 재설치 결과를 테이블로 표시:
+3. **Result summary**:
    ```
    leeloo-kit 재설치 완료
 

@@ -5,125 +5,127 @@ user_invocable: true
 argument-hint: "[check|review|kpi]"
 ---
 
-# /lk-coding-guard — 코딩 행동 게이트
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-LLM이 코드 작성 시 빠지기 쉬운 4대 함정(silent assumption · over-engineering · drive-by refactor · weak success criteria)을 차단하고, 글로벌 원칙 7번(스파게티 금지) 정량 게이트를 코드 작성 직전에 재주입합니다.
+# /lk-coding-guard — Coding Behavior Gate
 
-> **Tradeoff:** 신중성을 속도보다 우선합니다. 사소한 오타·일회성 작업에는 판단껏 적용 강도 조정.
+Blocks the four traps LLMs fall into when writing code (silent assumption, over-engineering, drive-by refactor, weak success criteria) and re-injects the global Mandatory Principle 7 (Anti-Spaghetti Code Gate) quantitative gates immediately before any code is written.
 
-## 발동 조건
+> **Tradeoff:** Prioritizes care over speed. For trivial typos or one-off work, scale the rigor down as needed.
 
-- 코드를 작성·수정·리뷰·리팩터링하기 *직전*
-- `/lk-coding-guard` 수동 호출 (체크리스트 재주입)
-- `/lk-coding-guard kpi` — 자기 점검 KPI 확인
+## Trigger Conditions
 
----
-
-## 1. Think Before Coding (작성 전 사고)
-
-**가정·해석 분기·트레이드오프를 표면화한다. 모호하면 멈춘다.**
-
-- 가정을 명시한다. 불확실하면 추측하지 말고 묻는다.
-- 해석이 둘 이상이면 *모두* 제시한다. 조용히 하나를 고르지 않는다.
-- 더 단순한 접근이 있으면 말한다. 필요하면 사용자 요구에 푸시백한다.
-- 불명확한 지점은 멈추고 *무엇이* 모호한지 명명한 뒤 질문한다.
-
-## 2. Simplicity First + 정량 게이트
-
-**문제를 푸는 최소 코드. speculative 금지.**
-
-- 요청되지 않은 기능을 추가하지 않는다.
-- 1회용 코드에 추상화를 만들지 않는다.
-- 요청되지 않은 "유연성"·"설정 가능성"을 도입하지 않는다.
-- 발생 불가능한 시나리오에 에러 핸들링을 두지 않는다.
-- 200줄로 쓴 것이 50줄로 가능하면 다시 쓴다.
-
-**정량 게이트 (매 함수/매 파일 — 글로벌 원칙 7번 통합):**
-
-| 항목 | 임계 |
-|---|---|
-| 단일 책임(SRP) | 함수/클래스 1 = 역할 1. 변경 이유 2개 이상 → 분리 |
-| 중첩 깊이 | 최대 3단계. 4단계 도달 즉시 분해 (Early Return으로 평탄화) |
-| 함수 길이 | 50~80줄 이내 |
-| 복잡도 | 분기 10개 이상(CC ≥ 10) → 즉시 분해 |
-| DRY | 동일 로직 3회째 추출. 단, 추상화가 단순성을 해치면 중복 용인 |
-| 명명 | 이름이 역할을 설명. 주석으로 모호함 보완 금지 |
-| 결합도 | 전역 상태·숨은 의존성·순환 참조 금지. 입출력은 명시적 인자/반환값 |
-
-> **자기 질문**: "시니어 엔지니어가 보면 과잉이라 할까?" 그렇다면 단순화한다.
-
-## 3. Surgical Changes (외과적 변경)
-
-**필요한 것만 손댄다. 자기가 만든 어지름만 정리한다.**
-
-기존 코드를 수정할 때:
-
-- 인접 코드·주석·포맷을 "개선"하지 않는다.
-- 망가지지 않은 것을 리팩터링하지 않는다.
-- 기존 스타일을 따른다 — 자기 취향과 다르더라도.
-- **요청 범위 밖** 데드코드를 발견하면 *보고만* 한다 — 무단 삭제 금지.
-
-본인 변경으로 발생한 orphan은:
-
-- 본인 변경이 미사용으로 만든 import/변수/함수만 제거.
-- 사전부터 존재한 데드코드는 사용자 승인 전 제거 금지.
-
-> **테스트**: 변경된 *모든* 라인이 사용자 요청에 직접 추적되는가?
-
-**범위 안/밖 정책 (글로벌 원칙 5번 정합):**
-
-- *현재 작업 범위 내* 발견 문제 → 즉시 수정.
-- *범위 밖* 문제 → 별도 보고하고 사용자 승인 후 수정.
-- 무단 정리·drive-by refactor 금지.
-
-## 4. Goal-Driven Execution (목표 주도)
-
-**성공 기준을 정의하고, 검증될 때까지 루프한다.**
-
-명령형 → 선언형 변환:
-
-| 대신… | 이렇게 |
-|---|---|
-| "유효성 검사 추가" | "잘못된 입력 테스트를 먼저 작성, 통과시키기" |
-| "버그 수정" | "버그를 재현하는 테스트 작성, 통과시키기" |
-| "X 리팩터링" | "변경 전·후 테스트가 모두 통과하는지 확인" |
-
-다단계 작업은 brief plan + verify를 명시:
-
-```
-1. [단계] → verify: [확인 방법]
-2. [단계] → verify: [확인 방법]
-3. [단계] → verify: [확인 방법]
-```
-
-강한 성공 기준은 LLM이 *독립적으로* 루프하게 한다. 약한 기준("작동하게 만들어")은 끊임없는 명확화를 요구한다.
-
-## 5. KPI 자기 점검
-
-다음 4지표가 개선되면 게이트가 작동 중:
-
-- **불필요 diff↓** — 요청되지 않은 변경이 PR에 없다
-- **재작성↓** — 과잉으로 인한 재작성이 줄었다
-- **사전 질문↑** — 실수 *후* 명확화가 아닌 구현 *전* 명확화
-- **미니 PR** — drive-by refactor·"개선" 없음
-
-`/lk-coding-guard kpi`로 최근 N개 PR의 diff 라인 수와 재작성률을 표시 (선택 기능).
+- *Just before* writing, modifying, reviewing, or refactoring code
+- Manual invocation of `/lk-coding-guard` (re-inject the checklist)
+- `/lk-coding-guard kpi` — review self-check KPIs
 
 ---
 
-## 글로벌 원칙과의 관계
+## 1. Think Before Coding
 
-| 글로벌 원칙 | 본 skill 대응 섹션 |
+**Surface assumptions, interpretation branches, and tradeoffs. Stop when ambiguous.**
+
+- State assumptions upfront. If uncertain, ask — do not guess.
+- If more than one interpretation exists, present *all* of them. Do not silently pick one.
+- If a simpler approach exists, say so. Push back on user requirements when needed.
+- For unclear points, stop, name *what* is ambiguous, then ask.
+
+## 2. Simplicity First + Quantitative Gates
+
+**Minimum code to solve the problem. No speculative work.**
+
+- Do not add features that were not requested.
+- Do not abstract single-use code.
+- Do not introduce unrequested "flexibility" or "configurability."
+- Do not add error handling for impossible scenarios.
+- If something written in 200 lines can be written in 50, rewrite it.
+
+**Quantitative gates (per function/per file — integrating global Mandatory Principle 7):**
+
+| Item | Threshold |
 |---|---|
-| 1번 코드 작성 금지 | (skill 적용 전 단계 — 사용자 명시 지시 확인) |
-| 5번 미루지 말 것 | §3 범위 안/밖 정책 (범위 안 즉시 수정) |
-| 6번 사용자 지적 시 재탐색 | §1 Think Before Coding (사전 차단) |
-| 7번 스파게티 금지 정량 게이트 | §2 Simplicity First (정량 게이트 흡수) |
-| 8번 계획 우선 | §4 Goal-Driven Execution (verify 패턴) |
+| Single Responsibility (SRP) | One function/class = one role. ≥2 reasons to change → split |
+| Nesting depth | Max 3 levels. Decompose immediately at level 4 (flatten via Early Return) |
+| Function length | 50–80 lines |
+| Complexity | ≥10 branches (CC ≥ 10) → decompose immediately |
+| DRY | Extract on the 3rd repetition. If abstraction harms simplicity, accept duplication |
+| Naming | Names describe the role. Do not paper over ambiguous names with comments |
+| Coupling | No global state, hidden dependencies, or circular references. I/O via explicit arguments/returns |
 
-> 글로벌 md는 *baseline 강제*, 본 skill은 *코딩 모드 진입 시 attention 재주입*. 두 채널 분담.
+> **Self-question**: "Would a senior engineer call this overengineered?" If yes, simplify.
 
-## 참고
+## 3. Surgical Changes
 
-- 출처: Andrej Karpathy, [LLM coding pitfalls](https://x.com/karpathy/status/2015883857489522876)
-- 통합본: 카파시 4원칙 + 글로벌 원칙 7번 정량 게이트 + 우리 5번 범위 정책
+**Touch only what is needed. Clean up only the mess you made.**
+
+When modifying existing code:
+
+- Do not "improve" adjacent code, comments, or formatting.
+- Do not refactor what is not broken.
+- Follow existing style — even when it differs from your taste.
+- For dead code **outside the requested scope**, *report only* — no unauthorized deletion.
+
+For orphans caused by your changes:
+
+- Remove only the imports/variables/functions your change made unused.
+- Pre-existing dead code MUST NOT be removed without user approval.
+
+> **Test**: Does *every* changed line trace directly back to the user's request?
+
+**Scope policy (aligned with global Mandatory Principle 5):**
+
+- *Within current scope*: fix immediately.
+- *Outside scope*: report separately and fix only after user approval.
+- No unauthorized cleanups, no drive-by refactors.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria, then loop until verified.**
+
+Imperative → declarative conversion:
+
+| Instead of… | Use this |
+|---|---|
+| "Add validation" | "Write a test for invalid input first, then make it pass" |
+| "Fix the bug" | "Write a test that reproduces the bug, then make it pass" |
+| "Refactor X" | "Verify pre/post tests both pass" |
+
+For multi-step work, state a brief plan + verify:
+
+```
+1. [step] → verify: [check method]
+2. [step] → verify: [check method]
+3. [step] → verify: [check method]
+```
+
+Strong success criteria let the LLM loop *independently*. Weak criteria ("make it work") force endless clarification.
+
+## 5. KPI Self-Check
+
+The gate is working when these four indicators improve:
+
+- **Unnecessary diff↓** — no unrequested changes in PRs
+- **Rewrites↓** — fewer rewrites caused by overreach
+- **Pre-implementation questions↑** — clarification *before* implementation, not *after* mistakes
+- **Mini PRs** — no drive-by refactors, no "improvements"
+
+`/lk-coding-guard kpi` shows recent N PRs' diff line count and rewrite rate (optional).
+
+---
+
+## Relationship to Global Principles
+
+| Global Principle | Section in this skill |
+|---|---|
+| Principle 1 No code without instruction | (pre-skill stage — verify explicit user instruction) |
+| Principle 5 Don't defer | §3 Scope policy (fix immediately within scope) |
+| Principle 6 Re-explore on user pushback | §1 Think Before Coding (preventive block) |
+| Principle 7 Anti-Spaghetti quantitative gates | §2 Simplicity First (absorbs the quantitative gates) |
+| Principle 8 Plan First | §4 Goal-Driven Execution (verify pattern) |
+
+> The global md is the *baseline enforcer*; this skill is the *attention re-injection on entering coding mode*. Two channels, divided responsibility.
+
+## References
+
+- Source: Andrej Karpathy, [LLM coding pitfalls](https://x.com/karpathy/status/2015883857489522876)
+- Composite: Karpathy's 4 principles + global Principle 7 quantitative gates + our Principle 5 scope policy

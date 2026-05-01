@@ -4,35 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-`leeloo-claude-setup`은 Leeloo(이루기술) 사내 Claude Code 플러그인 마켓플레이스 레포지토리.
-하나의 레포에서 8개 독립 플러그인(`.claude-plugin/marketplace.json`의 `plugins` 배열)을 제공.
+`leeloo-claude-setup` is the Leeloo (이루기술) internal Claude Code plugin marketplace repository.
+A single repo ships 8 independent plugins, declared in the `plugins` array of `.claude-plugin/marketplace.json`.
 
 ## Plugins
 
-| 플러그인 | 버전 | 유형 | 스킬 수 | 상세 |
+| Plugin | Version | Role | Skills | Details |
 |---|---|---|---|---|
-| leeloo-kit | 3.7.0 | 환경/도구(하네스 엔지니어링 코어) | 5 | `leeloo-kit/CLAUDE.md` |
-| leeloo-workflow | 1.0.1 | 워크플로우(Plan/리뷰/TODO) | 4 | `leeloo-workflow/CLAUDE.md` |
-| leeloo-git | 1.0.1 | Git 자동화 | 2 | `leeloo-git/CLAUDE.md` |
-| leeloo-agent | 1.0.1 | Sub Agent/Team 관리 | 2 | `leeloo-agent/CLAUDE.md` |
-| leeloo-doc | 1.2.0 | 문서/도면(HWP·PDF 변환·추출) | 5 | `leeloo-doc/CLAUDE.md` |
+| leeloo-kit | 3.7.0 | Environment & tooling (harness-engineering core) | 5 | `leeloo-kit/CLAUDE.md` |
+| leeloo-workflow | 1.0.1 | Workflow (Plan / review / TODO) | 4 | `leeloo-workflow/CLAUDE.md` |
+| leeloo-git | 1.0.1 | Git automation | 2 | `leeloo-git/CLAUDE.md` |
+| leeloo-agent | 1.0.1 | Sub-agent & team management | 2 | `leeloo-agent/CLAUDE.md` |
+| leeloo-doc | 1.2.0 | Documents & drawings (HWP/PDF conversion & extraction) | 5 | `leeloo-doc/CLAUDE.md` |
 | leeloo-bitbucket | 1.0.1 | Bitbucket REST API | 5 | `leeloo-bitbucket/CLAUDE.md` |
-| leeloo-n8n | 1.0.1 | n8n MCP 래핑 | 8 | `leeloo-n8n/CLAUDE.md` |
-| leeloo-its | 1.0.1 | ITS Oracle DB 관리 | 3 | `leeloo-its/CLAUDE.md` |
+| leeloo-n8n | 1.0.1 | n8n MCP wrapper | 8 | `leeloo-n8n/CLAUDE.md` |
+| leeloo-its | 1.0.1 | ITS Oracle DB management | 3 | `leeloo-its/CLAUDE.md` |
 
-네임스페이스: `lk-` / `lk-doc-` / `lk-bb-` / `lk-n8n-` / `lk-its-` 접두사로 충돌 방지. 각 플러그인 독립 활성화 가능.
+Namespacing: prefixes `lk-` / `lk-doc-` / `lk-bb-` / `lk-n8n-` / `lk-its-` prevent collisions. Each plugin can be enabled independently.
+
+## Output Language Policy
+
+Internal instructions in this repository (CLAUDE.md, SKILL.md bodies, agents, output styles, resources) are written in English to reduce token cost. **All user-facing output — skill-generated reports, converted documents, chat replies, command results — MUST be in Korean.** The English instructions govern Claude's behavior; they do not change the language Claude speaks to the user.
 
 ## Coding Principles
 
-상세는 `~/.claude/CLAUDE.md` 필수 원칙 7(스파게티 코드 금지)을 따른다.
-매 코드 작성/수정 시 SRP · 중첩 3단계 · 함수 50~80줄 · 복잡도 10 미만 · DRY & KISS 체크.
+Follow Mandatory Principle 7 (Anti-Spaghetti Code Gate) in `~/.claude/CLAUDE.md`.
+On every code write/edit, check: SRP · max nesting depth 3 · function length 50–80 lines · cyclomatic complexity < 10 · DRY & KISS.
 
 ## Testing Changes
 
-1. 레포를 마켓플레이스에 등록
-2. 플러그인 목록에 8개 표시 확인
-3. 각 플러그인의 skill이 `/` 자동완성에 나타나는지 확인
+1. Register this repo as a marketplace.
+2. Verify all 8 plugins appear in the plugin list.
+3. Verify each plugin's skills show up in `/` autocomplete.
 
 ## Failure Memory
 
-실패 기록 요약은 프로젝트 로컬 `CLAUDE.local.md`에 기록됩니다(gitignore, Claude Code 자동 로드). 상세는 `.leeloo/failure-memory/` 및 `/lk-harness failure-memory` 참조.
+Failure-record summaries live in the project-local `CLAUDE.local.md` (gitignored, auto-loaded by Claude Code). For full records see `.leeloo/failure-memory/` and `/lk-harness failure-memory`.

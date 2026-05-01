@@ -1,29 +1,29 @@
 # leeloo-its
 
-ITS(지능형교통시스템) Oracle DB 대화형 관리 플러그인.
-테이블 DDL 생성/수정, 코드 관리, 시설물 등록을 수행하며 Oracle DB에 직접 실행.
+Interactive ITS (Intelligent Transport System) Oracle DB management plugin.
+Generates/modifies table DDL, manages codes, and registers field equipment, executing directly against Oracle DB.
 
 ## Architecture
 
 - `plugin.json` — Plugin manifest (name: "leeloo-its", version: "1.0.1").
 - `skills/` — 3 skills (lk-its- prefix):
-  - `lk-its-ddl/` — DDL 생성/수정 (create, alter, show, check, dict).
-  - `lk-its-code/` — 코드/패턴코드 관리 (add-group, add-item, add-pattern, add-holiday, list, search).
-  - `lk-its-equip/` — 현장 시설물 등록/수정/조회 (add, modify, list, show, status, move, delete).
-- `resources/` — 참조 리소스:
-  - `system-prompt.md` — P1~P10 DDL 생성 원칙 + 도메인/컬럼 사전 + Few-shot.
-  - `domain-dictionary.yaml` — 데이터 표준 사전 (Single Source of Truth).
-  - `db-connection.md` — Oracle DB 접속 정보 + Python 헬퍼.
-- `tools/` — `consistency_checker.py` (DDL 정합성 자동 검증).
+  - `lk-its-ddl/` — DDL create/modify (create, alter, show, check, dict).
+  - `lk-its-code/` — Code/pattern code management (add-group, add-item, add-pattern, add-holiday, list, search).
+  - `lk-its-equip/` — Field equipment register/modify/lookup (add, modify, list, show, status, move, delete).
+- `resources/` — Reference resources:
+  - `system-prompt.md` — P1–P10 DDL generation principles + domain/column dictionary + few-shot.
+  - `domain-dictionary.yaml` — Data standard dictionary (Single Source of Truth).
+  - `db-connection.md` — Oracle DB connection info + Python helpers.
+- `tools/` — `consistency_checker.py` (automatic DDL consistency verification).
 
 ## Key Design Decisions
 
-- **Claude 자체가 DDL 생성**: 별도 API 호출 불필요. system-prompt.md 규칙 기반.
-- **데이터 표준 사전 참조**: domain-dictionary.yaml이 모든 컬럼 타입/크기의 Single Source of Truth.
-- **Oracle DB 직접 실행**: python3 + oracledb로 CREATE/ALTER/INSERT 즉시 실행.
-- **스킬 연계**: its-code ↔ its-equip ↔ its-ddl 간 자동 연계 제안.
+- **Claude generates DDL itself**: No separate API calls needed. Based on system-prompt.md rules.
+- **Reference data standard dictionary**: domain-dictionary.yaml is the Single Source of Truth for every column type/size.
+- **Direct Oracle DB execution**: python3 + oracledb runs CREATE/ALTER/INSERT immediately.
+- **Skill chaining**: Automatic chaining suggestions across its-code ↔ its-equip ↔ its-ddl.
 
 ## Dependencies
 
-- Python 3 + oracledb 패키지
-- Oracle DB 접속 (resources/db-connection.md 참조)
+- Python 3 + oracledb package
+- Oracle DB connection (see resources/db-connection.md)

@@ -6,33 +6,33 @@ description: |
 keep-coding-instructions: true
 ---
 
-# 운영 (Ops) 스타일
+# Ops Style
 
-## 규칙
+## Rules
 
-1. **모든 변경에 영향 범위(Blast Radius) 표시**:
+1. **Tag every change with its blast radius**:
    `[Low]` / `[Medium]` / `[High]` / `[Critical]`
 
-2. **롤백 계획 자동 제시**:
-   - 변경 취소 방법
-   - 롤백 명령어
+2. **Auto-include a rollback plan**:
+   - How to undo the change
+   - Rollback commands
 
-3. **환경별 차이점 테이블**:
-   | 항목 | Dev | Staging | Prod |
+3. **Per-environment differences table**:
+   | Item | Dev | Staging | Prod |
    |------|-----|---------|------|
 
-4. **모니터링 체크리스트**:
-   배포 후 확인할 메트릭/로그
-   - [ ] 에러율
-   - [ ] 응답 시간
-   - [ ] 리소스 사용량
+4. **Monitoring checklist**:
+   Metrics/logs to watch after deploy
+   - [ ] Error rate
+   - [ ] Response time
+   - [ ] Resource usage
 
-5. **"배포 전 체크" 섹션**:
-   - [ ] 환경 변수 확인
-   - [ ] 의존성 버전 확인
-   - [ ] 마이그레이션 확인
-   - [ ] 롤백 계획 수립
+5. **"Pre-deploy check" section**:
+   - [ ] Environment variables verified
+   - [ ] Dependency versions verified
+   - [ ] Migration verified
+   - [ ] Rollback plan ready
 
-6. **다운타임 예상 분석**
+6. **Expected downtime analysis**
 
-7. **언어**: 한국어, 간결하고 명확한 톤
+7. **Language**: Korean, concise and clear tone.

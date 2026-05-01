@@ -1,106 +1,110 @@
 ---
 name: lk-bb-branch
-description: "Bitbucket 브랜치 관리(목록/생성/삭제)"
+description: |
+  Bitbucket 저장소 브랜치 관리 — 목록 조회·생성·삭제.
+  브랜치, 브랜치 생성, 브랜치 삭제, 브랜치 목록, 비트버킷, branch, create branch, delete branch, bitbucket
 user_invocable: true
 argument-hint: "[list|create|delete] <repo_slug> [branch_name]"
 ---
 
-# /lk-bb-branch — 브랜치 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Bitbucket 저장소의 브랜치를 관리합니다.
+# /lk-bb-branch — Branch Management
 
-## 서브커맨드
+Manages branches in Bitbucket repositories.
+
+## Subcommands
 
 ```
-/lk-bb-branch list <repo_slug>                          — 브랜치 목록
-/lk-bb-branch create <repo_slug> <branch_name>          — 브랜치 생성 (기본: main에서)
-/lk-bb-branch create <repo_slug> <branch_name> <source> — 소스 브랜치 지정하여 생성
-/lk-bb-branch delete <repo_slug> <branch_name>          — 브랜치 삭제
+/lk-bb-branch list <repo_slug>                          — List branches
+/lk-bb-branch create <repo_slug> <branch_name>          — Create branch (default source: main)
+/lk-bb-branch create <repo_slug> <branch_name> <source> — Create branch from a specified source
+/lk-bb-branch delete <repo_slug> <branch_name>          — Delete branch
 ```
 
 ## Procedure
 
-### 사전 체크
+### Pre-check
 
-Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
-- 파일이 없거나 토큰이 비어있으면: "Bitbucket 연결이 설정되지 않았습니다. `/lk-bb-setup install`로 초기 설정을 진행하세요." 안내 후 중단.
-- YAML frontmatter에서 `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace`를 파싱.
-- 이후 curl 호출 시 `-u "{이메일}:{토큰}"` 형식으로 사용.
-- `bb-fetch-all.sh` 호출 시 환경변수로 전달: `BITBUCKET_USER_EMAIL="{이메일}" BITBUCKET_API_TOKEN="{토큰}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
+Use the Read tool to load `~/.claude/leeloo-bitbucket.local.md`.
+- If the file is missing or the token is empty, instruct: "Bitbucket connection is not configured. Run `/lk-bb-setup install` for initial setup." Then stop.
+- Parse `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace` from the YAML frontmatter.
+- Use `-u "{email}:{token}"` for subsequent curl calls.
+- For `bb-fetch-all.sh` calls, pass via env vars: `BITBUCKET_USER_EMAIL="{email}" BITBUCKET_API_TOKEN="{token}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
 
-### 인자 파싱
+### Argument parsing
 
-- `list <repo_slug>` → **list** 동작
-- `create <repo_slug> <branch_name> [source]` → **create** 동작
-- `delete <repo_slug> <branch_name>` → **delete** 동작
-- repo_slug 누락 시: AskUserQuestion으로 입력 요청.
+- `list <repo_slug>` → **list** action
+- `create <repo_slug> <branch_name> [source]` → **create** action
+- `delete <repo_slug> <branch_name>` → **delete** action
+- If repo_slug is missing, prompt for input via AskUserQuestion.
 
 ---
 
-### list 동작
+### list action
 
-브랜치가 많을 수 있으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
+Branches may be numerous, so use `bb-fetch-all.sh` for parallel pagination.
 
-Bash로 실행:
+Run via Bash:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches" \
   --jq-filter '{name: .name, hash: .target.hash[0:7], date: .target.date, author: .target.author.raw}'
 ```
 
-결과 표시:
+Display the result:
 
 ```
-브랜치 목록: {repo_slug} — 총 {N}개
+Branch list: {repo_slug} — total {N}
 
-| # | 브랜치 | 최신 커밋 | 작성자 | 날짜 |
-|---|--------|----------|--------|------|
+| # | Branch | Latest commit | Author | Date |
+|---|--------|---------------|--------|------|
 | 1 | main | abc1234 | user | 2026-03-20 |
 | ... | | | | |
 ```
 
 ---
 
-### create 동작
+### create action
 
-1. 소스 브랜치가 미지정이면 기본값 `main` 사용.
+1. If source branch is unspecified, default to `main`.
 
-2. Bash로 실행:
+2. Run via Bash:
    ```bash
    curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches" \
      -d '{"name": "{branch_name}", "target": {"hash": "{source}"}}'
    ```
-   - source가 브랜치 이름인 경우, 먼저 해당 브랜치의 최신 커밋 해시를 조회:
+   - If source is a branch name, first look up the latest commit hash of that branch:
      ```bash
      curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches/{source}" | jq -r '.target.hash'
      ```
 
-3. 결과 표시:
+3. Display the result:
    ```
-   브랜치 생성 완료
+   Branch created
 
-   | 항목 | 값 |
-   |------|-----|
-   | 저장소 | {repo_slug} |
-   | 브랜치 | {branch_name} |
-   | 소스 | {source} |
+   | Field | Value |
+   |-------|-------|
+   | Repository | {repo_slug} |
+   | Branch | {branch_name} |
+   | Source | {source} |
    ```
 
 ---
 
-### delete 동작
+### delete action
 
 1. AskUserQuestion:
-   - Header: "⚠️ 브랜치 삭제"
-   - Question: "`{repo_slug}/{branch_name}` 브랜치를 삭제합니다. 계속할까요?"
-   - Options: "삭제", "취소"
-   - "취소" 선택 시 중단.
+   - Header: "Delete branch"
+   - Question: "Delete branch `{repo_slug}/{branch_name}`. Continue?"
+   - Options: "Delete", "Cancel"
+   - If "Cancel" is selected, stop.
 
-2. Bash로 실행:
+2. Run via Bash:
    ```bash
    curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}/refs/branches/{branch_name}"
    ```
 
-3. HTTP 204 → "브랜치 `{branch_name}` 삭제 완료."
-   기타 → 에러 메시지 표시.
+3. HTTP 204 → "Branch `{branch_name}` deleted."
+   Other → display the error message.

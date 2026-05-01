@@ -1,81 +1,85 @@
 ---
 name: lk-n8n-template
-description: "n8n 템플릿 검색·조회·배포"
+description: |
+  n8n.io 워크플로우 템플릿 검색·조회·자체 인스턴스로 배포.
+  n8n 템플릿, 템플릿 검색, 템플릿 배포, 워크플로우 템플릿, n8n template, deploy template, workflow template
 user_invocable: true
 argument-hint: "[search|get|deploy] <query|id>"
 ---
 
-# /lk-n8n-template — 템플릿 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-n8n.io의 워크플로우 템플릿을 검색하고, 조회하고, 인스턴스에 배포합니다.
+# /lk-n8n-template — Template Management
 
-## 서브커맨드
+Search, inspect, and deploy n8n.io workflow templates to your instance.
+
+## Subcommands
 
 ```
-/lk-n8n-template search <keyword>   — 템플릿 키워드 검색
-/lk-n8n-template get <id>           — 템플릿 상세 조회
-/lk-n8n-template deploy <id>        — 템플릿을 n8n 인스턴스에 배포
+/lk-n8n-template search <keyword>   — Keyword search for templates
+/lk-n8n-template get <id>           — Template detail
+/lk-n8n-template deploy <id>        — Deploy template to the n8n instance
 ```
 
 ## Procedure
 
-### MCP 사전 체크
+### MCP pre-check
 
-1. `mcp__n8n-mcp__n8n_health_check` 호출.
-   - 실패 시: "n8n MCP 서버가 설정되지 않았습니다. `/n8n-setup install` 을 먼저 실행하세요." 안내 후 중단.
+1. Call `mcp__n8n-mcp__n8n_health_check`.
+   - On failure, instruct: "n8n MCP server is not configured. Run `/n8n-setup install` first." Then stop.
 
-### 인자 파싱
+### Argument parsing
 
-- 인자 없음 → 사용법 안내 후 중단
-- `search <keyword>` → **search** 동작
-- `get <id>` → **get** 동작
-- `deploy <id>` → **deploy** 동작
-
----
-
-### search 동작
-
-1. `mcp__n8n-mcp__search_templates` 를 `query`, `searchMode: "keyword"` 로 호출.
-2. 결과를 테이블로 표시:
-   ```
-   템플릿 검색 결과: "{keyword}"
-
-   | ID | 이름 | 설명 | 조회수 |
-   |----|------|------|--------|
-   ```
-3. 안내: "상세 조회: `/lk-n8n-template get <id>` | 배포: `/lk-n8n-template deploy <id>`"
+- No args → print usage and stop
+- `search <keyword>` → **search** action
+- `get <id>` → **get** action
+- `deploy <id>` → **deploy** action
 
 ---
 
-### get 동작
+### search action
 
-1. `mcp__n8n-mcp__get_template` 를 `templateId`, `mode: "structure"` 로 호출.
-2. 템플릿 정보를 표시:
-   - 기본 정보 (이름, 작성자, 설명)
-   - 노드 목록 및 연결 구조
-   - 필요한 credential 목록
-3. 안내: "이 템플릿 배포: `/lk-n8n-template deploy <id>`"
+1. Call `mcp__n8n-mcp__search_templates` with `query`, `searchMode: "keyword"`.
+2. Display the result as a table:
+   ```
+   Template search result: "{keyword}"
+
+   | ID | Name | Description | Views |
+   |----|------|-------------|-------|
+   ```
+3. Footer: "Detail: `/lk-n8n-template get <id>` | Deploy: `/lk-n8n-template deploy <id>`"
 
 ---
 
-### deploy 동작
+### get action
 
-1. `mcp__n8n-mcp__get_template` 로 템플릿 정보 조회하여 이름 확인.
-2. AskUserQuestion — "템플릿 '{이름}'을 n8n 인스턴스에 배포하시겠습니까? (배포/취소)"
-   - 커스텀 이름을 지정하고 싶은 경우 직접 입력 가능.
-3. "배포" 선택 시 `mcp__n8n-mcp__n8n_deploy_template` 를 `templateId` 로 호출.
-   - `autoFix: true`, `autoUpgradeVersions: true`, `stripCredentials: true` 기본 적용.
-4. 배포 결과 표시:
+1. Call `mcp__n8n-mcp__get_template` with `templateId`, `mode: "structure"`.
+2. Display template info:
+   - Basic info (name, author, description)
+   - Node list and connection structure
+   - Required credentials list
+3. Footer: "Deploy this template: `/lk-n8n-template deploy <id>`"
+
+---
+
+### deploy action
+
+1. Look up template info via `mcp__n8n-mcp__get_template` to confirm the name.
+2. AskUserQuestion — "Deploy template '{name}' to the n8n instance? (Deploy/Cancel)"
+   - Allow free input for a custom name.
+3. On "Deploy", call `mcp__n8n-mcp__n8n_deploy_template` with `templateId`.
+   - Defaults: `autoFix: true`, `autoUpgradeVersions: true`, `stripCredentials: true`.
+4. Display the deployment result:
    ```
-   템플릿 배포 완료
+   Template deployed
 
-   | 항목 | 값 |
-   |------|-----|
-   | 워크플로우 ID | {id} |
-   | 이름 | {name} |
-   | 자동수정 | {적용된 수정 목록} |
-   | 필요 credential | {목록} |
+   | Field | Value |
+   |-------|-------|
+   | Workflow ID | {id} |
+   | Name | {name} |
+   | Auto-fixes | {applied fixes} |
+   | Required credentials | {list} |
 
-   n8n UI에서 credential을 설정한 후 활성화하세요.
+   Configure credentials in the n8n UI, then activate.
    ```
-5. 안내: "검증: `/n8n-validate check {id}` | 실행: `/n8n-run test {id}`"
+5. Footer: "Validate: `/n8n-validate check {id}` | Run: `/n8n-run test {id}`"

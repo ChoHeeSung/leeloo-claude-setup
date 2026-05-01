@@ -1,37 +1,41 @@
 ---
 name: lk-todo
-description: "Plan → 태스크 단위 TODO 리스트 관리"
+description: |
+  Plan 모드에서 작성한 계획을 실행 가능한 TODO 리스트로 변환·진행 추적.
+  TODO, 할일, 태스크, 작업 목록, 진행 관리, 체크리스트, todo, task list, checklist, progress
 user_invocable: true
 argument-hint: "[create|list|add|start|done|undo|clear] [path|item|number]"
 ---
 
-# /lk-todo — Plan → TODO 변환 및 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Plan mode에서 작성한 계획을 실행 가능한 TODO 리스트로 변환하고, 진행 상황을 추적합니다.
-설계 문서 참조 기능으로 작업 중 언제든 관련 섹션을 빠르게 확인할 수 있습니다.
+# /lk-todo — Plan → TODO Conversion and Management
 
-## 서브커맨드
+Convert plans authored in Plan mode into actionable TODO lists, and track progress.
+A design-document reference feature lets you quickly check related sections at any time during work.
+
+## Subcommands
 
 ```
-/lk-todo                  — plan 파일에서 TODO 리스트 생성 (기본 동작 = create)
-/lk-todo create [path]    — 지정된 plan 파일에서 TODO 생성
-/lk-todo list             — 현재 TODO 목록 표시
-/lk-todo add <항목>       — TODO 항목 수동 추가
-/lk-todo start <번호>     — 작업 시작 (시작 시간 기록)
-/lk-todo done <번호>      — 항목 완료 (종료 시간 + 소요 시간 기록)
-/lk-todo undo <번호>      — 완료 취소
-/lk-todo clear            — 완료된 항목 정리
+/lk-todo                  — generate a TODO list from a plan file (default = create)
+/lk-todo create [path]    — generate TODOs from the specified plan file
+/lk-todo list             — show the current TODO list
+/lk-todo add <item>       — manually add a TODO item
+/lk-todo start <number>   — start work (record start time)
+/lk-todo done <number>    — complete an item (record end time + duration)
+/lk-todo undo <number>    — revert completion
+/lk-todo clear            — purge completed items
 ```
 
-## TODO.md 파일 형식
+## TODO.md File Format
 
-파일 위치: `{프로젝트루트}/TODO.md`
+File location: `{project-root}/TODO.md`
 
 ```markdown
 # TODO
 
-> 생성 기준: {plan 파일명} | {날짜시간}
-> 설계 문서: {plan 파일 절대경로}
+> 생성 기준: {plan filename} | {date/time}
+> 설계 문서: {plan absolute path}
 
 ## 작업 목록
 
@@ -46,112 +50,112 @@ Plan mode에서 작성한 계획을 실행 가능한 TODO 리스트로 변환하
 완료: 1/3 (33%)
 ```
 
-상태 아이콘: ⬜ 대기, 🔨 진행중, ✅ 완료
+Status icons: ⬜ pending, 🔨 in progress, ✅ done
 
-**참조 컬럼**: 설계 문서의 섹션 참조 (예: `§Phase1:1-1` → Plan의 Phase 1, 항목 1-1)
+**Reference column**: section reference within the design document (e.g., `§Phase1:1-1` → Plan's Phase 1, item 1-1)
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `create` → **create** 동작
-- `create [path]` → path 지정된 plan 파일로 create
-- `list` → **list** 동작
-- `add <항목>` → **add** 동작
-- `start <번호>` → **start** 동작
-- `done <번호>` → **done** 동작
-- `undo <번호>` → **undo** 동작
-- `clear` → **clear** 동작
-
----
-
-### create 동작
-
-1. **Plan 확보**:
-   - **인자가 있으면**: 해당 경로의 파일을 사용.
-   - **인자가 없고 현재 컨텍스트에 plan이 있으면** (plan mode 직후 호출 등):
-     1. `mkdir -p .claude/plans/` 실행
-     2. plan 내용을 `.claude/plans/{YYYY-MM-DD}-{plan-요약-kebab-case}.md`에 Write 도구로 저장
-     3. 저장된 파일을 사용
-   - **인자도 없고 컨텍스트에 plan도 없으면**: Glob으로 다음 경로 순서대로 검색:
-     1. `{프로젝트루트}/docs/plan/*.plan.md`
-     2. `{프로젝트루트}/.claude/plans/*.md` (`.review.md` 제외)
-     - 없으면 에러, 여러 개면 AskUserQuestion으로 선택.
-
-2. **Plan 절대경로 결정**: Bash로 `realpath {plan파일경로}` 실행하여 절대경로 획득.
-
-3. **Plan 내용 읽기**: Read 도구로 plan 파일 내용을 읽습니다.
-
-4. **태스크 분해**: Plan의 변경 사항/구현 단계를 분석하여 독립적 태스크 단위로 분해합니다.
-   - 각 태스크에 번호, 제목, 간단한 설명 부여
-   - 참조 섹션: Plan 문서의 해당 섹션명 추출 (예: `§Phase1`, `§Step2`)
-   - 시작/종료/소요는 `-`로 초기화
-   - 상태는 모두 ⬜
-
-5. **기존 파일 확인**: 프로젝트 루트에 TODO.md가 이미 존재하면 AskUserQuestion으로 덮어쓰기 확인.
-
-6. **파일 생성**: Write 도구로 `{프로젝트루트}/TODO.md` 생성.
-   - 헤더에 설계 문서 절대경로 포함 (위 파일 형식 참조).
-
-7. **결과 표시**: 생성된 TODO 목록을 사용자에게 표시합니다.
+Parse the subcommand from user input:
+- No argument or `create` → **create** action
+- `create [path]` → create using the specified plan file
+- `list` → **list** action
+- `add <item>` → **add** action
+- `start <number>` → **start** action
+- `done <number>` → **done** action
+- `undo <number>` → **undo** action
+- `clear` → **clear** action
 
 ---
 
-### list 동작
+### create action
 
-1. Read 도구로 프로젝트 루트의 `TODO.md`를 읽습니다.
-2. 파일이 없으면 "TODO.md가 없습니다. `/lk-todo create`로 생성하세요." 안내.
-3. 내용을 사용자에게 표시합니다.
+1. **Acquire the plan**:
+   - **If argument given**: use that path.
+   - **If no argument and a plan is in the current context** (called right after plan mode):
+     1. Run `mkdir -p .claude/plans/`
+     2. Write the plan to `.claude/plans/{YYYY-MM-DD}-{plan-summary-kebab-case}.md`
+     3. Use the saved file
+   - **If neither argument nor context plan**: Glob the following paths in order:
+     1. `{project-root}/docs/plan/*.plan.md`
+     2. `{project-root}/.claude/plans/*.md` (excluding `.review.md`)
+     - None: error. Multiple: AskUserQuestion to pick.
+
+2. **Plan absolute path**: run `realpath {plan path}` via Bash to get the absolute path.
+
+3. **Read plan content**: Read the plan file via the Read tool.
+
+4. **Decompose tasks**: analyze the plan's change items / implementation steps and decompose into independent task units.
+   - Assign each task: number, title, brief description
+   - Reference section: extract the related plan section name (e.g., `§Phase1`, `§Step2`)
+   - Initialize start/end/duration to `-`
+   - Status: all ⬜
+
+5. **Existing file check**: if `TODO.md` already exists in the project root, AskUserQuestion to confirm overwrite.
+
+6. **Create file**: Write to `{project-root}/TODO.md`.
+   - Header includes the design document absolute path (see file format above).
+
+7. **Show result**: display the generated TODO list to the user.
 
 ---
 
-### add 동작
+### list action
 
-1. Read 도구로 `TODO.md`를 읽습니다. 없으면 에러.
-2. 기존 목록의 마지막 번호를 파악합니다.
-3. 새 항목을 테이블 끝에 추가합니다:
-   - 번호: 마지막 번호 + 1
-   - 상태: ⬜
-   - 태스크: 사용자가 입력한 항목
-   - 참조: `-` (수동 추가이므로)
-   - 시작/종료/소요: `-`
-4. 진행 상황 갱신.
-5. Edit 도구로 TODO.md 수정.
+1. Read the project root's `TODO.md`.
+2. If missing: "TODO.md가 없습니다. `/lk-todo create`로 생성하세요."
+3. Display the contents to the user.
 
 ---
 
-### start 동작
+### add action
 
-1. Read 도구로 `TODO.md`를 읽습니다.
-2. 지정된 번호의 항목을 찾습니다.
-3. 상태를 🔨로 변경합니다.
-4. 시작 시간을 현재 한국 시각(KST, UTC+9) (`MM-DD HH:MM`)으로 기록합니다.
-5. Edit 도구로 TODO.md 수정.
-6. **설계 문서 참조 안내**: 해당 태스크의 참조 섹션이 `-`가 아닌 경우:
-   - TODO.md 헤더에서 설계 문서 절대경로를 읽어 안내:
+1. Read `TODO.md`. Error if missing.
+2. Identify the last item number.
+3. Append a new item to the table:
+   - Number: last + 1
+   - Status: ⬜
+   - Task: the item the user provided
+   - Reference: `-` (manually added)
+   - Start/end/duration: `-`
+4. Update progress.
+5. Modify TODO.md via the Edit tool.
+
+---
+
+### start action
+
+1. Read `TODO.md`.
+2. Find the specified item number.
+3. Change status to 🔨.
+4. Record start time as current Korea time (KST, UTC+9) (`MM-DD HH:MM`).
+5. Modify TODO.md via the Edit tool.
+6. **Design reference notice**: if the task's reference section is not `-`:
+   - Read the design absolute path from the TODO.md header and notify:
    ```
-   참조: {설계문서 절대경로}의 {참조섹션} 내용을 확인하세요.
+   참조: {design absolute path}의 {reference section} 내용을 확인하세요.
    ```
 
 ---
 
-### done 동작
+### done action
 
-1. Read 도구로 `TODO.md`를 읽습니다.
-2. 지정된 번호의 항목을 찾습니다.
-3. 상태를 ✅로 변경합니다.
-4. 종료 시간을 현재 한국 시각(KST, UTC+9) (`MM-DD HH:MM`)으로 기록합니다.
-5. 시작 시간이 `-`이면 종료 시간과 동일하게 설정합니다.
-6. 소요 시간을 자동 계산합니다 (종료 - 시작, 분 단위).
-7. 진행 상황(완료 비율) 갱신.
-8. Edit 도구로 TODO.md 수정.
-9. **진행률 기반 제안**:
-   - 완료 비율이 50% 도달 시 (처음 도달할 때만):
+1. Read `TODO.md`.
+2. Find the specified item number.
+3. Change status to ✅.
+4. Record end time as current Korea time (KST, UTC+9) (`MM-DD HH:MM`).
+5. If start time is `-`, set it equal to the end time.
+6. Auto-compute duration (end − start, in minutes).
+7. Update progress (completion ratio).
+8. Modify TODO.md via the Edit tool.
+9. **Progress-based suggestions**:
+   - On reaching 50% completion (only the first time):
      ```
      절반 완료! /lk-commit 으로 중간 커밋을 권장합니다.
      ```
-   - 완료 비율이 100% 도달 시:
+   - On reaching 100%:
      ```
      모든 태스크 완료!
      /lk-commit 으로 최종 커밋하세요.
@@ -159,22 +163,22 @@ Plan mode에서 작성한 계획을 실행 가능한 TODO 리스트로 변환하
 
 ---
 
-### undo 동작
+### undo action
 
-1. Read 도구로 `TODO.md`를 읽습니다.
-2. 지정된 번호의 항목을 찾습니다.
-3. 상태를 ⬜로 되돌립니다.
-4. 종료 시간과 소요 시간을 `-`로 초기화합니다.
-5. 진행 상황 갱신.
-6. Edit 도구로 TODO.md 수정.
+1. Read `TODO.md`.
+2. Find the specified item number.
+3. Revert status to ⬜.
+4. Reset end time and duration to `-`.
+5. Update progress.
+6. Modify TODO.md via the Edit tool.
 
 ---
 
-### clear 동작
+### clear action
 
-1. Read 도구로 `TODO.md`를 읽습니다.
-2. ✅ 상태인 항목들을 제거합니다.
-3. 남은 항목들의 번호를 1부터 재정렬합니다.
-4. 진행 상황 갱신.
-5. Edit 도구로 TODO.md 수정.
-6. 제거된 항목 수를 사용자에게 알립니다.
+1. Read `TODO.md`.
+2. Remove items with status ✅.
+3. Renumber the remaining items starting at 1.
+4. Update progress.
+5. Modify TODO.md via the Edit tool.
+6. Tell the user how many items were removed.

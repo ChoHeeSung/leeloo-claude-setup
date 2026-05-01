@@ -1,102 +1,106 @@
 ---
 name: lk-n8n-setup
-description: "n8n MCP 서버 상태 확인·설치"
+description: |
+  n8n MCP 서버 연결 상태 확인 및 설치 가이드.
+  n8n 설정, n8n 설치, MCP 서버, 연결 확인, n8n setup, n8n install, mcp server, health check
 user_invocable: true
 argument-hint: "[status|install]"
 ---
 
-# /lk-n8n-setup — n8n MCP 연결 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-n8n MCP 서버의 연결 상태를 확인하고, 미설치 시 설치를 안내합니다.
+# /lk-n8n-setup — n8n MCP Connection Management
 
-## 서브커맨드
+Verify the n8n MCP server connection, and guide installation when missing.
+
+## Subcommands
 
 ```
-/lk-n8n-setup           — MCP 연결 상태 확인 (기본 동작 = status)
-/lk-n8n-setup status    — MCP 연결 상태 + n8n 인스턴스 정보 표시
-/lk-n8n-setup install   — n8n MCP 서버 설치 가이드 표시
+/lk-n8n-setup           — Check MCP connection status (default = status)
+/lk-n8n-setup status    — Show MCP connection status + n8n instance info
+/lk-n8n-setup install   — Show n8n MCP server install guide
 ```
 
 ## Procedure
 
-### 인자 파싱
+### Argument parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `status` → **status** 동작
-- `install` → **install** 동작
-
----
-
-### status 동작
-
-1. **MCP 연결 확인**: `mcp__n8n-mcp__n8n_health_check` 도구를 `mode: "diagnostic"` 으로 호출합니다.
-
-2. **결과 표시**:
-   - 성공 시:
-     ```
-     n8n MCP 연결 상태
-
-     | 항목 | 상태 |
-     |------|------|
-     | MCP 서버 | ✅ 연결됨 |
-     | n8n 인스턴스 | ✅ {URL} |
-     | API 버전 | {version} |
-
-     n8n MCP가 정상 동작 중입니다.
-     /n8n-workflow list 로 워크플로우를 확인해보세요.
-     ```
-   - 실패 시:
-     ```
-     n8n MCP 연결 상태
-
-     | 항목 | 상태 |
-     |------|------|
-     | MCP 서버 | ❌ 연결 실패 |
-
-     /lk-n8n-setup install 로 설치 가이드를 확인하세요.
-     ```
+Parse the subcommand from user input:
+- No args or `status` → **status** action
+- `install` → **install** action
 
 ---
 
-### install 동작
+### status action
 
-1. **n8n 접속 정보 입력**: AskUserQuestion 2개를 한 번에 질문합니다:
-   - "n8n API URL을 입력하세요 (예: http://localhost:5678):" — Header: "API URL"
-     - 옵션: "http://localhost:5678 (기본)", 직접 입력
-   - "n8n API Key를 입력하세요:" — Header: "API Key"
-     - 옵션: "나중에 설정", 직접 입력
+1. **Verify MCP connection**: call `mcp__n8n-mcp__n8n_health_check` with `mode: "diagnostic"`.
 
-2. **설치 범위 선택**: AskUserQuestion — "MCP 서버를 어디에 설정할까요?"
-   - Header: "설치 범위"
-   - 옵션:
-     - "글로벌 (권장)" — 설명: "~/.claude.json에 추가. 모든 프로젝트에서 사용 가능"
-     - "프로젝트" — 설명: "현재 프로젝트 .mcp.json에 추가. 팀원과 공유됨 (API Key 제외)"
+2. **Display result**:
+   - Success:
+     ```
+     n8n MCP connection status
 
-3. **설정 적용**:
+     | Field | Status |
+     |-------|--------|
+     | MCP server | Connected |
+     | n8n instance | {URL} |
+     | API version | {version} |
 
-   **글로벌 선택 시**: Bash로 다음 명령 실행:
+     n8n MCP is operating normally.
+     Try /n8n-workflow list to view workflows.
+     ```
+   - Failure:
+     ```
+     n8n MCP connection status
+
+     | Field | Status |
+     |-------|--------|
+     | MCP server | Connection failed |
+
+     Run /lk-n8n-setup install for the install guide.
+     ```
+
+---
+
+### install action
+
+1. **Enter n8n connection info**: ask two AskUserQuestion items at once:
+   - "Enter the n8n API URL (e.g., http://localhost:5678):" — Header: "API URL"
+     - Options: "http://localhost:5678 (default)", free input
+   - "Enter the n8n API Key:" — Header: "API Key"
+     - Options: "Set later", free input
+
+2. **Choose install scope**: AskUserQuestion — "Where should the MCP server be configured?"
+   - Header: "Install scope"
+   - Options:
+     - "Global (recommended)" — Description: "Adds to ~/.claude.json. Available across all projects"
+     - "Project" — Description: "Adds to the current project's .mcp.json. Shared with the team (excluding API Key)"
+
+3. **Apply settings**:
+
+   **For Global**: run via Bash:
    ```bash
-   claude mcp add n8n-mcp --scope user -e MCP_MODE=stdio -e N8N_API_URL={입력된URL} -e N8N_API_KEY={입력된KEY} -- npx n8n-mcp
+   claude mcp add n8n-mcp --scope user -e MCP_MODE=stdio -e N8N_API_URL={entered_URL} -e N8N_API_KEY={entered_KEY} -- npx n8n-mcp
    ```
 
-   **프로젝트 선택 시**: Bash로 다음 명령 실행:
+   **For Project**: run via Bash:
    ```bash
-   claude mcp add n8n-mcp --scope project -e MCP_MODE=stdio -e N8N_API_URL={입력된URL} -e N8N_API_KEY={입력된KEY} -- npx n8n-mcp
+   claude mcp add n8n-mcp --scope project -e MCP_MODE=stdio -e N8N_API_URL={entered_URL} -e N8N_API_KEY={entered_KEY} -- npx n8n-mcp
    ```
 
-   - API Key를 "나중에 설정"으로 선택한 경우: `-e N8N_API_KEY=` 부분을 생략하고, 안내 메시지에 수동 설정 방법 포함.
+   - When API Key is "Set later": omit `-e N8N_API_KEY=` and include manual setup instructions in the guidance.
 
-4. **결과 안내**:
+4. **Result summary**:
    ```
-   n8n MCP 서버 설정 완료
+   n8n MCP server setup complete
 
-   | 항목 | 값 |
-   |------|-----|
-   | 범위 | 글로벌 / 프로젝트 |
+   | Field | Value |
+   |-------|-------|
+   | Scope | Global / Project |
    | API URL | {URL} |
-   | API Key | 설정됨 / 미설정 |
+   | API Key | Set / Not set |
 
-   Claude Code를 재시작한 후 /lk-n8n-setup status 로 연결을 확인하세요.
+   Restart Claude Code, then run /lk-n8n-setup status to verify the connection.
 
-   API Key 발급: n8n 웹 UI → Settings → API → Create API Key
+   Issue API Key: n8n web UI → Settings → API → Create API Key
    ```

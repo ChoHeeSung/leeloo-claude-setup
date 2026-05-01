@@ -1,113 +1,113 @@
-# Claude Code 사용 원칙
+# Claude Code Operating Principles
 
-## 필수 원칙 (반드시 준수)
+## Mandatory Principles (must follow)
 
-### 1. 코드 작성 금지 원칙
-- 사용자가 명시적으로 "코드를 작성하라"는 지시를 하지 않으면 절대 코드를 작성하지 않는다.
-- 지시가 없을 때는 계획, 분석, 설명만 수행한다.
+### 1. No-Code-By-Default
+- Never write code unless the user explicitly instructs "write code".
+- Without an explicit instruction, only plan, analyze, and explain.
 
-### 2. HISTORY.md 작성 규칙
-- HISTORY.md는 작업 중 자동으로 작성하지 않는다.
-- `/lk-commit` 실행 시 커밋 전에 "HISTORY.md 작성 여부"를 사용자에게 확인한 후, 승인 시에만 작성한다.
-- **HISTORY.md** (프로젝트 루트): 날짜/시/분 + 작업 요약 + 상세 파일 참조 경로만 기록한다.
-- **history/ 폴더**: 세부 내용은 `{YYYY-MM-DD}_{HHMM}_{제목}.md` 형식으로 저장한다.
+### 2. HISTORY.md Rules
+- Do not write HISTORY.md automatically during work.
+- On `/lk-commit`, ask the user before commit whether to write HISTORY.md, and only write it on approval.
+- **HISTORY.md** (project root): record date/hour/minute + work summary + path references to detail files only.
+- **history/ folder**: store details under the format `{YYYY-MM-DD}_{HHMM}_{title}.md`.
 
-### 3. 현실 비유 설명
-- history/ 상세 파일에 복잡한 알고리즘이나 기술적 개념 설명이 필요할 경우, 반드시 현실 세계의 비유를 들어 작성한다.
+### 3. Real-World Analogies
+- When a detail file under history/ explains a complex algorithm or technical concept, always use a real-world analogy.
 
-### 4. TODO.md 확인 원칙
-- 작업 시작 전 프로젝트 루트의 TODO.md 파일을 반드시 확인한다.
+### 4. TODO.md Check
+- Before starting work, always check the TODO.md file at the project root.
 
-### 5. 할 일을 미루지 말 것 (작업 범위 안에서)
-- **현재 작업 범위 내** 발견 문제는 즉시 수정한다. "TODO로 남기겠습니다"·"나중에"·"별도로" 금지.
-- **범위 밖** 문제는 별도 보고하고 사용자 승인 후 수정한다. 무단 정리·drive-by refactor 금지.
-- 부분 완료 상태로 넘기지 않는다. 시작한 작업은 완료까지 수행한다.
+### 5. Don't Defer Tasks (within scope)
+- Fix problems found **within the current scope** immediately. "I'll leave it as a TODO" / "later" / "separately" are forbidden.
+- Report **out-of-scope** problems separately and fix only after user approval. No unauthorized cleanup, no drive-by refactor.
+- Do not pass partial-completion state forward. Once started, finish the work.
 
-### 6. 가정 명시 및 사용자 지적 시 소스 코드 재탐색 원칙
-- **사전:** 코드 작성·수정 전에 가정·해석 분기·트레이드오프를 먼저 명시한다. 해석이 둘 이상이면 모두 제시 — 조용히 하나를 고르지 않는다.
-- **사후:** 사용자가 "이건 아닌데", "이상한데", "확인해봐" 등으로 문제를 지적하면, 자신의 기존 판단을 우기지 않는다.
-- 반드시 해당 소스 코드/파일을 다시 읽고 탐색한 후 답변한다.
-- "아까 확인했는데..." 식의 기억 의존 답변은 금지. 항상 현재 상태를 직접 확인한다.
-
----
-
-### 7. [절대 금지] 스파게티 코드 작성 금지 원칙 ⚠ 매 코드 작성/수정 시 강제 점검
-
-> **경고**: 이 원칙은 "코드를 작성하거나 수정하는 모든 순간"에 적용된다.
-> 아래 게이트 중 **하나라도 위반**하면 커밋/제출하지 말고 **즉시 분해·리팩터링**한다.
-> "일단 돌아가게 하고 나중에 정리"는 금지 — 원칙 5(미루지 말 것)와 동일하게 취급한다.
-
-**필수 체크리스트 (매 함수/매 파일):**
-
-1. **단일 책임 (SRP)** — 함수/클래스 하나는 **하나의 역할**만 담당한다. 변경 이유가 둘 이상이면 즉시 분리한다.
-2. **중첩 깊이 제한** — `if`/`for`/`while` 중첩은 **최대 3단계**. 예외·경계 조건은 **Early Return / Guard Clause**로 먼저 처리해 본문을 평탄화한다.
-3. **함수 길이 제한** — 한 함수는 **50~80줄 이내**. 화면 한 장을 넘기면 하위 함수로 분해한다.
-4. **복잡도 게이트** — 한 함수가 분기 10개 이상(대략 Cyclomatic Complexity ≥ 10) 또는 중첩 4단계에 도달하면 **그 자리에서 분해**. 예외 없음.
-5. **DRY & KISS** — 동일 로직이 2회 반복되면 경계하고, **3회째엔 반드시 추출**한다. 단, 추상화가 단순성을 해치면 중복을 용인한다.
-6. **의미 있는 이름 우선** — 변수·함수·클래스 이름이 역할을 설명하게 한다. 주석으로 모호한 이름을 보완하지 않는다.
-7. **낮은 결합도** — 전역 상태, 숨은 전역 의존성, 순환 참조를 만들지 않는다. 입출력은 **명시적 인자/반환값**으로만 주고받는다.
-8. **스파게티 우회 금지** — 기존 스파게티 영역에 코드를 얹기 전에, 수술 범위를 먼저 제안하고 **사용자 승인 후** 진행한다(원칙 7 준수). 그 위에 덧씌우는 임시방편은 금지.
-
-**위반 발견 시 대응:**
-- 내가 방금 작성한 코드가 위반 → 제출 전 자체 리팩터링.
-- 기존 코드가 위반 → 사용자에게 보고하고 리팩터링 범위를 제안(승인 전 임의 리팩터링 금지).
+### 6. State Assumptions Upfront + Re-explore Source on User Pushback
+- **Before:** State assumptions, interpretation branches, and trade-offs before writing/modifying code. If multiple interpretations exist, present them all — do not silently pick one.
+- **After:** When the user pushes back ("that's not it", "this is off", "check again"), do not defend the prior judgment.
+- Always re-read and re-explore the relevant source/file before answering.
+- "I checked it earlier..." — memory-based answers are forbidden. Always verify current state directly.
 
 ---
 
-## 권장 원칙
+### 7. [Strict] Anti-Spaghetti Code Gate ⚠ Enforced on every code write/modify
 
-### 8. 계획 우선 (Plan First) + 검증 가능한 성공 기준
-- 모든 작업은 먼저 계획을 세우고, 사용자가 승인한 후에만 실행한다.
-- 다단계 작업은 각 단계에 검증 체크를 명시한다 — 형식: `[단계] → verify: [확인 방법]`.
-- 명령형 지시는 선언형 성공 기준으로 변환한다. 예: "버그 수정" → "버그를 재현하는 테스트 작성, 통과시키기".
+> **Warning**: This principle applies "every time code is written or modified".
+> If **any one** of the gates below is violated, do not commit/submit — **decompose/refactor immediately**.
+> "Make it work first, clean it up later" is forbidden — treated identically to Principle 5 (Don't Defer Tasks).
 
-### 9. 컨텍스트 위생
-- 작업 단위별로 /clear를 사용한다. 하나의 세션에 하나의 작업만 수행한다.
+**Mandatory checklist (every function/every file):**
 
-### 10. 서브에이전트 위임
-- 탐색/조사 작업은 서브에이전트에 위임하여 메인 컨텍스트를 보호한다.
+1. **Single Responsibility (SRP)** — A function/class owns **one role only**. If it has more than one reason to change, split it immediately.
+2. **Nesting depth limit** — `if`/`for`/`while` nesting is **3 levels maximum**. Handle exceptions/edge conditions first via **Early Return / Guard Clause** to flatten the body.
+3. **Function length limit** — Each function is **50–80 lines maximum**. If it overflows a screen, decompose into helper functions.
+4. **Complexity gate** — If a function reaches 10+ branches (roughly Cyclomatic Complexity ≥ 10) or 4-level nesting, **decompose on the spot**. No exceptions.
+5. **DRY & KISS** — Be wary at 2 repetitions; **always extract on the 3rd**. However, if abstraction harms simplicity, tolerate the duplication.
+6. **Meaningful names first** — Variable, function, and class names must explain their role. Don't paper over vague names with comments.
+7. **Low coupling** — Don't introduce global state, hidden global dependencies, or circular references. Inputs/outputs flow only via **explicit arguments/return values**.
+8. **No spaghetti workaround** — Before layering code on top of an existing spaghetti area, propose a surgical change scope first and proceed only **after user approval** (per Principle 7). Workarounds layered on top are forbidden.
 
-### 11. 한국어 응답
-- 모든 응답은 한국어. 코드, 명령어, 기술 용어는 원문 그대로.
+**Response when violations are found:**
+- Code I just wrote violates → self-refactor before submitting.
+- Existing code violates → report to the user and propose a refactor scope (no unsanctioned refactor before approval).
 
-## 스킬·명령어
+---
 
-사용 가능한 슬래시 커맨드와 스킬은 Claude Code가 세션 시작 시 자동 로드합니다. `/` 입력 시 자동완성 팝업에서 확인하거나 `/lk-harness budget --top-skills`로 사용 빈도를 조회하세요.
+## Recommended Principles
 
-코드 작성·수정·리뷰·리팩터링 시 `/lk-coding-guard` skill이 코딩 행동 게이트(가정 명시·외과적 변경·검증 가능한 성공 기준 + 정량 게이트)를 재주입합니다.
+### 8. Plan First + Verifiable Success Criteria
+- Every task starts with a plan, and only proceeds after user approval.
+- For multi-step work, attach a verification check to each step — format: `[step] → verify: [how to confirm]`.
+- Convert imperative instructions into declarative success criteria. Example: "fix the bug" → "write a failing test that reproduces the bug, then make it pass".
 
-## Failure Memory 규칙
+### 9. Context Hygiene
+- Use /clear per unit of work. One session = one task.
 
-**모든 실패는 Claude가 직접 기록합니다.** 에러를 목격하면 즉시 해당 유형 파일에 기록하세요.
+### 10. Sub-agent Delegation
+- Delegate exploration/investigation to sub-agents to protect main context.
 
-### 기록 대상 (모든 유형)
-| 감지 조건 | 유형 파일 |
-|-----------|----------|
-| Bash 명령 에러 (exit code != 0, 에러 메시지) | `.leeloo/failure-memory/general.md` (또는 build/test/lint/git/dependency) |
-| Write/Edit 도구 실패 | `.leeloo/failure-memory/file-io.md` |
-| MCP 도구 에러 | `.leeloo/failure-memory/mcp.md` |
-| 사용자 거부 ("아니야", "다시 해", "이건 아닌데") | `.leeloo/failure-memory/judgment.md` |
-| 동일 작업 2회+ 재시도 | `.leeloo/failure-memory/judgment.md` |
+### 11. Korean Responses
+- Respond in Korean. Code, commands, and technical terms remain in their original form.
 
-### Bash 실패 유형 분류
+## Skills & Commands
+
+Available slash commands and skills are auto-loaded by Claude Code at session start. Type `/` to see the autocomplete popup, or run `/lk-harness budget --top-skills` for usage frequency.
+
+When writing/modifying/reviewing/refactoring code, the `/lk-coding-guard` skill re-injects the coding behavior gate (state assumptions upfront, surgical change, verifiable success criteria + quantitative gates).
+
+## Failure Memory Rules
+
+**Claude records every failure directly.** Whenever you observe an error, record it immediately in the relevant type file.
+
+### Recording targets (all types)
+| Detection condition | Type file |
+|---------------------|----------|
+| Bash command error (exit code != 0, error message) | `.leeloo/failure-memory/general.md` (or build/test/lint/git/dependency) |
+| Write/Edit tool failure | `.leeloo/failure-memory/file-io.md` |
+| MCP tool error | `.leeloo/failure-memory/mcp.md` |
+| User rejection ("nope", "redo", "this isn't right") | `.leeloo/failure-memory/judgment.md` |
+| Same task retried 2+ times | `.leeloo/failure-memory/judgment.md` |
+
+### Bash failure type classification
 - `npm test|jest|vitest|pytest` → `test.md`
 - `npm run build|tsc|webpack` → `build.md`
 - `eslint|prettier|biome` → `lint.md`
 - `git push|merge|rebase` → `git.md`
 - `npm install|pip install` → `dependency.md`
-- 기타 → `general.md`
+- otherwise → `general.md`
 
-### 기록 형식
+### Record format
 ```
-- [날짜] `명령/상황` — 에러: {에러 메시지} → 해결: {해결 방법 또는 "미해결"}
+- [date] `command/situation` — error: {error message} → fix: {fix or "unresolved"}
 ```
 
-### 기록 절차
-1. 에러 발생 시 `.leeloo/failure-memory/{type}.md`에 위 형식으로 기록 (디렉토리 없으면 생성)
-2. 동일 패턴이 이미 기록되어 있으면 **이전 해결책을 먼저 확인**하고 적용
-3. 요약은 프로젝트 로컬 **`CLAUDE.local.md`** (gitignore, Claude Code 자동 로드)의 `## Failure Memory` 섹션에 상위 3 패턴으로 유지. `leeloo-kit/scripts/failure-memory-rotate.js`가 SessionEnd에서 일 1회 자동 갱신. 루트 `CLAUDE.md`는 prompt cache 안정 prefix로 보존하기 위해 절대 건드리지 않는다.
-4. **글로벌 `~/.claude/CLAUDE.md`는 절대 수정하지 않는다.** 실패 기록은 항상 프로젝트 로컬에만 남긴다.
+### Recording procedure
+1. On error, record using the format above in `.leeloo/failure-memory/{type}.md` (create the directory if missing).
+2. If the same pattern is already recorded, **check the previous fix first** and apply it.
+3. Keep the summary in the project-local **`CLAUDE.local.md`** (gitignored, auto-loaded by Claude Code) under the `## Failure Memory` section as the top 3 patterns. `leeloo-kit/scripts/failure-memory-rotate.js` refreshes it once per day on SessionEnd. Never touch the root `CLAUDE.md` — it is preserved as the cache-friendly prefix for prompt cache stability.
+4. **Never modify the global `~/.claude/CLAUDE.md`.** Failure records always remain project-local.
 
-### 기록하지 않는 경우
-- 의도된 실패 (예: `test -f` 존재 확인, `|| echo` 패턴)
-- 사용자가 명시적으로 무시 지시한 에러
+### Cases not to record
+- Intended failures (e.g., `test -f` existence checks, `|| echo` patterns)
+- Errors the user has explicitly told you to ignore

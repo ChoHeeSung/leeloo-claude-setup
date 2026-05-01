@@ -1,52 +1,56 @@
 ---
 name: lk-agent
-description: "Sub Agent 생성·조회·삭제"
+description: |
+  Sub Agent 생성·조회·삭제 — 7개 프리셋 기반 인터랙티브 관리.
+  서브에이전트, 에이전트 생성, 에이전트 만들기, 에이전트 목록, 에이전트 삭제, 프리셋, sub agent, subagent, agent create, agent preset
 user_invocable: true
 argument-hint: "[create|list|show|delete] [--preset <name>]"
 ---
 
-# /lk-agent — Sub Agent 생성 및 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-`.claude/agents/*.md` 파일을 대화형으로 생성하고 관리합니다. 프리셋 7종을 내장하여 빠른 시작을 지원합니다.
+# /lk-agent — Sub Agent Creation and Management
 
-## 서브커맨드
+Interactively create and manage `.claude/agents/*.md` files. Ships with 7 built-in presets for a fast start.
+
+## Subcommands
 
 ```
-/lk-agent                         — 대화형으로 에이전트 생성 (기본 동작 = create)
-/lk-agent create                  — 대화형으로 에이전트 생성
-/lk-agent create --preset <name>  — 프리셋 기반 빠른 생성
-/lk-agent list                    — .claude/agents/ 내 에이전트 목록
-/lk-agent show <name>             — 에이전트 상세 정보
-/lk-agent delete <name>           — 에이전트 삭제
+/lk-agent                         — interactive agent creation (default = create)
+/lk-agent create                  — interactive agent creation
+/lk-agent create --preset <name>  — preset-based fast creation
+/lk-agent list                    — list agents under .claude/agents/
+/lk-agent show <name>             — show agent details
+/lk-agent delete <name>           — delete an agent
 ```
 
-## 프리셋 7종
+## 7 Presets
 
-| 프리셋 | 용도 | tools | model | permissionMode |
-|--------|------|-------|-------|----------------|
-| `code-reviewer` | 코드 리뷰 | Read, Grep, Glob | sonnet | plan |
-| `debugger` | 버그 추적/수정 | Read, Edit, Grep, Glob, Bash | sonnet | default |
-| `tester` | 테스트 작성 | Read, Write, Edit, Bash, Grep, Glob | sonnet | acceptEdits |
-| `researcher` | 코드베이스 탐색 | Read, Grep, Glob, Bash | haiku | plan |
-| `docs-writer` | 문서 작성 | Read, Write, Edit, Grep, Glob | sonnet | acceptEdits |
-| `plan-reviewer` | Plan 검증 전문 | Read, Grep, Glob | sonnet | plan |
-| `refactoring-guide` | 리팩토링 가이드 | Read, Grep, Glob, Bash | sonnet | plan |
+| Preset | Purpose | tools | model | permissionMode |
+|--------|---------|-------|-------|----------------|
+| `code-reviewer` | code review | Read, Grep, Glob | sonnet | plan |
+| `debugger` | bug tracing/fixing | Read, Edit, Grep, Glob, Bash | sonnet | default |
+| `tester` | writing tests | Read, Write, Edit, Bash, Grep, Glob | sonnet | acceptEdits |
+| `researcher` | codebase exploration | Read, Grep, Glob, Bash | haiku | plan |
+| `docs-writer` | documentation | Read, Write, Edit, Grep, Glob | sonnet | acceptEdits |
+| `plan-reviewer` | Plan validation specialist | Read, Grep, Glob | sonnet | plan |
+| `refactoring-guide` | refactoring guidance | Read, Grep, Glob, Bash | sonnet | plan |
 
-## 에이전트 frontmatter 필드 설명
+## Agent Frontmatter Fields
 
-| 필드 | 설명 | 예시 |
-|------|------|------|
-| `name` | 에이전트 고유 이름 (kebab-case) | `code-reviewer` |
-| `description` | 역할 설명 (한 줄, 한국어) | `코드를 리뷰합니다.` |
-| `tools` | 허용된 도구 목록 | `["Read", "Grep"]` |
-| `model` | 사용 모델 | `opus`, `sonnet`, `haiku` |
-| `permissionMode` | 권한 모드 | `plan`, `acceptEdits`, `default` |
-| `maxTurns` | 최대 대화 턴 수 | `15` |
-| `effort` | 작업 강도 힌트 | `low`, `medium`, `high` |
-| `disallowedTools` | 금지 도구 목록 | `["Bash", "Write"]` |
-| `context` | 에이전트에게 전달할 추가 컨텍스트 | `"프로젝트 루트: /app"` |
+| Field | Description | Example |
+|-------|-------------|---------|
+| `name` | Unique agent name (kebab-case) | `code-reviewer` |
+| `description` | Role description (one line, Korean) | `코드를 리뷰합니다.` |
+| `tools` | Allowed tool list | `["Read", "Grep"]` |
+| `model` | Model to use | `opus`, `sonnet`, `haiku` |
+| `permissionMode` | Permission mode | `plan`, `acceptEdits`, `default` |
+| `maxTurns` | Max conversation turns | `15` |
+| `effort` | Effort hint | `low`, `medium`, `high` |
+| `disallowedTools` | Forbidden tool list | `["Bash", "Write"]` |
+| `context` | Extra context for the agent | `"프로젝트 루트: /app"` |
 
-## 프리셋 상세 — 생성되는 파일 내용
+## Preset Details — Generated File Contents
 
 ### code-reviewer
 
@@ -269,56 +273,56 @@ maxTurns: 20
 
 ## Procedure
 
-### 인자 파싱
+### Argument Parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `create` → **create** 동작
-- `create --preset <name>` → **preset create** 동작
-- `list` → **list** 동작
-- `show <name>` → **show** 동작
-- `delete <name>` → **delete** 동작
+Parse the subcommand from user input:
+- No argument or `create` → **create** action
+- `create --preset <name>` → **preset create** action
+- `list` → **list** action
+- `show <name>` → **show** action
+- `delete <name>` → **delete** action
 
 ---
 
-### create 동작 (대화형)
+### create action (interactive)
 
-1. **역할 질문**: AskUserQuestion — "어떤 역할의 에이전트를 만들까요? (예: API 테스트 전문가, 성능 최적화 담당 등)" (자유 입력)
+1. **Role question**: AskUserQuestion — "어떤 역할의 에이전트를 만들까요? (예: API 테스트 전문가, 성능 최적화 담당 등)" (free input)
 
-2. **자동 추론**: 사용자의 답변에서 다음을 추론합니다:
-   - `name`: 역할을 나타내는 kebab-case 이름 (예: `api-tester`)
-   - `description`: 한 줄 설명 (한국어)
-   - `tools`: 역할에 필요한 최소한의 도구만 선택
-     - 읽기 전용 작업 → `["Read", "Grep", "Glob"]`
-     - 코드 수정 필요 → `+ "Edit"`
-     - 새 파일 생성 필요 → `+ "Write"`
-     - 명령어 실행 필요 → `+ "Bash"`
-   - `model`: 역할 복잡도에 따라 선택
-     - 아키텍처 설계, 종합 분석, 고난이도 추론 → `opus`
-     - 일반 구현, 코드 리뷰, 문서 작성 → `sonnet`
-     - 단순 탐색, 검색, 테스트 실행 → `haiku`
-   - `permissionMode`: 작업 특성에 따라 선택
-     - 읽기 전용, 분석만 → `plan`
-     - 코드 수정 필요 → `acceptEdits`
-     - 명령어 실행 포함 → `default`
-   - `maxTurns`: 작업 복잡도에 따라 10~30
-   - 시스템 프롬프트 초안: 역할, 작업 절차, 출력 형식 포함
+2. **Auto-inference**: Infer the following from the user's answer:
+   - `name`: kebab-case name expressing the role (e.g., `api-tester`)
+   - `description`: one-line description (Korean)
+   - `tools`: minimal toolset required for the role
+     - read-only work → `["Read", "Grep", "Glob"]`
+     - code modification needed → `+ "Edit"`
+     - new file creation needed → `+ "Write"`
+     - command execution needed → `+ "Bash"`
+   - `model`: pick by complexity
+     - architecture, comprehensive analysis, hard reasoning → `opus`
+     - general implementation, code review, documentation → `sonnet`
+     - simple exploration, search, test execution → `haiku`
+   - `permissionMode`: pick by task type
+     - read-only, analysis only → `plan`
+     - code modification needed → `acceptEdits`
+     - command execution included → `default`
+   - `maxTurns`: 10–30 by complexity
+   - System prompt draft: include role, work procedure, output format
 
-3. **프리뷰 확인**: AskUserQuestion으로 생성될 파일 전체 내용을 프리뷰로 보여줍니다.
+3. **Preview confirmation**: Show the full file content as a preview via AskUserQuestion.
    ```
    .claude/agents/{name}.md 프리뷰:
 
-   {파일 전체 내용}
+   {full file content}
 
    이대로 생성할까요? (생성/수정)
    ```
-   - "수정" 선택 시 → 수정 사항을 반영하여 다시 프리뷰
-   - "생성" 선택 시 → 다음 단계로 진행
+   - "수정" → revise per feedback and re-preview
+   - "생성" → proceed to next step
 
-4. **디렉토리 확인**: Bash로 `.claude/agents/` 디렉토리 존재 확인. 없으면 `mkdir -p .claude/agents/` 실행.
+4. **Directory check**: Use Bash to verify the `.claude/agents/` directory exists. If missing, run `mkdir -p .claude/agents/`.
 
-5. **파일 생성**: Write 도구로 `.claude/agents/{name}.md` 생성.
+5. **File creation**: Create `.claude/agents/{name}.md` via the Write tool.
 
-6. **결과 출력**:
+6. **Result output**:
    ```
    에이전트 생성 완료
 
@@ -332,29 +336,29 @@ maxTurns: 20
 
 ---
 
-### preset create 동작
+### preset create action
 
-1. **프리셋 검증**: 요청된 프리셋 이름이 7종(`code-reviewer`, `debugger`, `tester`, `researcher`, `docs-writer`, `plan-reviewer`, `refactoring-guide`) 중 하나인지 확인. 아니면 에러 + 사용 가능한 프리셋 목록 표시.
+1. **Preset validation**: Verify the requested preset is one of the 7 (`code-reviewer`, `debugger`, `tester`, `researcher`, `docs-writer`, `plan-reviewer`, `refactoring-guide`). Otherwise, error and show available presets.
 
-2. **프리뷰 표시**: 해당 프리셋의 전체 파일 내용을 프리뷰로 표시합니다.
+2. **Preview**: Show the full preset file content as a preview.
 
-3. **확인**: AskUserQuestion — "이대로 생성할까요? (생성/수정)"
-   - "수정" 선택 시 → 수정 사항을 반영하여 다시 프리뷰
-   - "생성" 선택 시 → 다음 단계로 진행
+3. **Confirmation**: AskUserQuestion — "이대로 생성할까요? (생성/수정)"
+   - "수정" → revise per feedback and re-preview
+   - "생성" → proceed to next step
 
-4. **디렉토리 확인**: Bash로 `.claude/agents/` 디렉토리 존재 확인. 없으면 `mkdir -p .claude/agents/` 실행.
+4. **Directory check**: Use Bash to verify `.claude/agents/`. If missing, run `mkdir -p .claude/agents/`.
 
-5. **파일 생성**: Write 도구로 `.claude/agents/{preset-name}.md` 생성.
+5. **File creation**: Create `.claude/agents/{preset-name}.md` via the Write tool.
 
-6. **결과 출력**: create 동작과 동일한 형식.
+6. **Result output**: Same format as the create action.
 
 ---
 
-### list 동작
+### list action
 
-1. Glob 도구로 `.claude/agents/*.md` 파일 목록을 검색합니다.
-2. 파일이 없으면 "에이전트가 없습니다. `/lk-agent create`로 생성하세요." 안내.
-3. 각 파일에서 frontmatter를 읽어 테이블로 표시합니다:
+1. Use Glob to find `.claude/agents/*.md`.
+2. If empty, show "에이전트가 없습니다. `/lk-agent create`로 생성하세요."
+3. Read each file's frontmatter and display as a table:
 
 ```
 등록된 에이전트 목록
@@ -367,19 +371,19 @@ maxTurns: 20
 
 ---
 
-### show 동작
+### show action
 
-1. `.claude/agents/{name}.md` 파일이 존재하는지 확인합니다.
-2. 없으면 에러 + 유사한 이름의 에이전트 제안 (Glob으로 검색).
-3. 있으면 Read 도구로 파일 전체 내용을 읽어 표시합니다.
+1. Verify `.claude/agents/{name}.md` exists.
+2. If missing, error and suggest similar names (search via Glob).
+3. If found, read full content via the Read tool and display.
 
 ---
 
-### delete 동작
+### delete action
 
-1. `.claude/agents/{name}.md` 파일이 존재하는지 확인합니다.
-2. 없으면 에러 + 사용 가능한 에이전트 목록 표시.
+1. Verify `.claude/agents/{name}.md` exists.
+2. If missing, error and show available agents.
 3. AskUserQuestion — "`{name}` 에이전트를 삭제하시겠습니까? (예/아니오)"
-4. "예" 선택 시 → Bash로 `rm .claude/agents/{name}.md` 실행.
-5. 디렉토리가 비어있으면 빈 상태로 유지 (삭제하지 않음).
-6. 결과: "`{name}` 에이전트가 삭제되었습니다."
+4. On "예" → run `rm .claude/agents/{name}.md` via Bash.
+5. Leave the directory empty (do not delete the directory itself).
+6. Result: "`{name}` 에이전트가 삭제되었습니다."

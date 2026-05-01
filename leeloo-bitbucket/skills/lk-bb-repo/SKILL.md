@@ -1,145 +1,149 @@
 ---
 name: lk-bb-repo
-description: "Bitbucket 저장소 관리(목록/조회/생성/삭제)"
+description: |
+  Bitbucket Cloud 워크스페이스 저장소 관리 — 목록·조회·생성·삭제.
+  레포지토리, 저장소, 레포 생성, 레포 삭제, 워크스페이스, 비트버킷, repository, repo, workspace, bitbucket
 user_invocable: true
 argument-hint: "[list|get|create|delete] [repo_slug]"
 ---
 
-# /lk-bb-repo — 저장소 관리
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-Bitbucket Cloud 워크스페이스의 저장소를 관리합니다.
+# /lk-bb-repo — Repository Management
 
-## 서브커맨드
+Manage repositories in a Bitbucket Cloud workspace.
+
+## Subcommands
 
 ```
-/lk-bb-repo list                — 저장소 목록 (전체, 병렬 페이지네이션)
-/lk-bb-repo list <keyword>     — 저장소 검색 (이름 필터)
-/lk-bb-repo get <repo_slug>    — 저장소 상세 정보
-/lk-bb-repo create <repo_slug> — 저장소 생성
-/lk-bb-repo delete <repo_slug> — 저장소 삭제 (확인 필요)
+/lk-bb-repo list                — Repository list (all, with parallel pagination)
+/lk-bb-repo list <keyword>     — Repository search (filter by name)
+/lk-bb-repo get <repo_slug>    — Repository detail
+/lk-bb-repo create <repo_slug> — Create repository
+/lk-bb-repo delete <repo_slug> — Delete repository (confirmation required)
 ```
 
 ## Procedure
 
-### 사전 체크
+### Pre-check
 
-Read 도구로 `~/.claude/leeloo-bitbucket.local.md` 읽기.
-- 파일이 없거나 토큰이 비어있으면: "Bitbucket 연결이 설정되지 않았습니다. `/lk-bb-setup install`로 초기 설정을 진행하세요." 안내 후 중단.
-- YAML frontmatter에서 `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace`를 파싱.
-- 이후 curl 호출 시 `-u "{이메일}:{토큰}"` 형식으로 사용.
-- `bb-fetch-all.sh` 호출 시 환경변수로 전달: `BITBUCKET_USER_EMAIL="{이메일}" BITBUCKET_API_TOKEN="{토큰}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
+Use the Read tool to load `~/.claude/leeloo-bitbucket.local.md`.
+- If the file is missing or the token is empty, instruct: "Bitbucket connection is not configured. Run `/lk-bb-setup install` for initial setup." Then stop.
+- Parse `bitbucket_user_email`, `bitbucket_api_token`, `bitbucket_workspace` from the YAML frontmatter.
+- Use `-u "{email}:{token}"` for subsequent curl calls.
+- For `bb-fetch-all.sh` calls, pass via env vars: `BITBUCKET_USER_EMAIL="{email}" BITBUCKET_API_TOKEN="{token}" "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" ...`
 
-### 인자 파싱
+### Argument parsing
 
-사용자 입력에서 서브커맨드를 파싱합니다:
-- 인자 없음 또는 `list` → **list** 동작
-- `list <keyword>` → **list** 동작 (키워드 필터)
-- `get <repo_slug>` → **get** 동작
-- `create <repo_slug>` → **create** 동작
-- `delete <repo_slug>` → **delete** 동작
+Parse the subcommand from user input:
+- No args or `list` → **list** action
+- `list <keyword>` → **list** action (with keyword filter)
+- `get <repo_slug>` → **get** action
+- `create <repo_slug>` → **create** action
+- `delete <repo_slug>` → **delete** action
 
 ---
 
-### list 동작
+### list action
 
-저장소가 많으므로 `bb-fetch-all.sh` 스크립트로 병렬 페이지네이션 처리합니다.
+Repositories may be numerous, so use `bb-fetch-all.sh` for parallel pagination.
 
-Bash로 실행:
+Run via Bash:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/bb-fetch-all.sh" "/repositories/$BITBUCKET_WORKSPACE" \
   --jq-filter '{name: .name, slug: .slug, project: .project.key, updated: .updated_on, is_private: .is_private}'
 ```
 
-키워드가 있으면 결과 JSON에서 name/slug에 키워드가 포함된 항목만 필터링합니다.
+If a keyword is given, filter the result JSON to entries whose name/slug contain it.
 
-결과를 테이블로 표시:
+Display the result as a table:
 
 ```
-Bitbucket 저장소 목록 ({워크스페이스}) — 총 {N}개
+Bitbucket repository list ({workspace}) — total {N}
 
-| # | 프로젝트 | 저장소 | 슬러그 | 공개 | 최종 업데이트 |
-|---|---------|--------|--------|------|-------------|
-| 1 | PROJ | My Repo | my-repo | ✅/🔒 | 2026-03-20 |
+| # | Project | Repository | Slug | Public | Last updated |
+|---|---------|------------|------|--------|--------------|
+| 1 | PROJ | My Repo | my-repo | public/private | 2026-03-20 |
 | ... | | | | | |
 ```
 
 ---
 
-### get 동작
+### get action
 
-Bash로 실행:
+Run via Bash:
 ```bash
 curl -s -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}" | jq '{name: .name, slug: .slug, project: .project.key, description: .description, language: .language, is_private: .is_private, created: .created_on, updated: .updated_on, size: .size, mainbranch: .mainbranch.name, clone_ssh: (.links.clone[] | select(.name=="ssh") | .href), clone_https: (.links.clone[] | select(.name=="https") | .href)}'
 ```
 
-결과 표시:
+Display the result:
 ```
-저장소 상세: {repo_slug}
+Repository detail: {repo_slug}
 
-| 항목 | 값 |
-|------|-----|
-| 이름 | {name} |
-| 프로젝트 | {project} |
-| 설명 | {description} |
-| 언어 | {language} |
-| 메인 브랜치 | {mainbranch} |
-| 공개 여부 | ✅ 공개 / 🔒 비공개 |
-| 생성일 | {created} |
-| 최종 업데이트 | {updated} |
+| Field | Value |
+|-------|-------|
+| Name | {name} |
+| Project | {project} |
+| Description | {description} |
+| Language | {language} |
+| Main branch | {mainbranch} |
+| Visibility | public / private |
+| Created | {created} |
+| Last updated | {updated} |
 | Clone (SSH) | {ssh_url} |
 | Clone (HTTPS) | {https_url} |
 ```
 
 ---
 
-### create 동작
+### create action
 
 1. AskUserQuestion:
-   - Header: "저장소 생성"
-   - Question: "저장소를 생성합니다. 다음 정보를 확인하세요."
+   - Header: "Create repository"
+   - Question: "Creating a repository. Confirm the following."
    - Options:
-     - "비공개 (기본)" — is_private: true
-     - "공개" — is_private: false
+     - "Private (default)" — is_private: true
+     - "Public" — is_private: false
 
 2. AskUserQuestion:
-   - Header: "프로젝트"
-   - Question: "어떤 프로젝트에 생성할까요? (프로젝트 key 입력, 예: PROJ)"
-   - Options: 직접 입력, "기본 프로젝트"
+   - Header: "Project"
+   - Question: "Which project should it belong to? (enter project key, e.g., PROJ)"
+   - Options: free input, "Default project"
 
-3. Bash로 실행:
+3. Run via Bash:
    ```bash
    curl -s -X POST -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" -H "Content-Type: application/json" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}" \
-     -d '{"scm": "git", "is_private": {true/false}, "project": {"key": "{프로젝트key}"}}'
+     -d '{"scm": "git", "is_private": {true/false}, "project": {"key": "{project_key}"}}'
    ```
 
-4. 결과 표시:
+4. Display the result:
    ```
-   저장소 생성 완료: {repo_slug}
+   Repository created: {repo_slug}
 
-   | 항목 | 값 |
-   |------|-----|
-   | 슬러그 | {repo_slug} |
-   | 프로젝트 | {project_key} |
-   | 공개 여부 | 비공개/공개 |
+   | Field | Value |
+   |-------|-------|
+   | Slug | {repo_slug} |
+   | Project | {project_key} |
+   | Visibility | private/public |
    | Clone | git clone {ssh_url} |
    ```
 
 ---
 
-### delete 동작
+### delete action
 
 1. AskUserQuestion:
-   - Header: "⚠️ 저장소 삭제"
-   - Question: "`{repo_slug}` 저장소를 삭제합니다. 이 작업은 되돌릴 수 없습니다. 계속할까요?"
-   - Options: "삭제", "취소"
-   - "취소" 선택 시 중단.
+   - Header: "Delete repository"
+   - Question: "Delete repository `{repo_slug}`. This cannot be undone. Continue?"
+   - Options: "Delete", "Cancel"
+   - If "Cancel" is selected, stop.
 
-2. Bash로 실행:
+2. Run via Bash:
    ```bash
    curl -s -w "\nHTTP_STATUS:%{http_code}" -X DELETE -u "$BITBUCKET_USER_EMAIL:$BITBUCKET_API_TOKEN" \
      "https://api.bitbucket.org/2.0/repositories/$BITBUCKET_WORKSPACE/{repo_slug}"
    ```
 
-3. HTTP 204 → "저장소 `{repo_slug}` 삭제 완료."
-   기타 → 에러 메시지 표시.
+3. HTTP 204 → "Repository `{repo_slug}` deleted."
+   Other → display the error message.

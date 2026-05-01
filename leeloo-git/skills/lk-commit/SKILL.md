@@ -1,12 +1,15 @@
 ---
 name: lk-commit
-description: "회사 스타일 커밋 메시지 생성 + 커밋/푸시"
+description: |
+  회사 스타일 Conventional Commits 메시지 자동 생성 후 커밋·푸시.
+  커밋, 커밋해, 커밋 메시지, 푸시, 깃 커밋, conventional commits, commit, git commit, push
 user_invocable: true
 argument-hint: "[--push] [commit message]"
 ---
 
-git diff를 분석해 Conventional Commits + 한국어 스타일 커밋 메시지를 자동 생성하고 커밋합니다.
-TODO.md가 있으면 커밋 전후로 진행 상황을 연동합니다.
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
+
+Analyze the git diff to auto-generate a Conventional Commits + Korean-style commit message and commit. If TODO.md exists, sync progress before/after the commit.
 
 ## Usage
 
@@ -27,11 +30,11 @@ Extract from arguments:
 - `--push` → push after commit
 - Remaining text → user-provided commit message (optional)
 
-### 2. TODO.md 확인 (커밋 전)
+### 2. TODO.md check (pre-commit)
 
-Read 도구로 프로젝트 루트의 `TODO.md` 읽기 (없으면 이 단계 건너뜀).
+Read the project root's `TODO.md` via the Read tool (skip this step if absent).
 
-TODO.md가 있으면 현재 🔨 진행중 항목을 표시:
+If TODO.md exists, display current 🔨 in-progress items:
 ```
 현재 진행 중인 TODO 항목:
 - #2: 진행 중 태스크명
@@ -56,63 +59,63 @@ If no changes (no output), output:
 
 ### 4. Generate commit message (Haiku Task)
 
-**유저가 메시지를 직접 제공한 경우 이 단계를 건너뛴다.**
+**Skip this step if the user provided a message directly.**
 
-Haiku 서브 에이전트에게 diff 분석 + 커밋 메시지 생성을 위임한다.
+Delegate diff analysis + commit message generation to a Haiku sub-agent.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `haiku`
-- `prompt`: 아래 템플릿에 git 명령 결과를 삽입
+- `prompt`: insert git command output into the template below
 
 ```
-아래 git 변경사항을 분석하고 커밋 메시지를 생성하라.
+Analyze the git changes below and generate a commit message.
 
-## 커밋 메시지 표준 (commit-messages-guide 기반)
+## Commit Message Standard (based on commit-messages-guide)
 
-### 구조
-커밋 메시지는 3부분으로 구성한다:
+### Structure
+A commit message has 3 parts:
 
-<type>: <제목> — <핵심 요약>
-                                        ← 빈 줄 (필수)
-<본문>
-                                        ← 빈 줄
+<type>: <subject> — <core summary>
+                                        ← blank line (required)
+<body>
+                                        ← blank line
 <footer>
 
-- **제목 (subject)**: 50자 이내. 변경사항의 영향을 간결하게 설명
-- **본문 (body)**: 한 줄 72자 이내. '왜' 변경했는지, '무엇이' 바뀌었는지, '부수 효과'는 무엇인지 설명
-- **footer**: 관련 이슈 번호 (선택사항, 예: Refs: #123, Closes: #456)
+- **subject**: ≤ 50 chars. Briefly describe the impact of the change.
+- **body**: ≤ 72 chars per line. Explain *why* changed, *what* changed, and *side effects*.
+- **footer**: related issue refs (optional, e.g., Refs: #123, Closes: #456).
 
 ### Type (Conventional Commits)
-feat(새 기능), fix(버그 수정), refactor(구조 개선), docs(문서만),
-test(테스트), chore(빌드/설정), style(포맷), perf(성능 개선)
+feat (new feature), fix (bug fix), refactor (structural improvement), docs (docs only),
+test, chore (build/config), style (format), perf (performance).
 
-### 제목 규칙
-1. 50자 이내로 작성
-2. 한국어로 작성. 기술 용어(함수명, 파일명, 패키지명)는 원문 유지
-3. 마침표로 끝내지 않는다
-4. 변경사항이 '무엇을 하는지' 설명 (과거형 금지: "추가했음" X → "추가" O)
-5. 코드를 보지 않아도 변경사항이 무엇인지 이해 가능하게 작성
+### Subject rules
+1. ≤ 50 chars.
+2. **Write in Korean.** Keep technical terms (function names, file names, package names) in their original form.
+3. No trailing period.
+4. Describe what the change *does* (no past tense: "추가했음" ✗ → "추가" ✓).
+5. Understandable without reading the code.
 
-### 본문 규칙
-1. 한 줄 72자 이내로 줄바꿈
-2. `- ` bullet 목록으로 구체적 변경 내용 나열
-3. 각 bullet에 구체적 정보 포함 (파일명, 값, 전후 비교 등)
-4. **왜 변경했는지** 맥락 설명 (코드 diff로 알 수 없는 정보)
-5. **부수 효과**가 있으면 명시
-6. 변경 파일 1개이거나 단순하면 본문 생략 (제목만)
+### Body rules
+1. Wrap each line at ≤ 72 chars.
+2. Use `- ` bullet list for concrete changes.
+3. Each bullet carries concrete info (file name, value, before/after).
+4. Explain **why** the change was made (context the diff cannot show).
+5. Note **side effects** if any.
+6. Omit body when the change is single-file or trivial (subject only).
 
-### 피해야 할 메시지
-- "수정" "변경" "업데이트" 같은 총칭적 메시지는 금지
-- "Fix this" "뭔가 고침" "이제 잘 작동할거임" 금지
-- 맥락 없이 파일명만 나열하는 것도 금지
+### Messages to avoid
+- Generic messages like "수정", "변경", "업데이트" — banned.
+- "Fix this", "뭔가 고침", "이제 잘 작동할거임" — banned.
+- Listing only file names without context — banned.
 
-### 좋은 예시
+### Good examples (Korean — output language)
 
-단순 (본문 없음):
+Simple (no body):
 chore: Docker 타임존 서울 설정 — TZ=Asia/Seoul 환경변수 추가
 
-표준 (본문 포함):
+Standard (with body):
 fix: 직렬화 오류 수정 — JSON 전환으로 경로 의존성 제거
 
 기존 방식이 클래스 파일 경로에 의존하여 리팩토링 시
@@ -122,7 +125,7 @@ fix: 직렬화 오류 수정 — JSON 전환으로 경로 의존성 제거
 - 기존 데이터 마이그레이션 스크립트 추가
 - 역직렬화 실패 시 fallback 로직 제거 (더 이상 불필요)
 
-복합 (다수 파일 변경):
+Composite (multi-file change):
 feat: 사용자 결제 모듈 추가 — Credit 모델에 use 메소드 구현
 
 기존에는 결제 처리가 컨트롤러에 직접 구현되어 있어
@@ -134,39 +137,39 @@ feat: 사용자 결제 모듈 추가 — Credit 모델에 use 메소드 구현
 
 Refs: #321
 
-## 입력 데이터
+## Input data
 
 ### git diff --stat
-{diff_stat 결과}
+{diff_stat result}
 
 ### git diff
-{diff 결과}
+{diff result}
 
 ### git log --oneline -5
-{최근 커밋 스타일 참고용}
+{recent commit style reference}
 
-## 출력
-커밋 메시지만 출력하라. 다른 설명이나 마크다운 코드블록 없이 메시지 원문만.
+## Output
+Output **only the commit message in Korean** — no other explanation, no markdown code fences.
 ```
 
-서브 에이전트가 반환한 텍스트를 커밋 메시지로 사용한다.
+Use the text returned by the sub-agent as the commit message.
 
-### 5. HISTORY.md 작성 여부 확인
+### 5. HISTORY.md write decision
 
-커밋 전에 AskUserQuestion — "HISTORY.md에 이번 작업을 기록할까요?"
+Before committing, AskUserQuestion — "HISTORY.md에 이번 작업을 기록할까요?"
 
 **Options**:
-1. label: "작성" — HISTORY.md + history/ 상세 파일 생성
-2. label: "건너뛰기" — HISTORY.md 작성 없이 커밋 진행
+1. label: "작성" — generate HISTORY.md + history/ detail file
+2. label: "건너뛰기" — proceed without writing HISTORY.md
 
-**"작성" 선택 시 (Haiku Task):**
+**On "작성" (Haiku Task):**
 
-HISTORY.md 작성은 Haiku 서브 에이전트에게 위임한다. 메인 세션은 프롬프트 구성 + 결과 확인만 수행.
+Delegate HISTORY.md authoring to a Haiku sub-agent. The main session only builds the prompt and verifies the result.
 
-**Agent tool 호출:**
+**Agent tool invocation:**
 - `subagent_type`: `task`
 - `task_model`: `haiku`
-- `prompt`: 아래 템플릿에 커밋 메시지와 diff 요약을 삽입
+- `prompt`: insert commit message and diff summary into the template below
 
 ```
 아래 커밋 정보를 바탕으로 HISTORY.md와 history/ 상세 파일을 작성하라.
@@ -192,10 +195,10 @@ HISTORY.md 작성은 Haiku 서브 에이전트에게 위임한다. 메인 세션
 {confirmed_commit_message}
 
 ### git diff --stat
-{diff_stat 결과}
+{diff_stat result}
 
 ### git diff (핵심 부분)
-{diff 요약 — 너무 크면 파일명 + 주요 변경 위주}
+{diff summary — for very large diffs use file names + key changes}
 
 ## 출력
 생성한 파일 경로 2개만 출력:
@@ -203,9 +206,9 @@ HISTORY.md 작성은 Haiku 서브 에이전트에게 위임한다. 메인 세션
 - HISTORY.md (갱신)
 ```
 
-서브 에이전트 완료 후 메인 세션은 반환된 파일 경로를 확인만 한다 (재읽기 불필요).
+After the sub-agent finishes, the main session only verifies the returned file paths (no need to re-read).
 
-**"건너뛰기" 선택 시:** 이 단계를 건너뛰고 바로 커밋 확인으로 진행.
+**On "건너뛰기":** skip this step and go straight to commit confirmation.
 
 ### 6. Confirm with user
 
@@ -214,7 +217,7 @@ Present the generated message using AskUserQuestion with **preview** to show the
 **Question**: "커밋 메시지를 확인하세요:"
 **Header**: "Commit"
 **Options**:
-1. label: "커밋" (Recommended), preview: 생성된 전체 커밋 메시지 (제목 + 본문)
+1. label: "커밋" (Recommended), preview: full generated commit message (subject + body)
 2. label: "수정", description: "직접 메시지 입력"
 
 If user selects "수정" (Other), use their custom input.
@@ -238,16 +241,16 @@ EOF
 )"
 ```
 
-### 8. TODO.md 연동 (커밋 후)
+### 8. TODO.md sync (post-commit)
 
-TODO.md가 있으면 AskUserQuestion — "완료된 TODO 항목이 있나요? (항목 번호를 입력하거나 없음 선택)"
+If TODO.md exists, AskUserQuestion — "완료된 TODO 항목이 있나요? (항목 번호를 입력하거나 없음 선택)"
 
-- 번호를 입력한 경우: 해당 번호들의 상태를 ✅로 변경
-  - Edit 도구로 TODO.md 수정
-  - 종료 시간: 현재 한국 시각(KST, UTC+9) (`MM-DD HH:MM`)으로 기록
-  - 소요 시간: 시작 시간이 있으면 계산, 없으면 `-`
-  - 진행 상황 갱신
-- "없음" 선택 시: 건너뜀
+- If numbers entered: change those items' status to ✅
+  - Modify TODO.md via the Edit tool
+  - End time: current Korea time (KST, UTC+9) (`MM-DD HH:MM`)
+  - Duration: compute if start time exists, else `-`
+  - Update progress
+- On "없음": skip
 
 ### 9. Push (if --push)
 
@@ -294,11 +297,11 @@ Push 하려면:
   변경 파일: [N]개
 ```
 
-### 11. 세션 정리 안내 (커밋 완료 후)
+### 11. Session cleanup guide (after commit completes)
 
-커밋(또는 커밋+push) 완료 후 세션 정리 방법을 **안내 텍스트로만** 출력한다. `/clear`·`/compact`는 Claude가 직접 실행할 수 없고 사용자가 직접 입력해야 하므로, AskUserQuestion 같은 대화형 선택지를 쓰지 않는다(의사결정은 사용자 몫).
+After commit (or commit+push) completes, output session cleanup guidance **as plain text only**. Since `/clear` and `/compact` cannot be executed by Claude (they require user input), do not use AskUserQuestion or any interactive selection (the decision belongs to the user).
 
-**출력 형식** (그대로 한 블록으로 출력, 선택지 제시 금지):
+**Output format** (emit as one block, no options):
 
 ```
 다음 작업 맥락에 따라 필요 시 직접 입력하세요:
@@ -307,27 +310,27 @@ Push 하려면:
 - 작업 단위 종료 → 새 세션: /clear  (원칙 8 권장, TODO.md·HISTORY.md·Failure Memory·auto memory는 파일로 보존되어 자동 복원)
 ```
 
-추가 안내 금지: "어느 쪽을 고르시겠습니까?" 같은 대화형 유도 문구는 절대 쓰지 않는다.
+No additional prompts: never use interactive nudges like "어느 쪽을 고르시겠습니까?".
 
 ## Notes
 
 - Always use `git add -A` to stage all changes (tracked + untracked)
 - Never commit `.env`, credentials, or secret files — warn if detected
 - If on a detached HEAD, warn the user before committing
-- `Co-Authored-By`에는 `git config user.name/email`로 가져온 커밋 사용자 정보를 사용
+- For `Co-Authored-By`, use the commit user info fetched via `git config user.name/email`
 - If the diff is very large, focus analysis on file names and key changes rather than reading every line
 
-## 절대 실행 금지 명령어
+## Forbidden Commands (never run)
 
-아래 명령어는 어떤 상황에서도 실행하지 않는다:
+The following commands MUST NOT be executed under any circumstance:
 
-- `git push --force` / `git push -f` — 원격 히스토리 덮어쓰기. 다른 사람의 작업 소실 위험
-- `git push --force-to-lease` — force push 변형. 동일한 위험
-- `git reset --hard` — 커밋되지 않은 변경사항 영구 삭제
-- `git clean -f` / `git clean -fd` — 추적되지 않는 파일/디렉토리 영구 삭제
-- `git checkout .` / `git restore .` — 모든 수정사항 되돌림 (커밋 안 된 작업 소실)
-- `git branch -D` — 병합되지 않은 브랜치 강제 삭제
-- `git rebase` (interactive 포함) — 히스토리 변경. 이 스킬의 범위 밖
-- `git commit --amend` — 직전 커밋 수정. 의도치 않은 변경 위험
-- `git stash drop` / `git stash clear` — stash 영구 삭제
-- `git config` (write) — 사용자 git 설정 변경 금지 (read는 허용)
+- `git push --force` / `git push -f` — overwrites remote history. Risk of losing others' work
+- `git push --force-to-lease` — force-push variant. Same risk
+- `git reset --hard` — permanently discards uncommitted changes
+- `git clean -f` / `git clean -fd` — permanently deletes untracked files/directories
+- `git checkout .` / `git restore .` — reverts all modifications (loss of uncommitted work)
+- `git branch -D` — force-deletes unmerged branches
+- `git rebase` (including interactive) — rewrites history. Out of this skill's scope
+- `git commit --amend` — modifies the previous commit. Risk of unintended changes
+- `git stash drop` / `git stash clear` — permanently deletes stash
+- `git config` (write) — never modify the user's git config (read is allowed)

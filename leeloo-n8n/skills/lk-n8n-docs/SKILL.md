@@ -1,57 +1,61 @@
 ---
 name: lk-n8n-docs
-description: "n8n MCP 도구 문서 조회"
+description: |
+  n8n MCP 도구 사용법·문서 조회.
+  n8n 문서, n8n 사용법, MCP 도구, n8n 도움말, n8n docs, n8n help, n8n mcp tools
 user_invocable: true
 argument-hint: "[topic]"
 ---
 
-# /lk-n8n-docs — n8n MCP 도구 문서
+> Output language: Korean. This English instruction governs Claude's behavior; all user-facing output (reports, generated documents, chat messages) MUST be in Korean.
 
-n8n MCP 도구의 문서와 사용법을 조회합니다.
+# /lk-n8n-docs — n8n MCP Tools Documentation
 
-## 서브커맨드
+Look up documentation and usage for n8n MCP tools.
+
+## Subcommands
 
 ```
-/lk-n8n-docs                  — 전체 도구 목록 + 퀵스타트 가이드
-/lk-n8n-docs <topic>          — 특정 도구의 상세 문서 (예: n8n_create_workflow)
+/lk-n8n-docs                  — Tool overview + quickstart guide
+/lk-n8n-docs <topic>          — Detailed documentation for a tool (e.g., n8n_create_workflow)
 ```
 
 ## Procedure
 
-### MCP 사전 체크
+### MCP pre-check
 
-1. `mcp__n8n-mcp__n8n_health_check` 호출.
-   - 실패 시: "n8n MCP 서버가 설정되지 않았습니다. `/n8n-setup install` 을 먼저 실행하세요." 안내 후 중단.
+1. Call `mcp__n8n-mcp__n8n_health_check`.
+   - On failure, instruct: "n8n MCP server is not configured. Run `/n8n-setup install` first." Then stop.
 
-### 인자 파싱
+### Argument parsing
 
-- 인자 없음 → **overview** 동작
-- `<topic>` → **topic** 동작
-
----
-
-### overview 동작
-
-1. `mcp__n8n-mcp__tools_documentation` 를 파라미터 없이 호출 (퀵스타트 가이드).
-2. 추가로 leeloo-n8n skill 매핑 테이블을 표시:
-   ```
-   leeloo-n8n 스킬 가이드
-
-   | 스킬 | 용도 | 예시 |
-   |------|------|------|
-   | /n8n-setup | MCP 연결 관리 | /n8n-setup status |
-   | /n8n-workflow | 워크플로우 CRUD | /n8n-workflow list |
-   | /n8n-run | 실행 및 기록 | /n8n-run test 123 |
-   | /n8n-validate | 검증 및 수정 | /n8n-validate check 123 |
-   | /n8n-node | 노드 검색/정보 | /n8n-node search slack |
-   | /n8n-template | 템플릿 관리 | /n8n-template search chatbot |
-   | /n8n-version | 버전 관리 | /n8n-version list 123 |
-   | /lk-n8n-docs | 문서 조회 | /lk-n8n-docs |
-   ```
+- No args → **overview** action
+- `<topic>` → **topic** action
 
 ---
 
-### topic 동작
+### overview action
 
-1. `mcp__n8n-mcp__tools_documentation` 를 `topic`, `depth: "full"` 로 호출.
-2. 해당 도구의 상세 문서를 표시.
+1. Call `mcp__n8n-mcp__tools_documentation` without parameters (quickstart guide).
+2. Additionally display the leeloo-n8n skill mapping table:
+   ```
+   leeloo-n8n skill guide
+
+   | Skill | Purpose | Example |
+   |-------|---------|---------|
+   | /n8n-setup | MCP connection management | /n8n-setup status |
+   | /n8n-workflow | Workflow CRUD | /n8n-workflow list |
+   | /n8n-run | Run and history | /n8n-run test 123 |
+   | /n8n-validate | Validation and fixes | /n8n-validate check 123 |
+   | /n8n-node | Node search/info | /n8n-node search slack |
+   | /n8n-template | Template management | /n8n-template search chatbot |
+   | /n8n-version | Version management | /n8n-version list 123 |
+   | /lk-n8n-docs | Documentation lookup | /lk-n8n-docs |
+   ```
+
+---
+
+### topic action
+
+1. Call `mcp__n8n-mcp__tools_documentation` with `topic`, `depth: "full"`.
+2. Display the detailed documentation for the tool.
