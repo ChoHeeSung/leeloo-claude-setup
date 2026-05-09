@@ -6,6 +6,7 @@ const { spawnSync } = require('child_process');
 const { readStdin, respond, sessionMessage } = require('./lib/io');
 const { ensureStateDir } = require('./lib/paths');
 const { getFailureMemoryStats } = require('./lib/failure-log');
+const mcpGuard = require('./mcp-guard');
 
 function isCommandAvailable(cmd) {
   // POSIX 호환: 'which' 대신 'command -v' 사용 (최소 설치 Linux 지원)
@@ -305,6 +306,16 @@ async function main() {
       const totalPct = Math.round((totalDone / totalAll) * 100);
       messages.push(`TODO 전체: ${totalDone}/${totalAll} (${totalPct}%)`);
       todoLines.forEach((line) => messages.push(line));
+    }
+  } catch (e) {
+    // 무시
+  }
+
+  // 9. MCP Guard — 화이트리스트 외 mcpServers 자동 disable
+  try {
+    const guardResult = mcpGuard.run();
+    if (guardResult && guardResult.changed > 0) {
+      messages.push(`MCP Guard: ${guardResult.changed}개 비활성화 (${guardResult.names.join(', ')})`);
     }
   } catch (e) {
     // 무시
